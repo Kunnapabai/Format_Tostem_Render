@@ -291,32 +291,58 @@
             font-weight: 500;
         }
 
-        .download-section {
+        .text-output-section {
             padding: 20px 0;
             border-top: 1px solid #e9ecef;
             display: none;
         }
 
-        .download-btn {
-            background: linear-gradient(45deg, #28a745, #20c997);
-            color: white;
-            padding: 12px 24px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: 600;
-            margin-right: 10px;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            display: inline-block;
+        .text-output-container {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            position: relative;
         }
 
-        .download-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 16px rgba(40,167,69,0.3);
+        .text-output {
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            color: #333;
+            white-space: pre-wrap;
+            word-break: break-all;
+            max-height: 400px;
+            overflow-y: auto;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: linear-gradient(45deg, #28a745, #20c997);
             color: white;
-            text-decoration: none;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .copy-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(40,167,69,0.3);
+        }
+
+        .copy-btn.copied {
+            background: linear-gradient(45deg, #17a2b8, #138496);
         }
 
         .summary-section {
@@ -342,21 +368,27 @@
         }
 
         .stat-item {
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.9);
+            color: #2c3e50;
             padding: 15px 20px;
             border-radius: 8px;
             text-align: center;
+            flex: 1;
+            min-width: 200px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
 
         .stat-number {
             font-size: 2rem;
             font-weight: 700;
             display: block;
+            color: #007bff;
         }
 
         .stat-label {
             font-size: 0.9rem;
-            opacity: 0.9;
+            opacity: 0.8;
+            color: #2c3e50;
         }
 
         @media (max-width: 768px) {
@@ -388,14 +420,39 @@
             .data-table th, .data-table td {
                 padding: 10px 5px;
             }
+
+            .copy-btn {
+                position: static;
+                margin-top: 10px;
+                width: 100%;
+            }
         }
+        .stat-item.highlight {
+            background: linear-gradient(45deg, #007bff, #0056b3);
+            color: white;
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(0,123,255,0.4);
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+
+        .stat-item.highlight .stat-number {
+            color: white;
+            font-size: 2.2rem;
+        }
+
+        .stat-item.highlight .stat-label {
+            color: white;
+            opacity: 1;
+            font-weight: 600;
+        }
+
     </style>
 </head>
 <body>
     <div class="corner-nav">
-        <a href="/original" class="corner-btn">Matrix</a>
-        <a href="/joint" class="corner-btn">Joint</a>
-        <a href="/format" class="corner-btn">Windows txt</a>
+        <a href="/original" class="corner-btn">Excel Matrix</a>
+        <a href="/joint" class="corner-btn">Excel Joint</a>
+        <a href="/format" class="corner-btn">Text Windows</a>
     </div>
 
     <div class="header">
@@ -412,7 +469,7 @@
             <div class="upload-area" onclick="document.getElementById('pdfFile').click()">
                 <div>
                     <strong style="font-size: 1.2em;">📁 คลิกหรือลากไฟล์ PDF มาวางที่นี่</strong><br><br>
-                    <small style="color: #666;">รองรับไฟล์ .pdf เท่านั้น</small>
+                    <small style="color: #666;">รองรับไฟล์ .pdf เท่านั้น (ขนาดไม่เกิน 25MB)</small>
                 </div>
             </div>
             
@@ -432,23 +489,25 @@
         </div>
 
         <div id="errorMessage" class="message error-message"></div>
-        <div id="successMessage" class="message success-message"></div>
 
         <div id="resultsSection" class="results-section">
             <div id="summarySection" class="summary-section" style="display: none;">
                 <div class="summary-title">สรุปผลลัพธ์</div>
                 <div class="summary-stats">
-                    <div class="stat-item">
-                        <span class="stat-number" id="totalGlass">0</span>
-                        <span class="stat-label">จำนวนกระจกทั้งหมด (บาน)</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-number" id="totalRecords">0</span>
-                        <span class="stat-label">พบกระจก (records)</span>
-                    </div>
+
                     <div class="stat-item">
                         <span class="stat-number" id="totalReferences">0</span>
-                        <span class="stat-label">จาก Reference Codes</span>
+                        <span class="stat-label">Total Reference Codes</span>
+                    </div>
+                    
+                    <div class="stat-item">
+                        <span class="stat-number" id="totalRecords">0</span>
+                        <span class="stat-label">Total Row</span>
+                    </div>
+
+                    <div class="stat-item highlight">
+                        <span class="stat-number" id="totalGlass">0</span>
+                        <span class="stat-label">Total Qty</span>
                     </div>
                 </div>
             </div>
@@ -461,9 +520,12 @@
 
         <div id="productInfo" class="message success2-message" style="display: none; margin-top: 10px;"></div>
 
-        <div id="downloadSection" class="download-section">
-            <a href="/download/txt" class="download-btn" target="_blank">ดาวน์โหลด TXT</a>
-            <a href="/download/json" class="download-btn" target="_blank">ดาวน์โหลด JSON</a>
+        <div id="textOutputSection" class="text-output-section">
+            <h2 class="section-title">ผลลัพธ์ Text Format</h2>
+            <div class="text-output-container">
+                <button id="copyBtn" class="copy-btn" onclick="copyToClipboard()">📋 คัดลอก</button>
+                <div id="textOutput" class="text-output"></div>
+            </div>
         </div>
     </div>
 
@@ -526,23 +588,94 @@
             }
         }
 
+        function copyToClipboard() {
+            const textOutput = document.getElementById('textOutput');
+            const copyBtn = document.getElementById('copyBtn');
+            
+            // Create a temporary textarea to copy text
+            const tempTextArea = document.createElement('textarea');
+            tempTextArea.value = textOutput.textContent;
+            document.body.appendChild(tempTextArea);
+            tempTextArea.select();
+            
+            try {
+                document.execCommand('copy');
+                copyBtn.textContent = '✅ คัดลอกแล้ว';
+                copyBtn.classList.add('copied');
+                
+                setTimeout(() => {
+                    copyBtn.textContent = '📋 คัดลอก';
+                    copyBtn.classList.remove('copied');
+                }, 2000);
+            } catch (err) {
+                console.error('Failed to copy text: ', err);
+            }
+            
+            document.body.removeChild(tempTextArea);
+        }
+
+        function generateTextOutput(glassData) {
+            if (!glassData || glassData.length === 0) {
+                return "ไม่พบข้อมูล GLASS ที่สมบูรณ์";
+            }
+
+            function removeLeadingZeros(value) {
+                if (!value || !String(value).trim()) {
+                    return value;
+                }
+                
+                const valStr = String(value).trim();
+                
+                if (/^\d+$/.test(valStr)) {
+                    return String(parseInt(valStr));
+                }
+                
+                return valStr;
+            }
+
+            let content = "";
+            let totalQty = 0;
+            
+            for (const glassItem of glassData) {
+                const refCode = (glassItem.ref_code || '').trim();
+                const gw = (glassItem.GW || '').trim();
+                const gh = (glassItem.GH || '').trim();
+                const qty = (glassItem.Qty || '').trim();
+                
+                if (refCode && gw && gh && qty) {
+                    const gwClean = removeLeadingZeros(gw);
+                    const ghClean = removeLeadingZeros(gh);
+                    const qtyNum = parseInt(qty) || 0;
+                    
+                    content += `${refCode} ${gwClean} * ${ghClean} = ${qty}\n`;
+                    totalQty += qtyNum;
+                }
+            }
+            
+            if (content) {
+                content += `\nTotal Qty = ${totalQty}`;
+            } else {
+                content = "ไม่พบข้อมูล GLASS ที่สมบูรณ์";
+            }
+            
+            return content;
+        }
+
         document.getElementById('uploadForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
             const formData = new FormData(this);
             const loading = document.getElementById('loading');
             const errorMessage = document.getElementById('errorMessage');
-            const successMessage = document.getElementById('successMessage');
             const resultsSection = document.getElementById('resultsSection');
-            const downloadSection = document.getElementById('downloadSection');
+            const textOutputSection = document.getElementById('textOutputSection');
             const processBtn = document.getElementById('processBtn');
 
             // Reset UI
             loading.style.display = 'block';
             errorMessage.style.display = 'none';
-            successMessage.style.display = 'none';
             resultsSection.style.display = 'none';
-            downloadSection.style.display = 'none';
+            textOutputSection.style.display = 'none';
             processBtn.disabled = true;
 
             try {
@@ -557,24 +690,38 @@
                     // Display results
                     displayResults(result.data);
                     
-                    // Show success message
-                    successMessage.textContent = result.message;
-                    successMessage.style.display = 'block';
+                    // Generate and display text output
+                    const textContent = generateTextOutput(result.data.glass_data);
+                    document.getElementById('textOutput').textContent = textContent;
+                    textOutputSection.style.display = 'block';
                     
-                    // Show product info messages
+                    // Show product info messages (only if Order Qty > 1)
                     const productInfoDiv = document.getElementById('productInfo');
-                    if (result.data.product_messages && result.data.product_messages.length > 0) {
-                        productInfoDiv.innerHTML = result.data.product_messages
-                            .map(msg => `<p>${msg}</p>`)
-                            .join('');
-                        productInfoDiv.style.display = 'block';
+                    if (result.data.product_info && result.data.product_info.length > 0) {
+                        // Filter product info to only show items with Order Qty > 1
+                        const filteredProducts = result.data.product_info.filter(product => {
+                            const orderQty = parseInt(product.order_qty_sets) || 0;
+                            return orderQty > 1;
+                        });
+                        
+                        if (filteredProducts.length > 0) {
+                            const filteredMessages = filteredProducts.map(product => 
+                                `Product name ${product.product_name} มี Order Qty (sets) ${product.order_qty_sets}`
+                            );
+                            
+                            productInfoDiv.innerHTML = filteredMessages
+                                .map(msg => `<p>${msg}</p>`)
+                                .join('');
+                            productInfoDiv.style.display = 'block';
+                        } else {
+                            productInfoDiv.style.display = 'none';
+                        }
                     } else {
                         productInfoDiv.style.display = 'none';
                     }
 
-                    // Show results and download section
+                    // Show results section
                     resultsSection.style.display = 'block';
-                    downloadSection.style.display = 'block';
                 } else {
                     // Show error message
                     errorMessage.textContent = result.error || 'เกิดข้อผิดพลาดที่ไม่ทราบสาเหตุ';
