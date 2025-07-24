@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Format Tostem</title>
+<style>
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{
+        font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        line-height:1.6;
+        background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
+        min-height:100vh;
+        padding-top:80px; /* เพิ่ม padding-top เพื่อไม่ให้เนื้อหาติด header */
+    }
+    
+    /* Header */
+    header {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        position: fixed;
+        width: 100%;
+        top: 0;
+        z-index: 1000;
+        padding: 1rem 0;
+        transition: all 0.3s ease;
+    }
+    
+    .container1 {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 20px;
+    }
+    
+    nav {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .logo {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: white;
+        text-decoration: none;
+    }
+    
+    .nav-links {
+        display: flex;
+        list-style: none;
+        gap: 2rem;
+    }
+    
+    .nav-links a {
+        color: white;
+        text-decoration: none;
+        transition: color 0.3s ease;
+        font-weight: 500;
+    }
+    
+    .nav-links a:hover,
+    .nav-links a.active {
+        color: #ffd700;
+    }
+    
+    .header{
+        text-align:center;
+        color:white;
+        margin-bottom:30px;
+        margin-top:20px; /* เพิ่ม margin-top เพื่อไม่ให้ติด header */
+    }
+    .header h1{
+        font-size:2.5rem;
+        margin-bottom:10px;
+        text-shadow:2px 2px 4px rgba(0,0,0,.3);
+        font-weight:700;
+    }
+    .container{
+        max-width:1200px;
+        margin:0 auto;
+        background:white;
+        padding:30px;
+        border-radius:15px;
+        box-shadow:0 10px 30px rgba(0,0,0,.2);
+    }
+    .subtitle{text-align:center;color:#666;margin-bottom:30px;font-size:1.1em;}
+    .upload-area{
+        border:3px dashed #007bff;border-radius:15px;padding:40px 20px;
+        text-align:center;margin:20px 0;cursor:pointer;transition:.3s;background:#f8f9fa;
+    }
+    .upload-area:hover,.upload-area.dragover{
+        background:#e3f2fd;border-color:#0056b3;transform:translateY(-2px);
+    }
+    .file-input{display:none;}
+    textarea{
+        width:100%;height:220px;font-family:monospace;font-size:14px;
+        padding:15px;border:2px solid #e9ecef;border-radius:10px;background:white;
+        margin-top:10px;resize:vertical;
+    }
+    textarea:focus{outline:none;border-color:#007bff;box-shadow:0 0 0 3px rgba(0,123,255,.1);}
+    .number-input,.threshold-input{
+        width:100%;padding:12px;border:2px solid #e9ecef;border-radius:10px;
+        font-size:16px;margin-top:6px;
+    }
+    .btn{
+        width:100%;padding:15px;background:linear-gradient(45deg,#007bff,#0056b3);
+        color:white;border:none;border-radius:10px;font-size:18px;font-weight:600;
+        cursor:pointer;transition:.3s;margin:12px 0;
+    }
+    .btn:disabled{background:#6c757d;cursor:not-allowed;}
+    .btn:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 10px 20px rgba(0,123,255,.3);}
+    .message{padding:15px;border-radius:10px;margin:20px 0;display:none;}
+    .error-message{background:#f8d7da;color:#721c24;border:1px solid #f5c6cb;}
+    .success-message{background:#d4edda;color:#155724;border:1px solid #c3e6cb;}
+    .loading{text-align:center;padding:40px;color:#007bff;display:none;}
+    .loading-spinner{
+        border:4px solid #f3f3f3;border-top:4px solid #007bff;border-radius:50%;
+        width:40px;height:40px;animation:spin 1s linear infinite;margin:0 auto 20px;
+    }
+    @keyframes spin{0%{transform:rotate(0)}100%{transform:rotate(360deg)}}
+    table{width:100%;border-collapse:collapse;margin-top:20px;font-size:14px;}
+    th,td{border:1px solid #e9ecef;padding:10px;}
+    th{background:linear-gradient(45deg,#007bff,#0056b3);color:white;text-align:left;}
+    tr.ok{background:#e6ffed;}
+    tr.fail{background:#ffeef0;}
+    .stats{display:flex;gap:20px;flex-wrap:wrap;margin:20px 0;}
+    .stat{flex:1;min-width:160px;background:#f8f9fa;border-radius:10px;padding:15px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.1);}
+    .stat.highlight{background:linear-gradient(45deg,#007bff,#0056b3);color:white;}
+    .stat .num{font-size:2rem;font-weight:700;display:block;margin-bottom:4px;}
+    @media(max-width:768px){
+        nav{flex-direction:column;gap:1rem;}
+        .nav-links{gap:1rem;margin-top:1rem;}
+        .container{margin:10px;padding:20px;border-radius:10px;}
+        body{padding-top:120px;} /* เพิ่ม padding สำหรับ mobile */
+    }
+</style>
+</head>
+<body>
+    <header>
+        <nav class="container1">
+            <a href="#" class="logo">Format Tostem</a>
+            <ul class="nav-links">
+                <li><a href="/matrix" class="corner-btn">Excel Matrix</a></li>
+                <li><a href="/joint" class="corner-btn">Excel Joint</a></li>
+                <li><a href="/format" class="corner-btn">Text Windows</a></li>
+                <li><a href="/txt_vs_pdf" class="corner-btn active">TXT vs PDF Checker</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="header"><h1>TXT vs PDF Checker</h1></div>
+
+    <div class="container">
+        <p class="subtitle">วางข้อความหลายบรรทัด + อัปโหลด PDF แล้วตรวจว่ามี/ไม่มีในไฟล์</p>
+
+        <form id="compareForm" enctype="multipart/form-data">
+            <label>ข้อความ (.txt) ที่จะตรวจ</label>
+            <textarea name="text_block" placeholder="D1.1 897 * 2060 = 4&#10;D1.1 1519 * 2098 = 1"></textarea>
+
+            <label style="margin-top:15px;">เลือกไฟล์ PDF</label>
+            <div class="upload-area" onclick="document.getElementById('pdfFile').click()">
+                <strong>📁 คลิกหรือลากไฟล์ PDF มาวางที่นี่</strong><br><br>
+                <small>รองรับ .pdf ขนาดไม่เกิน 25MB</small>
+            </div>
+            <input type="file" id="pdfFile" name="pdf_file" class="file-input" accept="application/pdf" required />
+
+            <div style="display:flex;gap:15px;flex-wrap:wrap;margin-top:15px;">
+                <div style="flex:1;min-width:150px;">
+                    <label>เริ่มอ่านหน้าที่</label>
+                    <input type="number" name="start_page" value="1" min="1" class="number-input" />
+                </div>
+                <div style="flex:1;min-width:150px;">
+                    <label>Fuzzy Threshold (0-100)</label>
+                    <input type="number" name="threshold" value="85" min="0" max="100" class="threshold-input" />
+                </div>
+                <div style="flex:1;min-width:150px;display:flex;align-items:flex-end;">
+                    <label style="display:flex;align-items:center;gap:6px;">
+                        <input type="checkbox" name="fuzzy" value="1" style="width:18px;height:18px;"> ใช้ Fuzzy
+                    </label>
+                </div>
+                <div style="flex:1;min-width:150px;display:flex;align-items:flex-end;">
+                    <label style="display:flex;align-items:center;gap:6px;">
+                        <input type="checkbox" name="show_pdf_content" value="1" style="width:18px;height:18px;"> แสดงเนื้อหา PDF
+                    </label>
+                </div>
+            </div>
+
+            <button class="btn" id="submitBtn">🚀 ตรวจเลย</button>
+        </form>
+
+        <div id="loading" class="loading">
+            <div class="loading-spinner"></div>
+            <p>กำลังประมวลผล...</p>
+        </div>
+
+        <div id="errorMsg" class="message error-message"></div>
+
+        <div id="resultBlock" style="display:none;">
+            <div class="stats">
+                <div class="stat">
+                    <span class="num" id="totalLines">0</span>
+                    <span>บรรทัดทั้งหมด</span>
+                </div>
+                <div class="stat highlight">
+                    <span class="num" id="foundLines">0</span>
+                    <span>พบใน PDF</span>
+                </div>
+                <div class="stat">
+                    <span class="num" id="missingLines">0</span>
+                    <span>ไม่พบ</span>
+                </div>
+            </div>
+
+            <!-- PDF Content Display -->
+            <div id="pdfContentBlock" style="display:none; margin:20px 0;">
+                <h3 style="margin-bottom:10px; color:#007bff;">📄 เนื้อหาใน PDF:</h3>
+                <div style="background:#f8f9fa; padding:15px; border-radius:8px; border:1px solid #e9ecef; max-height:300px; overflow-y:auto;">
+                    <pre id="pdfContentText" style="white-space:pre-wrap; font-family:monospace; font-size:12px; margin:0; color:#333;"></pre>
+                </div>
+                <small id="pdfContentInfo" style="color:#666; margin-top:5px; display:block;"></small>
+            </div>
+
+            <table id="resultTable">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>บรรทัด</th>
+                        <th>พบ?</th>
+                        <th>หมายเหตุ</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+
+<script>
+const uploadArea = document.querySelector('.upload-area');
+const fileInput  = document.getElementById('pdfFile');
+const submitBtn  = document.getElementById('submitBtn');
+
+['dragenter','dragover','dragleave','drop'].forEach(eName=>{
+    uploadArea.addEventListener(eName, e=>{e.preventDefault();e.stopPropagation();});
+});
+['dragenter','dragover'].forEach(eName=>{
+    uploadArea.addEventListener(eName, ()=>uploadArea.classList.add('dragover'));
+});
+['dragleave','drop'].forEach(eName=>{
+    uploadArea.addEventListener(eName, ()=>uploadArea.classList.remove('dragover'));
+});
+uploadArea.addEventListener('drop', e=>{
+    const files=e.dataTransfer.files;
+    if(files.length){fileInput.files=files;setUploadText();}
+});
+fileInput.addEventListener('change', setUploadText);
+function setUploadText(){
+    if(fileInput.files[0]){
+        uploadArea.innerHTML=`<strong style="color:#28a745;">✅ ${fileInput.files[0].name}</strong><br><br><small>คลิกเพื่อเลือกไฟล์อื่น</small>`;
+        submitBtn.disabled=false;
+    }
+}
+
+document.getElementById('compareForm').addEventListener('submit', async e=>{
+    e.preventDefault();
+    const fd = new FormData(e.target);
+    const loading = document.getElementById('loading');
+    const errorMsg = document.getElementById('errorMsg');
+    const resultBlock = document.getElementById('resultBlock');
+    const tbody = document.querySelector('#resultTable tbody');
+
+    errorMsg.style.display='none';
+    resultBlock.style.display='none';
+    loading.style.display='block';
+    submitBtn.disabled=true;
+
+    try{
+        const res = await fetch('/compare', {method:'POST', body:fd});
+        const data = await res.json();
+        if(!res.ok) throw new Error(data.error||res.statusText);
+
+        const rows = data.results || [];
+        tbody.innerHTML = rows.map((r,i)=>`
+            <tr class="${r.ok?'ok':'fail'}">
+                <td>${i+1}</td>
+                <td>${r.raw||''}</td>
+                <td style="text-align:center">${r.ok?'✓':'✗'}</td>
+                <td><small>${r.reason||''}</small></td>
+            </tr>
+        `).join('');
+
+        document.getElementById('totalLines').textContent = rows.length;
+        document.getElementById('foundLines').textContent = rows.filter(x=>x.ok).length;
+        document.getElementById('missingLines').textContent = rows.filter(x=>!x.ok).length;
+
+        // แสดงเนื้อหา PDF ถ้าเลือกไว้
+        const pdfContentBlock = document.getElementById('pdfContentBlock');
+        if(data.pdf_content) {
+            document.getElementById('pdfContentText').textContent = data.pdf_content;
+            document.getElementById('pdfContentInfo').textContent = 
+                `แสดง ${data.pdf_content.length} ตัวอักษรแรก จากทั้งหมด ${data.pdf_content_full_length} ตัวอักษร`;
+            pdfContentBlock.style.display = 'block';
+        } else {
+            pdfContentBlock.style.display = 'none';
+        }
+
+        resultBlock.style.display='block';
+    }catch(err){
+        errorMsg.textContent = err.message;
+        errorMsg.style.display='block';
+    }finally{
+        loading.style.display='none';
+        submitBtn.disabled=false;
+    }
+});
+</script>
+</body>
+</html>
