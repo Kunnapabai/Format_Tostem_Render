@@ -16,6 +16,7 @@ from pathlib import Path
 from typing import Optional
 import pandas as pd
 from openpyxl import load_workbook
+# Ensure pandas and openpyxl are installed
 
 class ColorExtractor:
     def __init__(self, job_id: str):
