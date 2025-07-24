@@ -11,71 +11,83 @@
             box-sizing: border-box;
         }
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            line-height: 1.6;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
+       body{
+            font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height:1.6;
+            background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
+            min-height:100vh;
+            padding-top:80px; /* เพิ่ม padding-top เพื่อไม่ให้เนื้อหาติด header */
         }
 
-        .corner-nav {
+        /* Header */
+        header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
             position: fixed;
-            top: 20px;
-            right: 20px;
+            width: 100%;
+            top: 0;
             z-index: 1000;
-            display: flex;
-            gap: 10px;
-            height: 50px;
-        }
-
-        .corner-btn {
-            padding: 12px 20px;
-            border-radius: 25px;
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 14px;
+            padding: 1rem 0;
             transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            border: 2px solid transparent;
-            background: white;
-            color: black;
         }
-
-        .corner-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
-            text-decoration: none;
-            color: black;
-        }
-
-        .corner-btn.active {
-            background: linear-gradient(45deg, #007bff, #0056b3);
-            color: white;
-        }
-
-        .header {
-            text-align: center;
-            color: white;
-            margin-bottom: 30px;
-        }
-
-        .header h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-            font-weight: 700;
-        }
-
-        .container {
+        
+        .container1 {
             max-width: 1200px;
             margin: 0 auto;
-            background: white;
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            padding: 0 20px;
         }
-
+        
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: white;
+            text-decoration: none;
+        }
+        
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+        
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            transition: color 0.3s ease;
+            font-weight: 500;
+        }
+        
+        .nav-links a:hover,
+        .nav-links a.active {
+            color: #ffd700;
+        }
+        
+        .header{
+            text-align:center;
+            color:white;
+            margin-bottom:30px;
+            margin-top:20px; /* เพิ่ม margin-top เพื่อไม่ให้ติด header */
+        }
+        .header h1{
+            font-size:2.5rem;
+            margin-bottom:10px;
+            text-shadow:2px 2px 4px rgba(0,0,0,.3);
+            font-weight:700;
+        }
+        .container{
+            max-width:1200px;
+            margin:0 auto;
+            background:white;
+            padding:30px;
+            border-radius:15px;
+            box-shadow:0 10px 30px rgba(0,0,0,.2);
+        }
         .container h1 {
             color: #333;
             text-align: center;
@@ -449,18 +461,20 @@
     </style>
 </head>
 <body>
-    <div class="corner-nav">
-        <a href="/original" class="corner-btn">Excel Matrix</a>
-        <a href="/joint" class="corner-btn">Excel Joint</a>
-        <a href="/format" class="corner-btn">Text Windows</a>
-    </div>
+        <header>
+            <nav class="container1">
+                <a href="#" class="logo">Format Tostem</a>
+                <ul class="nav-links">
+                    <li><a href="/matrix" class="corner-btn">Excel Matrix</a></li>
+                    <li><a href="/joint" class="corner-btn">Excel Joint</a></li>
+                    <li><a href="/format" class="corner-btn active">Text Windows</a></li>
+                    <li><a href="/txt_vs_pdf" class="corner-btn">TXT vs PDF Checker</a></li>
+                </ul>
+            </nav>
+        </header>
+    <div class="header"><h1>PDF Data Extractor</h1></div>
 
-    <div class="header">
-        <h1>Format Tostem</h1>
-    </div>
-        
     <div class="container">
-        <h1>PDF Data Extractor</h1>
         <p class="subtitle">
             ดึงข้อมูล Reference Code และ GLASS จากไฟล์ PDF
         </p>
