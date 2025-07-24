@@ -9,6 +9,7 @@ import uuid
 import time
 import shutil
 from werkzeug.utils import secure_filename
+# Ensure pandas and openpyxl are installed
 
 # Set up logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
