@@ -1,141 +1,378 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Format Tostem</title>
-<style>
-    *{margin:0;padding:0;box-sizing:border-box;}
-    body{
-        font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        line-height:1.6;
-        background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
-        min-height:100vh;
-        padding-top:80px; /* เพิ่ม padding-top เพื่อไม่ให้เนื้อหาติด header */
-    }
-    
-    /* Header */
-    header {
-        background: rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(10px);
-        position: fixed;
-        width: 100%;
-        top: 0;
-        z-index: 1000;
-        padding: 1rem 0;
-        transition: all 0.3s ease;
-    }
-    
-    .container1 {
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 0 20px;
-    }
-    
-    nav {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-    
-    .logo {
-        font-size: 1.5rem;
-        font-weight: bold;
-        color: white;
-        text-decoration: none;
-    }
-    
-    .nav-links {
-        display: flex;
-        list-style: none;
-        gap: 2rem;
-    }
-    
-    .nav-links a {
-        color: white;
-        text-decoration: none;
-        transition: color 0.3s ease;
-        font-weight: 500;
-    }
-    
-    .nav-links a:hover,
-    .nav-links a.active {
-        color: #ffd700;
-    }
-    
-    .header{
-        text-align:center;
-        color:white;
-        margin-bottom:30px;
-        margin-top:20px; /* เพิ่ม margin-top เพื่อไม่ให้ติด header */
-    }
-    .header h1{
-        font-size:2.5rem;
-        margin-bottom:10px;
-        text-shadow:2px 2px 4px rgba(0,0,0,.3);
-        font-weight:700;
-    }
-    .container{
-        max-width:1200px;
-        margin:0 auto;
-        background:white;
-        padding:30px;
-        border-radius:15px;
-        box-shadow:0 10px 30px rgba(0,0,0,.2);
-    }
-    .subtitle{text-align:center;color:#666;margin-bottom:30px;font-size:1.1em;}
-    .upload-area{
-        border:3px dashed #007bff;border-radius:15px;padding:40px 20px;
-        text-align:center;margin:20px 0;cursor:pointer;transition:.3s;background:#f8f9fa;
-    }
-    .upload-area:hover,.upload-area.dragover{
-        background:#e3f2fd;border-color:#0056b3;transform:translateY(-2px);
-    }
-    .file-input{display:none;}
-    textarea{
-        width:100%;height:220px;font-family:monospace;font-size:14px;
-        padding:15px;border:2px solid #e9ecef;border-radius:10px;background:white;
-        margin-top:10px;resize:vertical;
-    }
-    textarea:focus{outline:none;border-color:#007bff;box-shadow:0 0 0 3px rgba(0,123,255,.1);}
-    .number-input,.threshold-input{
-        width:100%;padding:12px;border:2px solid #e9ecef;border-radius:10px;
-        font-size:16px;margin-top:6px;
-    }
-    .btn{
-        width:100%;padding:15px;background:linear-gradient(45deg,#007bff,#0056b3);
-        color:white;border:none;border-radius:10px;font-size:18px;font-weight:600;
-        cursor:pointer;transition:.3s;margin:12px 0;
-    }
-    .btn:disabled{background:#6c757d;cursor:not-allowed;}
-    .btn:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 10px 20px rgba(0,123,255,.3);}
-    .message{padding:15px;border-radius:10px;margin:20px 0;display:none;}
-    .error-message{background:#f8d7da;color:#721c24;border:1px solid #f5c6cb;}
-    .success-message{background:#d4edda;color:#155724;border:1px solid #c3e6cb;}
-    .loading{text-align:center;padding:40px;color:#007bff;display:none;}
-    .loading-spinner{
-        border:4px solid #f3f3f3;border-top:4px solid #007bff;border-radius:50%;
-        width:40px;height:40px;animation:spin 1s linear infinite;margin:0 auto 20px;
-    }
-    @keyframes spin{0%{transform:rotate(0)}100%{transform:rotate(360deg)}}
-    table{width:100%;border-collapse:collapse;margin-top:20px;font-size:14px;}
-    th,td{border:1px solid #e9ecef;padding:10px;}
-    th{background:linear-gradient(45deg,#007bff,#0056b3);color:white;text-align:left;}
-    tr.ok{background:#e6ffed;}
-    tr.fail{background:#ffeef0;}
-    .stats{display:flex;gap:20px;flex-wrap:wrap;margin:20px 0;}
-    .stat{flex:1;min-width:160px;background:#f8f9fa;border-radius:10px;padding:15px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.1);}
-    .stat.highlight{background:linear-gradient(45deg,#007bff,#0056b3);color:white;}
-    .stat .num{font-size:2rem;font-weight:700;display:block;margin-bottom:4px;}
-    @media(max-width:768px){
-        nav{flex-direction:column;gap:1rem;}
-        .nav-links{gap:1rem;margin-top:1rem;}
-        .container{margin:10px;padding:20px;border-radius:10px;}
-        body{padding-top:120px;} /* เพิ่ม padding สำหรับ mobile */
-    }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>เปรียบเทียบไฟล์ PDF/TXT</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body{
+            font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height:1.6;
+            background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
+            min-height:100vh;
+            padding-top:80px; /* เพิ่ม padding-top เพื่อไม่ให้เนื้อหาติด header */
+        }
+
+        .upload-section {
+            padding: 40px;
+            background: #f8f9fa;
+        }
+
+        .source-files-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .target-file-row {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 30px;
+        }
+
+        .upload-box {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            transition: transform 0.3s ease;
+        }
+
+        .upload-box:hover {
+            transform: translateY(-5px);
+        }
+
+        .upload-box h3 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .icon {
+            width: 24px;
+            height: 24px;
+            margin-right: 10px;
+        }
+
+        .file-upload-area {
+            border: 3px dashed #ddd;
+            border-radius: 10px;
+            padding: 40px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .file-upload-area:hover {
+            border-color: #4facfe;
+            background: #f0f8ff;
+        }
+
+        .file-upload-area.dragover {
+            border-color: #4facfe;
+            background: #f0f8ff;
+        }
+
+        .upload-icon {
+            width: 48px;
+            height: 48px;
+            margin: 0 auto 15px;
+            opacity: 0.5;
+        }
+
+        .file-info {
+            margin-top: 15px;
+            padding: 10px;
+            background: #e3f2fd;
+            border-radius: 5px;
+            font-weight: 600;
+            color: #1976d2;
+        }
+
+        .compare-section {
+            padding: 40px;
+            text-align: center;
+            background: white;
+        }
+
+        .compare-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.1rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .compare-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .compare-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .results-section {
+            padding: 40px;
+            background: #f8f9fa;
+        }
+
+        .results-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .results-header h3 {
+            color: #333;
+            font-size: 1.5rem;
+        }
+
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        }
+
+        .results-table th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .results-table td {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            vertical-align: top;
+        }
+
+        .results-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .diff-type {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .diff-added { background: #d4edda; color: #155724; }
+        .diff-removed { background: #f8d7da; color: #721c24; }
+        .diff-modified { background: #fff3cd; color: #856404; }
+
+        .content-preview {
+            max-width: 300px;
+            word-wrap: break-word;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        .text-input-area {
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            padding: 15px;
+            min-height: 200px;
+            background: #f9f9f9;
+            transition: all 0.3s ease;
+        }
+
+        .text-input-area:focus-within {
+            border-color: #4facfe;
+            background: #f0f8ff;
+        }
+
+        .text-input-area textarea {
+            width: 100%;
+            height: 200px;
+            border: none;
+            background: transparent;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            resize: vertical;
+            outline: none;
+            line-height: 1.5;
+        }
+
+        .text-input-area textarea::placeholder {
+            color: #999;
+            font-style: italic;
+        }
+
+        .char-counter {
+            text-align: right;
+            font-size: 0.8rem;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #4facfe;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .no-differences {
+            text-align: center;
+            padding: 40px;
+            background: #d4edda;
+            color: #155724;
+            border-radius: 10px;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            border: 1px solid #f5c6cb;
+        }
+
+        @media (max-width: 768px) {
+            .source-files-row {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .target-file-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .upload-section {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .results-table {
+                font-size: 0.9rem;
+            }
+            
+            .results-table th,
+            .results-table td {
+                padding: 10px;
+            }
+        }
+        .subtitle{text-align:center;color:#666;margin-bottom:30px;font-size:1.1em;}
+        
+        .container1 {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        /* Header */
+        header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            padding: 1rem 0;
+            transition: all 0.3s ease;
+        }
+        
+        .container1 {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: white;
+            text-decoration: none;
+        }
+        
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+        
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            transition: color 0.3s ease;
+            font-weight: 500;
+        }
+        
+        .nav-links a:hover,
+        .nav-links a.active {
+            color: #ffd700;
+        }
+        
+        .header{
+            text-align:center;
+            color:white;
+            margin-bottom:30px;
+            margin-top:20px; /* เพิ่ม margin-top เพื่อไม่ให้ติด header */
+        }
+        .header h1{
+            font-size:2.5rem;
+            margin-bottom:10px;
+            text-shadow:2px 2px 4px rgba(0,0,0,.3);
+            font-weight:700;
+        }
+        .container{
+            max-width:1200px;
+            margin:0 auto;
+            background:white;
+            padding:30px;
+            border-radius:15px;
+            box-shadow:0 10px 30px rgba(0,0,0,.2);
+        }
+
+    </style>
 </head>
 <body>
+
     <header>
         <nav class="container1">
             <a href="#" class="logo">Format Tostem</a>
@@ -148,170 +385,528 @@
         </nav>
     </header>
 
-    <div class="header"><h1>TXT vs PDF Checker</h1></div>
+    <div class="header"><h1>PDF/TXT Checker</h1></div>
 
     <div class="container">
-        <p class="subtitle">วางข้อความหลายบรรทัด + อัปโหลด PDF แล้วตรวจว่ามี/ไม่มีในไฟล์</p>
+        <p class="subtitle" >อัปโหลดไฟล์เพื่อเปรียบเทียบความแตกต่าง (รองรับทั้ง Text vs PDF และ PDF vs PDF)</p>
 
-        <form id="compareForm" enctype="multipart/form-data">
-            <label>ข้อความ (.txt) ที่จะตรวจ</label>
-            <textarea name="text_block" placeholder="D1.1 897 * 2060 = 4&#10;D1.1 1519 * 2098 = 1"></textarea>
+        <div class="upload-section">
+            <!-- Source Files Row -->
+            <div class="source-files-row">
+                <!-- PDF Source File -->
+                <div class="upload-box">
+                    <h3>
+                        <svg class="icon" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z"/>
+                        </svg>
+                        ไฟล์ต้นฉบับ (PDF)
+                    </h3>
 
-            <label style="margin-top:15px;">เลือกไฟล์ PDF</label>
-            <div class="upload-area" onclick="document.getElementById('pdfFile').click()">
-                <strong>📁 คลิกหรือลากไฟล์ PDF มาวางที่นี่</strong><br><br>
-                <small>รองรับ .pdf ขนาดไม่เกิน 25MB</small>
+                    <div class="file-upload-area" id="pdfSourceUpload">
+                        <svg class="upload-icon" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z"/>
+                        </svg>
+                        <p>คลิกหรือลากไฟล์ PDF มาวางที่นี่</p>
+                        <p style="font-size: 0.9rem; color: #666; margin-top: 10px;">รองรับเฉพาะ: PDF (สำหรับโหมด PDF vs PDF)</p>
+                        <input type="file" id="pdfSourceFile" style="display: none;" accept=".pdf">
+                    </div>
+                    <div id="pdfSourceFileInfo" class="file-info" style="display: none;"></div>
+                </div>
+
+                <!-- TXT Source Text Input -->
+                <div class="upload-box">
+                    <h3>
+                        <svg class="icon" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z M4 5a2 2 0 012-2v6a2 2 0 01-2 2H6a2 2 0 01-2-2V5zM14 5a2 2 0 012-2v6a2 2 0 01-2 2h-2a2 2 0 01-2-2V5z"/>
+                        </svg>
+                        ไฟล์ต้นฉบับ (ข้อความ)
+                    </h3>
+
+                    <div class="text-input-area">
+                        <textarea 
+                            id="txtContent" 
+                            placeholder="พิมพ์หรือวางข้อความที่ต้องการเปรียบเทียบที่นี่...
+
+ตัวอย่าง:
+D1.2 1268 * 488 = 2
+Total Qty = 2"
+                        ></textarea>
+                        <div class="char-counter">
+                            <span id="charCount">0</span> ตัวอักษร
+                        </div>
+                    </div>
+                </div>
             </div>
-            <input type="file" id="pdfFile" name="pdf_file" class="file-input" accept="application/pdf" required />
 
-            <div style="display:flex;gap:15px;flex-wrap:wrap;margin-top:15px;">
-                <div style="flex:1;min-width:150px;">
-                    <label>เริ่มอ่านหน้าที่</label>
-                    <input type="number" name="start_page" value="1" min="1" class="number-input" />
-                </div>
-                <div style="flex:1;min-width:150px;">
-                    <label>Fuzzy Threshold (0-100)</label>
-                    <input type="number" name="threshold" value="85" min="0" max="100" class="threshold-input" />
-                </div>
-                <div style="flex:1;min-width:150px;display:flex;align-items:flex-end;">
-                    <label style="display:flex;align-items:center;gap:6px;">
-                        <input type="checkbox" name="fuzzy" value="1" style="width:18px;height:18px;"> ใช้ Fuzzy
-                    </label>
-                </div>
-                <div style="flex:1;min-width:150px;display:flex;align-items:flex-end;">
-                    <label style="display:flex;align-items:center;gap:6px;">
-                        <input type="checkbox" name="show_pdf_content" value="1" style="width:18px;height:18px;"> แสดงเนื้อหา PDF
-                    </label>
+            <!-- Target File Row -->
+            <div class="target-file-row">
+                <div class="upload-box">
+                    <h3>
+                        <svg class="icon" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z"/>
+                        </svg>
+                        ไฟล์เปรียบเทียบ (PDF)
+                    </h3>
+
+                    <div class="file-upload-area" id="targetUpload">
+                        <svg class="upload-icon" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z"/>
+                        </svg>
+                        <p>คลิกหรือลากไฟล์ PDF ที่จะเปรียบเทียบมาวางที่นี่</p>
+                        <p style="font-size: 0.9rem; color: #666; margin-top: 10px;">รองรับเฉพาะ: PDF</p>
+                        <input type="file" id="targetFile" style="display: none;" accept=".pdf">
+                    </div>
+                    <div id="targetFileInfo" class="file-info" style="display: none;"></div>
                 </div>
             </div>
-
-            <button class="btn" id="submitBtn">🚀 ตรวจเลย</button>
-        </form>
-
-        <div id="loading" class="loading">
-            <div class="loading-spinner"></div>
-            <p>กำลังประมวลผล...</p>
         </div>
 
-        <div id="errorMsg" class="message error-message"></div>
-
-        <div id="resultBlock" style="display:none;">
-            <div class="stats">
-                <div class="stat">
-                    <span class="num" id="totalLines">0</span>
-                    <span>บรรทัดทั้งหมด</span>
-                </div>
-                <div class="stat highlight">
-                    <span class="num" id="foundLines">0</span>
-                    <span>พบใน PDF</span>
-                </div>
-                <div class="stat">
-                    <span class="num" id="missingLines">0</span>
-                    <span>ไม่พบ</span>
-                </div>
+        <div class="compare-section">
+            <button class="compare-btn" id="compareBtn" disabled>
+                เปรียบเทียบไฟล์
+            </button>
+            <div id="loadingIndicator" style="display: none; margin-top: 20px;">
+                <div class="loading"></div>
+                กำลังประมวลผล...
             </div>
+            <div id="errorMessage" class="error-message" style="display: none;"></div>
+        </div>
 
-            <!-- PDF Content Display -->
-            <div id="pdfContentBlock" style="display:none; margin:20px 0;">
-                <h3 style="margin-bottom:10px; color:#007bff;">📄 เนื้อหาใน PDF:</h3>
-                <div style="background:#f8f9fa; padding:15px; border-radius:8px; border:1px solid #e9ecef; max-height:300px; overflow-y:auto;">
-                    <pre id="pdfContentText" style="white-space:pre-wrap; font-family:monospace; font-size:12px; margin:0; color:#333;"></pre>
-                </div>
-                <small id="pdfContentInfo" style="color:#666; margin-top:5px; display:block;"></small>
+        <div class="results-section" id="resultsSection" style="display: none;">
+            <div class="results-header">
+                <h3>ผลการเปรียบเทียบ</h3>
             </div>
-
-            <table id="resultTable">
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>บรรทัด</th>
-                        <th>พบ?</th>
-                        <th>หมายเหตุ</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
+            <div id="resultsContent"></div>
         </div>
     </div>
 
-<script>
-const uploadArea = document.querySelector('.upload-area');
-const fileInput  = document.getElementById('pdfFile');
-const submitBtn  = document.getElementById('submitBtn');
+    <script>
+        let pdfSourceFile = null;
+        let txtContent = '';
+        let targetFile = null;
+        let activeSourceType = null;
 
-['dragenter','dragover','dragleave','drop'].forEach(eName=>{
-    uploadArea.addEventListener(eName, e=>{e.preventDefault();e.stopPropagation();});
-});
-['dragenter','dragover'].forEach(eName=>{
-    uploadArea.addEventListener(eName, ()=>uploadArea.classList.add('dragover'));
-});
-['dragleave','drop'].forEach(eName=>{
-    uploadArea.addEventListener(eName, ()=>uploadArea.classList.remove('dragover'));
-});
-uploadArea.addEventListener('drop', e=>{
-    const files=e.dataTransfer.files;
-    if(files.length){fileInput.files=files;setUploadText();}
-});
-fileInput.addEventListener('change', setUploadText);
-function setUploadText(){
-    if(fileInput.files[0]){
-        uploadArea.innerHTML=`<strong style="color:#28a745;">✅ ${fileInput.files[0].name}</strong><br><br><small>คลิกเพื่อเลือกไฟล์อื่น</small>`;
-        submitBtn.disabled=false;
-    }
-}
+        // Initialize event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            setupFileUploads();
+            setupTextInput();
+            setupCompareButton();
+        });
 
-document.getElementById('compareForm').addEventListener('submit', async e=>{
-    e.preventDefault();
-    const fd = new FormData(e.target);
-    const loading = document.getElementById('loading');
-    const errorMsg = document.getElementById('errorMsg');
-    const resultBlock = document.getElementById('resultBlock');
-    const tbody = document.querySelector('#resultTable tbody');
+        function setupFileUploads() {
+            // PDF Source Upload
+            const pdfSourceUpload = document.getElementById('pdfSourceUpload');
+            const pdfSourceFileInput = document.getElementById('pdfSourceFile');
+            
+            pdfSourceUpload.addEventListener('click', () => pdfSourceFileInput.click());
+            pdfSourceUpload.addEventListener('dragover', handleDragOver);
+            pdfSourceUpload.addEventListener('drop', (e) => handleDrop(e, 'pdfSource'));
+            pdfSourceFileInput.addEventListener('change', (e) => handleFileSelect(e, 'pdfSource'));
 
-    errorMsg.style.display='none';
-    resultBlock.style.display='none';
-    loading.style.display='block';
-    submitBtn.disabled=true;
-
-    try{
-        const res = await fetch('/compare', {method:'POST', body:fd});
-        const data = await res.json();
-        if(!res.ok) throw new Error(data.error||res.statusText);
-
-        const rows = data.results || [];
-        tbody.innerHTML = rows.map((r,i)=>`
-            <tr class="${r.ok?'ok':'fail'}">
-                <td>${i+1}</td>
-                <td>${r.raw||''}</td>
-                <td style="text-align:center">${r.ok?'✓':'✗'}</td>
-                <td><small>${r.reason||''}</small></td>
-            </tr>
-        `).join('');
-
-        document.getElementById('totalLines').textContent = rows.length;
-        document.getElementById('foundLines').textContent = rows.filter(x=>x.ok).length;
-        document.getElementById('missingLines').textContent = rows.filter(x=>!x.ok).length;
-
-        // แสดงเนื้อหา PDF ถ้าเลือกไว้
-        const pdfContentBlock = document.getElementById('pdfContentBlock');
-        if(data.pdf_content) {
-            document.getElementById('pdfContentText').textContent = data.pdf_content;
-            document.getElementById('pdfContentInfo').textContent = 
-                `แสดง ${data.pdf_content.length} ตัวอักษรแรก จากทั้งหมด ${data.pdf_content_full_length} ตัวอักษร`;
-            pdfContentBlock.style.display = 'block';
-        } else {
-            pdfContentBlock.style.display = 'none';
+            // Target Upload
+            const targetUpload = document.getElementById('targetUpload');
+            const targetFileInput = document.getElementById('targetFile');
+            
+            targetUpload.addEventListener('click', () => targetFileInput.click());
+            targetUpload.addEventListener('dragover', handleDragOver);
+            targetUpload.addEventListener('drop', (e) => handleDrop(e, 'target'));
+            targetFileInput.addEventListener('change', (e) => handleFileSelect(e, 'target'));
         }
 
-        resultBlock.style.display='block';
-    }catch(err){
-        errorMsg.textContent = err.message;
-        errorMsg.style.display='block';
-    }finally{
-        loading.style.display='none';
-        submitBtn.disabled=false;
-    }
-});
-</script>
+        function setupTextInput() {
+            const txtTextarea = document.getElementById('txtContent');
+            const charCount = document.getElementById('charCount');
+            
+            txtTextarea.addEventListener('input', function() {
+                const content = this.value.trim();
+                txtContent = content;
+                charCount.textContent = content.length;
+                
+                // Clear PDF source if text is entered
+                if (content && pdfSourceFile) {
+                    resetPdfSource();
+                }
+                
+                // Set active source type
+                if (content) {
+                    activeSourceType = 'txt';
+                } else if (!pdfSourceFile) {
+                    activeSourceType = null;
+                }
+                
+                updateCompareButton();
+            });
+        }
+
+        function setupCompareButton() {
+            document.getElementById('compareBtn').addEventListener('click', compareFiles);
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.currentTarget.classList.add('dragover');
+        }
+
+        function handleDrop(e, type) {
+            e.preventDefault();
+            e.currentTarget.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFileSelect({ target: { files: files } }, type);
+            }
+        }
+
+        function handleFileSelect(e, type) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            if (type === 'pdfSource') {
+                if (!file.name.toLowerCase().endsWith('.pdf')) {
+                    showError('กรุณาเลือกไฟล์ PDF สำหรับไฟล์ต้นฉบับ PDF');
+                    return;
+                }
+                // Clear text content if PDF is selected
+                if (txtContent) {
+                    resetTxtContent();
+                }
+                pdfSourceFile = file;
+                activeSourceType = 'pdf';
+                document.getElementById('pdfSourceFileInfo').textContent = `ไฟล์: ${file.name}`;
+                document.getElementById('pdfSourceFileInfo').style.display = 'block';
+                
+            } else if (type === 'target') {
+                if (!file.name.toLowerCase().endsWith('.pdf')) {
+                    showError('กรุณาเลือกไฟล์ PDF สำหรับไฟล์เปรียบเทียบ');
+                    return;
+                }
+                targetFile = file;
+                document.getElementById('targetFileInfo').textContent = `ไฟล์: ${file.name}`;
+                document.getElementById('targetFileInfo').style.display = 'block';
+            }
+
+            updateCompareButton();
+            hideError();
+        }
+
+        function resetPdfSource() {
+            pdfSourceFile = null;
+            document.getElementById('pdfSourceFileInfo').style.display = 'none';
+            document.getElementById('pdfSourceFile').value = '';
+            if (activeSourceType === 'pdf') {
+                activeSourceType = txtContent ? 'txt' : null;
+            }
+        }
+
+        function resetTxtContent() {
+            txtContent = '';
+            document.getElementById('txtContent').value = '';
+            document.getElementById('charCount').textContent = '0';
+            if (activeSourceType === 'txt') {
+                activeSourceType = pdfSourceFile ? 'pdf' : null;
+            }
+        }
+
+        function updateCompareButton() {
+            const compareBtn = document.getElementById('compareBtn');
+            const hasSourceContent = pdfSourceFile || txtContent;
+            compareBtn.disabled = !hasSourceContent || !targetFile;
+        }
+
+        async function compareFiles() {
+            const loadingIndicator = document.getElementById('loadingIndicator');
+            const compareBtn = document.getElementById('compareBtn');
+            
+            loadingIndicator.style.display = 'block';
+            compareBtn.disabled = true;
+            hideError();
+
+            try {
+                const formData = new FormData();
+                
+                if (activeSourceType === 'pdf' && pdfSourceFile) {
+                    // PDF vs PDF mode
+                    formData.append('pdf_source_file', pdfSourceFile);
+                    formData.append('pdf_file', targetFile);
+                    formData.append('start_page', '1');
+                } else if (activeSourceType === 'txt' && txtContent) {
+                    // Text vs PDF mode
+                    formData.append('text_block', txtContent);
+                    formData.append('pdf_file', targetFile);
+                    formData.append('start_page', '1');
+                } else {
+                    throw new Error('กรุณาใส่ข้อความหรือเลือกไฟล์ต้นฉบับ');
+                }
+
+                const response = await fetch('/compare', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'เกิดข้อผิดพลาดในการประมวลผล');
+                }
+
+                const result = await response.json();
+                displayResults(result);
+
+            } catch (error) {
+                showError('เกิดข้อผิดพลาด: ' + error.message);
+            } finally {
+                loadingIndicator.style.display = 'none';
+                compareBtn.disabled = false;
+            }
+        }
+
+        function displayResults(result) {
+            console.log('Result received:', result); // Debug log
+            
+            const resultsSection = document.getElementById('resultsSection');
+            const resultsContent = document.getElementById('resultsContent');
+
+            // Show parsing info if available
+            let infoHTML = '';
+            if (result.parsing_info) {
+                const matchRate = result.parsing_info.matched_items > 0 ? 
+                    Math.round((result.parsing_info.matched_items / Math.max(result.parsing_info.source_items_detected, result.parsing_info.target_items_detected)) * 100) : 0;
+                
+                infoHTML = `
+                    <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #2196F3;">
+                        <h4 style="margin: 0 0 10px 0; color: #1976D2;">📊 ข้อมูลการประมวลผล</h4>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                            <div>
+                                <p style="margin: 5px 0;"><strong>รายการต้นฉบับ:</strong> ${result.parsing_info.source_items_detected} รายการ</p>
+                                <p style="margin: 5px 0;"><strong>รายการเปรียบเทียบ:</strong> ${result.parsing_info.target_items_detected} รายการ</p>
+                            </div>
+                            <div>
+                                <p style="margin: 5px 0;"><strong>รายการที่ตรงกัน:</strong> ${result.parsing_info.matched_items} รายการ</p>
+                                <p style="margin: 5px 0;"><strong>อัตราความตรง:</strong> <span style="color: ${matchRate >= 90 ? '#4caf50' : matchRate >= 70 ? '#ff9800' : '#f44336'}; font-weight: bold;">${matchRate}%</span></p>
+                            </div>
+                        </div>
+                        ${result.parsing_info.source_total_qty !== result.parsing_info.target_total_qty ? 
+                            `<div style="margin-top: 10px; padding: 10px; background: #fff3cd; border-radius: 5px;">
+                                <strong>⚠️ ยอดรวมไม่ตรงกัน:</strong> ต้นฉบับ ${result.parsing_info.source_total_qty} ชิ้น ≠ เปรียบเทียบ ${result.parsing_info.target_total_qty} ชิ้น
+                            </div>` : 
+                            `<div style="margin-top: 10px; padding: 10px; background: #d4edda; border-radius: 5px;">
+                                <strong>✅ ยอดรวมตรงกัน:</strong> ${result.parsing_info.source_total_qty} ชิ้น
+                            </div>`
+                        }
+                    </div>
+                `;
+            }
+
+            // Check if we have differences or matched items
+            const hasDifferences = result.differences && result.differences.length > 0;
+            const hasMatchedItems = result.matched_items && result.matched_items.length > 0;
+
+            console.log('Has differences:', hasDifferences, 'Has matched:', hasMatchedItems); // Debug log
+
+            if (hasDifferences || hasMatchedItems) {
+                const sourceLabel = activeSourceType === 'pdf' ? 'PDF' : 'ข้อความ';
+                
+                // รวมรายการทั้งหมดและเรียงตาม line_number
+                let allItems = [];
+                
+                // เพิ่มรายการที่ถูกต้อง
+                if (hasMatchedItems) {
+                    result.matched_items.forEach(match => {
+                        allItems.push({
+                            line_number: match.line_number,
+                            type: 'correct',
+                            source_content: match.source_content,
+                            target_content: match.target_content,
+                            note: 'ข้อมูลตรงกันทุกประการ'
+                        });
+                    });
+                }
+                
+                // เพิ่มรายการที่แตกต่าง
+                if (hasDifferences) {
+                    result.differences.forEach(diff => {
+                        allItems.push({
+                            line_number: diff.line_number,
+                            type: diff.type,
+                            source_content: diff.source_content,
+                            target_content: diff.target_content,
+                            note: diff.note
+                        });
+                    });
+                }
+                
+                // เรียงตาม line_number
+                allItems.sort((a, b) => a.line_number - b.line_number);
+                
+                // Status badges
+                let statusHTML = '';
+                if (hasMatchedItems && hasDifferences) {
+                    statusHTML = `
+                        <div style="margin-bottom: 15px;">
+                            <span style="background: #4caf50; color: white; padding: 5px 10px; border-radius: 15px; font-size: 0.9rem; font-weight: bold; margin-right: 10px;">
+                                ✅ ถูกต้อง ${result.matched_items.length} รายการ
+                            </span>
+                            <span style="background: #f44336; color: white; padding: 5px 10px; border-radius: 15px; font-size: 0.9rem; font-weight: bold;">
+                                🚨 พบความแตกต่าง ${result.differences.length} รายการ
+                            </span>
+                        </div>
+                    `;
+                } else if (hasMatchedItems) {
+                    statusHTML = `
+                        <div style="margin-bottom: 15px;">
+                            <span style="background: #4caf50; color: white; padding: 5px 10px; border-radius: 15px; font-size: 0.9rem; font-weight: bold;">
+                                ✅ ถูกต้องทั้งหมด ${result.matched_items.length} รายการ
+                            </span>
+                        </div>
+                    `;
+                } else if (hasDifferences) {
+                    statusHTML = `
+                        <div style="margin-bottom: 15px;">
+                            <span style="background: #f44336; color: white; padding: 5px 10px; border-radius: 15px; font-size: 0.9rem; font-weight: bold;">
+                                🚨 พบความแตกต่าง ${result.differences.length} รายการ
+                            </span>
+                        </div>
+                    `;
+                }
+
+                let tableHTML = infoHTML + statusHTML + `
+                    <table class="results-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 10%;">ลำดับ</th>
+                                <th style="width: 10%;">ประเภท</th>
+                                <th style="width: 20%;">ไฟล์ต้นฉบับ (${sourceLabel})</th>
+                                <th style="width: 40%;">ไฟล์เปรียบเทียบ (PDF)</th>
+                                <th style="width: 20%;">รายละเอียด</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+
+                // แสดงรายการตามลำดับ line_number
+                allItems.forEach((item, index) => {
+                    let typeClass, typeName, backgroundColor;
+                    
+                    if (item.type === 'correct') {
+                        typeClass = 'diff-type';
+                        typeName = 'ถูก';
+                        backgroundColor = 'background: #f8fff8;';
+                    } else {
+                        typeClass = `diff-${item.type}`;
+                        typeName = item.type === 'added' ? 'เพิ่ม' : 
+                                  item.type === 'removed' ? 'ลบ' : 'แก้ไข';
+                        backgroundColor = '';
+                    }
+                    
+                    const sourceContent = item.source_content || '<em style="color: #999;">ไม่มีข้อมูล</em>';
+                    const targetContent = item.target_content || '<em style="color: #999;">ไม่มีข้อมูล</em>';
+                    
+                    let detailsHTML = '';
+                    if (item.note) {
+                        detailsHTML = `<div style="font-size: 0.8rem; color: ${item.type === 'correct' ? '#155724' : '#666'};">${item.note}</div>`;
+                    }
+                    
+                    const typeStyle = item.type === 'correct' ? 
+                        'style="background: #d4edda; color: #155724;"' : 
+                        '';
+                    
+                    tableHTML += `
+                        <tr style="${backgroundColor}">
+                            <td style="text-align: center; font-weight: bold;">${item.line_number}</td>
+                            <td style="text-align: center;"><span class="diff-type ${typeClass}" ${typeStyle}>${typeName}</span></td>
+                            <td class="content-preview">${sourceContent}</td>
+                            <td class="content-preview">${targetContent}</td>
+                            <td style="font-size: 0.8rem;">${detailsHTML || '-'}</td>
+                        </tr>
+                    `;
+                });
+
+                tableHTML += '</tbody></table>';
+                
+                // Add enhanced summary
+                const addedCount = hasDifferences ? result.differences.filter(d => d.type === 'added').length : 0;
+                const removedCount = hasDifferences ? result.differences.filter(d => d.type === 'removed').length : 0;
+                const modifiedCount = hasDifferences ? result.differences.filter(d => d.type === 'modified').length : 0;
+                const matchedCount = hasMatchedItems ? result.matched_items.length : 0;
+                
+                // คำนวณข้อมูลเพิ่มเติม
+                const totalLines = allItems.length;
+                const sourceTotalQty = result.parsing_info ? result.parsing_info.source_total_qty : 0;
+                const targetTotalQty = result.parsing_info ? result.parsing_info.target_total_qty : 0;
+                
+                tableHTML += `
+                    <div style="margin-top: 20px; padding: 15px; background: #f5f5f5; border-radius: 8px;">
+                        <h4 style="margin: 0 0 15px 0;">📈 สรุปผลการเปรียบเทียบ:</h4>
+                        
+                        <!-- ข้อมูลทั่วไป -->
+                        <div style="background: #fff; padding: 12px; border-radius: 6px; margin-bottom: 15px; border-left: 4px solid #007bff;">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                                <div>
+                                    <strong style="color: #333;">📄 จำนวนบรรทัด:</strong> ${totalLines} บรรทัด
+                                </div>
+                                <div>
+                                    <strong style="color: #333;">📦 Total Qty:</strong> 
+                                    ${sourceTotalQty === targetTotalQty ? 
+                                        `<span style="color: #28a745;">${sourceTotalQty} ชิ้น (ตรงกัน)</span>` :
+                                        `<span style="color: #dc3545;">ต้นฉบับ ${sourceTotalQty} ≠ เปรียบเทียบ ${targetTotalQty} ชิ้น</span>`
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- สถิติการเปรียบเทียบ -->
+                        <div style="margin-bottom: 10px;">
+                            <strong style="color: #333;">🎯 สถิติการเปรียบเทียบ:</strong>
+                        </div>
+                        <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                            ${matchedCount > 0 ? `<span class="diff-type" style="background: #d4edda; color: #155724; margin: 0; display: flex; align-items: center; gap: 5px;">✅ ถูกต้อง: ${matchedCount} รายการ</span>` : ''}
+                            ${modifiedCount > 0 ? `<span class="diff-type diff-modified" style="margin: 0; display: flex; align-items: center; gap: 5px;">✏️ แก้ไข: ${modifiedCount} รายการ</span>` : ''}
+                            ${addedCount > 0 ? `<span class="diff-type diff-added" style="margin: 0; display: flex; align-items: center; gap: 5px;">➕ เพิ่ม: ${addedCount} รายการ</span>` : ''}
+                            ${removedCount > 0 ? `<span class="diff-type diff-removed" style="margin: 0; display: flex; align-items: center; gap: 5px;">➖ ลบ: ${removedCount} รายการ</span>` : ''}
+                        </div>
+                        
+                        <!-- คำนวณเปอร์เซ็นต์ความถูกต้อง -->
+                        ${totalLines > 0 ? `
+                            <div style="margin-top: 15px; padding: 10px; background: ${matchedCount === totalLines ? '#d4edda' : matchedCount >= totalLines * 0.8 ? '#fff3cd' : '#f8d7da'}; border-radius: 6px;">
+                                <strong style="color: #333;">📊 อัตราความถูกต้อง: 
+                                    <span style="color: ${matchedCount === totalLines ? '#155724' : matchedCount >= totalLines * 0.8 ? '#856404' : '#721c24'}; font-size: 1.1em;">
+                                        ${Math.round((matchedCount / totalLines) * 100)}%
+                                    </span>
+                                    (${matchedCount}/${totalLines})
+                                </strong>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+                
+                resultsContent.innerHTML = tableHTML;
+            } else {
+                // No differences and no matched items - show message
+                resultsContent.innerHTML = infoHTML + `
+                    <div class="no-differences">
+                        <div style="font-size: 3rem; margin-bottom: 15px;">⚠️</div>
+                        <div style="font-size: 1.3rem; font-weight: bold; margin-bottom: 10px;">ไม่พบข้อมูลที่สามารถเปรียบเทียบได้</div>
+                        <div style="color: #666; margin-bottom: 15px;">กรุณาตรวจสอบรูปแบบข้อมูลในไฟล์</div>
+                        <div style="background: #fff; padding: 15px; border-radius: 5px; color: #333; margin-top: 15px;">
+                            <strong>รูปแบบข้อความที่ถูกต้อง:</strong><br>
+                            D1.2 1268 * 488 = 2<br>
+                            Total Qty = 2
+                        </div>
+                    </div>
+                `;
+            }
+
+            resultsSection.style.display = 'block';
+            resultsSection.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+        }
+
+        function hideError() {
+            document.getElementById('errorMessage').style.display = 'none';
+        }
+    </script>
 </body>
 </html>
