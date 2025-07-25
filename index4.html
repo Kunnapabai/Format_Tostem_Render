@@ -420,7 +420,7 @@
                         <svg class="icon" fill="currentColor" viewBox="0 0 20 20">
                             <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z M4 5a2 2 0 012-2v6a2 2 0 01-2 2H6a2 2 0 01-2-2V5zM14 5a2 2 0 012-2v6a2 2 0 01-2 2h-2a2 2 0 01-2-2V5z"/>
                         </svg>
-                        ไฟล์ต้นฉบับ (ข้อความ)
+                        ไฟล์ต้นฉบับ (Text)
                     </h3>
 
                     <div class="text-input-area">
@@ -876,18 +876,6 @@ Total Qty = 2"
                             ${addedCount > 0 ? `<span class="diff-type diff-added" style="margin: 0; display: flex; align-items: center; gap: 5px;">➕ เพิ่ม: ${addedCount} รายการ</span>` : ''}
                             ${removedCount > 0 ? `<span class="diff-type diff-removed" style="margin: 0; display: flex; align-items: center; gap: 5px;">➖ ลบ: ${removedCount} รายการ</span>` : ''}
                         </div>
-                        
-                        <!-- คำนวณเปอร์เซ็นต์ความถูกต้อง -->
-                        ${totalLines > 0 ? `
-                            <div style="margin-top: 15px; padding: 10px; background: ${matchedCount === totalLines ? '#d4edda' : matchedCount >= totalLines * 0.8 ? '#fff3cd' : '#f8d7da'}; border-radius: 6px;">
-                                <strong style="color: #333;">📊 อัตราความถูกต้อง: 
-                                    <span style="color: ${matchedCount === totalLines ? '#155724' : matchedCount >= totalLines * 0.8 ? '#856404' : '#721c24'}; font-size: 1.1em;">
-                                        ${Math.round((matchedCount / totalLines) * 100)}%
-                                    </span>
-                                    (${matchedCount}/${totalLines})
-                                </strong>
-                            </div>
-                        ` : ''}
                     </div>
                 `;
                 
