@@ -180,9 +180,10 @@
             text-transform: uppercase;
         }
 
-        .diff-added { background: #d4edda; color: #155724; }
-        .diff-removed { background: #f8d7da; color: #721c24; }
-        .diff-modified { background: #fff3cd; color: #856404; }
+        .diff-added { background: #f8d7da; color: #721c24; }    /* สีแดง สำหรับ "เพิ่ม" */
+        .diff-removed { background: #f8d7da; color: #721c24; }  /* สีแดง สำหรับ "ลบ" */
+        .diff-modified { background: #fff3cd; color: #856404; } /* สีเหลือง สำหรับ "แก้ไข" */
+        .diff-correct { background: #d4edda; color: #155724; }  /* สีเขียว สำหรับ "ถูก" */
 
         .content-preview {
             max-width: 300px;
@@ -725,7 +726,7 @@ Total Qty = 2"
                     result.differences.forEach(diff => {
                         allItems.push({
                             line_number: diff.line_number,
-                            type: diff.type,
+                            type: diff.type, // ใช้ type ที่ส่งมาจาก main4.py โดยตรง
                             source_content: diff.source_content,
                             target_content: diff.target_content,
                             note: diff.note
@@ -791,9 +792,22 @@ Total Qty = 2"
                         backgroundColor = 'background: #f8fff8;';
                     } else {
                         typeClass = `diff-${item.type}`;
-                        typeName = item.type === 'added' ? 'เพิ่ม' : 
-                                  item.type === 'removed' ? 'ลบ' : 'แก้ไข';
-                        backgroundColor = '';
+                        
+                        // แยก type อย่างชัดเจน
+                        if (item.type === 'added') {
+                            typeName = 'เพิ่ม';
+                            backgroundColor = 'background: #fff8f8';
+                        } else if (item.type === 'removed') {
+                            typeName = 'ลบ';
+                            backgroundColor = 'background: #fff8f8';
+                        } else if (item.type === 'modified') {
+                            typeName = 'แก้ไข';
+                            backgroundColor = 'background: #fffef8'; 
+                        } else {
+                            typeName = 'แก้ไข'; // default
+                            backgroundColor = 'background: #fffef8';
+                        }
+                        
                     }
                     
                     const sourceContent = item.source_content || '<em style="color: #999;">ไม่มีข้อมูล</em>';
