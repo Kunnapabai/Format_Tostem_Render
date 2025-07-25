@@ -277,7 +277,7 @@ def generate_text_from_glass_data(glass_data):
 def parse_txt_items(text: str):
     ITEM_RE = re.compile(r"""
         ^\s*
-        (?P<code>D\d+\.\d+)\s+
+        (?P<code>[A-Z]+\d*[A-Z]*\d*(?:\.\d+)?)\s+
         (?P<w>\d+)\s*[*xX]\s*(?P<h>\d+)\s*=\s*(?P<qty>\d+)
         \s*$
     """, re.VERBOSE)
@@ -311,27 +311,55 @@ def parse_pdf_items(text: str):
     items = []
 
     for i, ln in enumerate(lines):
-        m = re.match(
+        # ลองหา pattern ที่ต่างกัน
+        patterns = [
+            # Pattern 1: seq + content + qty + w x h
             r"^(?P<seq>\d+)\s+.*?(?P<qty>\d+)\s+(?P<w>\d+)\s*[xX×]\s*(?P<h>\d+)",
-            ln
-        )
+            # Pattern 2: seq + qty + w x h (อาจจะไม่มี content ตรงกลาง)
+            r"^(?P<seq>\d+)\s+.*?(?P<w>\d+)\s*[xX×]\s*(?P<h>\d+).*?(?P<qty>\d+)",
+            # Pattern 3: รูปแบบอื่น
+            r"^(?P<seq>\d+)\s+.*?(?P<w>\d+)\s*[xX×]\s*(?P<h>\d+).*?(?P<qty>\d+)"
+        ]
+        
+        m = None
+        for pattern in patterns:
+            m = re.search(pattern, ln)
+            if m:
+                break
+        
         if not m:
             continue
 
-        seq = int(m.group("seq"))
-        qty = int(m.group("qty"))
-        w   = int(m.group("w"))
-        h   = int(m.group("h"))
+        try:
+            seq = int(m.group("seq"))
+            w   = int(m.group("w"))
+            h   = int(m.group("h"))
+            qty = int(m.group("qty"))
+        except (ValueError, IndexError):
+            continue
 
         # Search for code #D1.x in this line or next lines
         code = ""
         raw_lines = [ln]
         for j in range(i, min(i + 3, len(lines))):
-            mc = re.search(r"#(D\d+\.\d+)", lines[j])
-            if mc:
-                code = mc.group(1)
-                if j != i:
-                    raw_lines.append(lines[j])
+            # หา pattern ของ code ที่หลากหลายขึ้น
+            code_patterns = [
+                r"#(D\d+\.\d+)",          # #D1.1
+                r"#([A-Z]+\d+\.\d+)",     # #AD6A1.2
+                r"#([A-Z]\d+[A-Z]\d*)",   # #D4A
+                r"#([A-Z]+\d+)",          # #AD1A
+                r"#([A-Z]+\d*-?\d*)",     # รูปแบบอื่นๆ
+            ]
+            
+            for code_pattern in code_patterns:
+                mc = re.search(code_pattern, lines[j])
+                if mc:
+                    code = mc.group(1)
+                    if j != i:
+                        raw_lines.append(lines[j])
+                    break
+            
+            if code:
                 break
 
         items.append({
@@ -349,66 +377,102 @@ def parse_pdf_items(text: str):
 # ================== Comparison Functions ==================
 
 def compare_items(txt_items, pdf_items, provided_total=None):
-    """Compare lists of items and build differences and matched items"""
+    """Compare lists of items and build differences and matched items - ใช้ไฟล์ต้นฉบับเป็นหลัก"""
     diffs = []
     matched_items = []
     matched_count = 0
+    
+    # Debug: พิมพ์ข้อมูลที่ parse ได้
+    print(f"DEBUG: txt_items = {len(txt_items)} items", file=sys.stderr)
+    for i, item in enumerate(txt_items):
+        print(f"  TXT[{i}]: {item}", file=sys.stderr)
+    
+    print(f"DEBUG: pdf_items = {len(pdf_items)} items", file=sys.stderr)
+    for i, item in enumerate(pdf_items):
+        print(f"  PDF[{i}]: {item}", file=sys.stderr)
+
+    # สร้าง mapping ของ PDF items
     pdf_by_seq = {i["seq"]: i for i in pdf_items}
-
-    for idx, it in enumerate(txt_items, start=1):
+    
+    # วนลูปตามไฟล์ต้นฉบับเป็นหลัก (ทุก sequence)
+    for idx, txt_it in enumerate(txt_items, start=1):
+        src_code = txt_it["code"]
+        src_w    = txt_it["width"]
+        src_h    = txt_it["height"]
+        src_q    = txt_it["quantity"]
+        source_content = f"{src_code} {src_w} * {src_h} = {src_q}"
+        
+        # หา PDF item ที่ตรงกับ sequence นี้
         pdf_it = pdf_by_seq.get(idx)
-        src_code = it["code"]
-        src_w    = it["width"]
-        src_h    = it["height"]
-        src_q    = it["quantity"]
+        
+        if pdf_it:
+            # มี PDF item ในตำแหน่งนี้ - เปรียบเทียบ
+            tgt_code = pdf_it["code"]
+            tgt_w    = pdf_it["width"]
+            tgt_h    = pdf_it["height"]
+            tgt_q    = pdf_it["quantity"]
+            target_content = "\n".join(pdf_it["raw_lines"])
 
-        tgt_code = pdf_it["code"]     if pdf_it else None
-        tgt_w    = pdf_it["width"]    if pdf_it else None
-        tgt_h    = pdf_it["height"]   if pdf_it else None
-        tgt_q    = pdf_it["quantity"] if pdf_it else None
+            notes = []
+            # เปรียบเทียบอย่างเข้มงวด - ต้องตรงกันทุกอย่าง
+            if str(tgt_code).strip() != str(src_code).strip():
+                notes.append(f"แก้รหัสจาก {tgt_code} เป็น {src_code}")
+            if int(tgt_w) != int(src_w):
+                notes.append(f"แก้ความกว้างจาก {tgt_w} เป็น {src_w}")
+            if int(tgt_h) != int(src_h):
+                notes.append(f"แก้ความสูงจาก {tgt_h} เป็น {src_h}")
+            if int(tgt_q) != int(src_q):
+                notes.append(f"แก้จำนวนจาก {tgt_q} เป็น {src_q}")
 
-        notes = []
-        if tgt_code != src_code:
-            notes.append(f"แก้รหัสจาก {tgt_code or '-'} เป็น {src_code}")
-        if tgt_w != src_w:
-            notes.append(f"แก้ความกว้างจาก {tgt_w or '-'} เป็น {src_w}")
-        if tgt_h != src_h:
-            notes.append(f"แก้ความสูงจาก {tgt_h or '-'} เป็น {src_h}")
-        if tgt_q != src_q:
-            notes.append(f"แก้จำนวนจาก {tgt_q or '-'} เป็น {src_q}")
+            # Debug: แสดงการเปรียบเทียบ
+            print(f"DEBUG: Compare line {idx}", file=sys.stderr)
+            print(f"  TXT: {src_code} {src_w}x{src_h}={src_q}", file=sys.stderr)
+            print(f"  PDF: {tgt_code} {tgt_w}x{tgt_h}={tgt_q}", file=sys.stderr)
+            print(f"  Notes: {notes}", file=sys.stderr)
 
-        if not notes:
-            matched_count += 1
-            # เพิ่มรายการที่ถูกต้องเข้าไปใน matched_items
-            source_content = f"{src_code} {src_w} * {src_h} = {src_q}"
-            target_content = "\n".join(pdf_it["raw_lines"]) if pdf_it else ""
-            matched_items.append({
-                "line_number":    idx,
-                "source_content": source_content,
-                "target_content": target_content
-            })
+            if not notes:
+                # ตรงกันทุกอย่าง - แสดงเป็นสีเขียว (ถูก)
+                matched_count += 1
+                matched_items.append({
+                    "line_number":    idx,
+                    "source_content": source_content,
+                    "target_content": target_content
+                })
+                print(f"  Result: MATCHED", file=sys.stderr)
+            else:
+                # มีความแตกต่าง - แสดงเป็นสีเหลือง (แก้ไข)
+                diffs.append({
+                    "line_number":    idx,
+                    "type":           "modified",   # สีเหลือง (แก้ไข)
+                    "source_content": source_content,
+                    "target_content": target_content,
+                    "note":           "; ".join(notes)
+                })
+                print(f"  Result: MODIFIED", file=sys.stderr)
         else:
-            # source_content มาจาก TXT
-            source_content = f"{src_code} {src_w} * {src_h} = {src_q}"
-            # target_content เป็น raw lines ของ PDF (snippet)
-            target_content = "\n".join(pdf_it["raw_lines"]) if pdf_it else ""
+            # ไม่มี PDF item ในตำแหน่งนี้ - รายการหายไป - แสดงเป็นสีแดง (เพิ่ม)
             diffs.append({
                 "line_number":    idx,
-                "type":           "modified",
+                "type":           "added",      # สีแดง (เพิ่ม)
                 "source_content": source_content,
-                "target_content": target_content,
-                "note":           "; ".join(notes)
+                "target_content": "",
+                "note":           f"เพิ่มรายการ {source_content}"
             })
+            print(f"DEBUG: Line {idx} MISSING: {source_content}", file=sys.stderr)
 
-    # กรณี PDF มีรายการเกิน
-    for idx in range(len(txt_items) + 1, len(pdf_items) + 1):
-        if idx in pdf_by_seq:
-            pdf_it = pdf_by_seq[idx]
+    # ตรวจสอบ PDF items ที่เกินมา (มีใน PDF แต่ไม่มีใน sequence ของไฟล์ต้นฉบับ)
+    used_sequences = set(range(1, len(txt_items) + 1))
+    
+    for pdf_it in pdf_items:
+        if pdf_it["seq"] not in used_sequences:
+            # PDF item นี้อยู่นอกเหนือจาก sequence ของไฟล์ต้นฉบับ
+            target_content = "\n".join(pdf_it["raw_lines"])
+            
             diffs.append({
-                "line_number":    idx,
-                "type":           "modified",
+                "line_number":    pdf_it["seq"],
+                "type":           "removed",    # สีแดง (ลบ)
                 "source_content": "",
-                "target_content": "\n".join(pdf_it["raw_lines"]),
+                "target_content": target_content,
                 "note":           "รายการใน PDF เกินมา"
             })
 
@@ -418,7 +482,7 @@ def compare_items(txt_items, pdf_items, provided_total=None):
     if txt_total != pdf_total:
         diffs.append({
             "line_number":    max(len(txt_items), len(pdf_items)) + 1,
-            "type":           "modified",
+            "type":           "modified",   # สีเหลือง (แก้ไข)
             "source_content": f"Total Qty = {txt_total}",
             "target_content": f"Total Qty = {pdf_total}",
             "note":           "ยอดรวมไม่ตรง"
