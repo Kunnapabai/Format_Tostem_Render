@@ -380,14 +380,22 @@ def process_pdf_file_with_main_py(input_path: str, start_page: int, job_id: str)
     try:
         start_time = time.time()
 
-        cmd = [
-            PYTHON, str(BASE_DIR / 'main.py'),
-            '--mode', 'format',
-            '--input', input_path,
-            '--start-page', str(start_page),
-            '--job-id', job_id,
-            '--output-dir', OUTPUT_FOLDER
-        ]
+        # ใช้ main3.py ถ้ามี (ไม่เปลี่ยนแปลง)
+        main3_py_path = BASE_DIR / 'main3.py'
+        if os.path.exists(main3_py_path):
+            logger.info(f"Processing PDF file with main3.py")
+            cmd = [PYTHON, str(main3_py_path), input_path, str(start_page), job_id]
+        else:
+            # ใช้ main.py แบบใหม่
+            logger.info(f"Processing PDF file with main.py (new format)")
+            cmd = [
+                PYTHON, str(BASE_DIR / 'main.py'),
+                '--mode', 'format',
+                '--input', input_path,
+                '--start-page', str(start_page),
+                '--job-id', job_id,
+                '--output-dir', OUTPUT_FOLDER
+            ]
         
         result = run_subprocess(cmd)
         processing_time = time.time() - start_time
@@ -398,7 +406,7 @@ def process_pdf_file_with_main_py(input_path: str, start_page: int, job_id: str)
             pass
 
         if result.returncode != 0:
-            logger.error("Processing failed with main.py: %s", result.stderr)
+            logger.error("Processing failed: %s", result.stderr)
             return None, f'เกิดข้อผิดพลาดในการประมวลผล: {result.stderr}'
 
         output_lines = result.stdout.strip().split('\n')
@@ -413,7 +421,7 @@ def process_pdf_file_with_main_py(input_path: str, start_page: int, job_id: str)
                     pass
 
         if not json_output:
-            return None, 'ไม่พบผลลัพธ์จาก main.py'
+            return None, 'ไม่พบผลลัพธ์จากการประมวลผล'
         if 'error' in json_output:
             return None, json_output['error']
 
@@ -425,7 +433,7 @@ def process_pdf_file_with_main_py(input_path: str, start_page: int, job_id: str)
         }, None
 
     except Exception as e:
-        logger.exception("Unexpected error with main.py")
+        logger.exception("Unexpected error in PDF processing")
         return None, f'เกิดข้อผิดพลาดที่ไม่คาดคิด: {str(e)}'
 
 # -------------------- Routes --------------------
