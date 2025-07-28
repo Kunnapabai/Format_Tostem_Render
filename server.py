@@ -48,12 +48,12 @@ def cleanup_old_files(hours: int = 1) -> None:
     except Exception as e:
         logger.error(f"Error during cleanup: {e}")
 
-def load_html_template(template_name='original') -> str:
+def load_html_template(template_name='matrix') -> str:
     template_files = {
-        'original': 'index.html',
+        'matrix': 'index.html',
         'joint': 'index2.html',
-        'format': 'index3.html',
-        'txt_vs_pdf': 'index4.html'  # TXT vs PDF Checker ใช้ index4.html
+        'text-glass': 'index3.html',
+        'glass-check': 'index4.html'  # TXT vs PDF Checker ใช้ index4.html
     }
     try:
         filename = template_files.get(template_name)
@@ -390,7 +390,7 @@ def process_pdf_file_with_main_py(input_path: str, start_page: int, job_id: str)
             logger.info(f"Processing PDF file with main.py (new format)")
             cmd = [
                 PYTHON, str(BASE_DIR / 'main.py'),
-                '--mode', 'format',
+                '--mode', 'text-glass',
                 '--input', input_path,
                 '--start-page', str(start_page),
                 '--job-id', job_id,
@@ -441,13 +441,13 @@ def process_pdf_file_with_main_py(input_path: str, start_page: int, job_id: str)
 @app.route('/matrix')
 def index():
     cleanup_old_files()
-    html_template = load_html_template('original')  # ใช้ index.html สำหรับ Matrix Mode
+    html_template = load_html_template('matrix')  # ใช้ index.html สำหรับ Matrix Mode
     return render_template_string(html_template)
 
-@app.route('/txt_vs_pdf')
+@app.route('/glass-check')
 def txt_vs_pdf():
     cleanup_old_files()
-    html_template = load_html_template('txt_vs_pdf')  # ใช้ index4.html สำหรับ TXT vs PDF
+    html_template = load_html_template('glass-check')  # ใช้ index4.html สำหรับ TXT vs PDF
     return render_template_string(html_template)
 
 @app.route('/joint')
@@ -456,10 +456,10 @@ def joint():
     html_template = load_html_template('joint')
     return render_template_string(html_template)
 
-@app.route('/format')
+@app.route('/text-glass')
 def format_page():
     cleanup_old_files()
-    html_template = load_html_template('format')
+    html_template = load_html_template('text-glass')
     return render_template_string(html_template)
 
 # -------------------- Compare Route --------------------
@@ -792,9 +792,9 @@ if __name__ == '__main__':
     print("🌐 Available routes:")
     print("   http://localhost:5000/          → Matrix Mode")
     print("   http://localhost:5000/matrix    → Matrix Mode")
-    print("   http://localhost:5000/txt_vs_pdf → TXT/PDF vs PDF Checker")
+    print("   http://localhost:5000/glass-check → TXT/PDF vs PDF Checker")
     print("   http://localhost:5000/joint     → Joint Mode")
-    print("   http://localhost:5000/format    → Format Mode - PDF Processing")
+    print("   http://localhost:5000/text-glass    → Format Mode - PDF Processing")
     print("   http://localhost:5000/health    → Health Check")
     print()
 
