@@ -204,6 +204,7 @@ class PDFExtractorWeb:
                     'Qty': glass_set.get('qty', '')
                 }
                 
+                
                 # Only add if we have at least one meaningful value
                 if glass_data['GW'] or glass_data['GH'] or glass_data['Qty']:
                     self.glass_data.append(glass_data)
