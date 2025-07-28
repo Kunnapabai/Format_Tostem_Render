@@ -378,10 +378,10 @@ def parse_pdf_items(text: str):
     return items
 
 
-# ================== Comparison Functions ==================
+# ================== Improved Comparison Functions ==================
 
 def compare_items(txt_items, pdf_items, provided_total=None):
-    """Compare lists of items and build differences and matched items - ใช้การค้นหาแบบยืดหยุ่น"""
+    """Compare lists of items and build differences and matched items - ใช้การค้นหาแบบ step-by-step"""
     diffs = []
     matched_count = 0
     
@@ -397,6 +397,7 @@ def compare_items(txt_items, pdf_items, provided_total=None):
     # สร้าง mapping ของ PDF items
     pdf_by_seq = {i["seq"]: i for i in pdf_items}
     used_pdf_sequences = set()  # เก็บ PDF sequences ที่ใช้แล้ว
+    matched_txt_indices = set()  # เก็บ TXT indices ที่ match แล้ว
     
     # Helper function สำหรับเช็คว่า items ตรงกันไหม
     def items_match(txt_item, pdf_item):
@@ -413,7 +414,7 @@ def compare_items(txt_items, pdf_items, provided_total=None):
         
         # เช็ค code
         if str(pdf_item["code"]).strip() == str(txt_item["code"]).strip():
-            similarities += 1
+            similarities += 2  # code สำคัญมาก
         
         # เช็ค width
         if int(pdf_item["width"]) == int(txt_item["width"]):
@@ -427,8 +428,8 @@ def compare_items(txt_items, pdf_items, provided_total=None):
         if int(pdf_item["quantity"]) == int(txt_item["quantity"]):
             similarities += 1
         
-        # ถ้าตรงกัน 2 จาก 4 หรือมากกว่า ถือว่าคล้ายกัน
-        return similarities >= 2
+        # ถ้าตรงกัน 3 จาก 5 หรือมากกว่า ถือว่าคล้ายกัน
+        return similarities >= 3
     
     # Helper function สำหรับสร้าง notes การแก้ไข
     def generate_edit_notes(txt_item, pdf_item):
@@ -443,152 +444,211 @@ def compare_items(txt_items, pdf_items, provided_total=None):
             notes.append(f"แก้จำนวนจาก {pdf_item['quantity']} เป็น {txt_item['quantity']}")
         return "; ".join(notes)
     
-    # Helper function สำหรับหา PDF item ที่ตรงกัน
-    def find_matching_pdf_item(txt_item, available_pdf_items):
-        for pdf_item in available_pdf_items:
-            if pdf_item["seq"] not in used_pdf_sequences and items_match(txt_item, pdf_item):
-                return pdf_item
-        return None
+    print(f"DEBUG: Starting Step-by-Step Matching Process", file=sys.stderr)
     
-    # Helper function สำหรับหา PDF item ที่คล้ายกัน (สำหรับ fallback)
-    def find_similar_pdf_item(txt_item, available_pdf_items):
-        """หา PDF item ที่คล้ายกันมากที่สุด"""
-        best_match = None
-        best_similarity = 0
-        
-        for pdf_item in available_pdf_items:
-            if pdf_item["seq"] not in used_pdf_sequences:
-                similarities = 0
-                
-                # นับความคล้ายคลึง
-                if str(pdf_item["code"]).strip() == str(txt_item["code"]).strip():
-                    similarities += 2  # code สำคัญมาก
-                if int(pdf_item["width"]) == int(txt_item["width"]):
-                    similarities += 1
-                if int(pdf_item["height"]) == int(txt_item["height"]):
-                    similarities += 1
-                if int(pdf_item["quantity"]) == int(txt_item["quantity"]):
-                    similarities += 1
-                
-                # ถ้าคล้ายกันมากกว่า และมีอย่างน้อย 2 คะแนน
-                if similarities > best_similarity and similarities >= 2:
-                    best_similarity = similarities
-                    best_match = pdf_item
-        
-        return best_match
+    # ============ ขั้นตอนที่ 1: Sequence Matching (ทำทุกบรรทัด) ============
+    print(f"DEBUG: === STEP 1: Sequence Matching ===", file=sys.stderr)
     
-    # วนลูปตามไฟล์ต้นฉบับเป็นหลัก
     for idx, txt_it in enumerate(txt_items, start=1):
+        if idx in matched_txt_indices:
+            continue
+            
         src_code = txt_it["code"]
         src_w    = txt_it["width"]
         src_h    = txt_it["height"]
         src_q    = txt_it["quantity"]
         source_content = f"{src_code} {src_w} * {src_h} = {src_q}"
         
-        print(f"DEBUG: Processing TXT line {idx}: {source_content}", file=sys.stderr)
+        print(f"DEBUG: Step1 - Processing TXT line {idx}: {source_content}", file=sys.stderr)
         
-        # ขั้นตอนที่ 1: ลองหา PDF item ในตำแหน่งเดียวกัน (sequence matching)
+        # ลองหา PDF item ในตำแหน่งเดียวกัน (sequence matching)
         pdf_it = pdf_by_seq.get(idx)
         if pdf_it and pdf_it["seq"] not in used_pdf_sequences:
-            print(f"DEBUG: Trying sequence match {idx}: PDF seq {pdf_it['seq']}", file=sys.stderr)
+            print(f"DEBUG: Step1 - Trying sequence match {idx}: PDF seq {pdf_it['seq']}", file=sys.stderr)
             
             if items_match(txt_it, pdf_it):
                 # ตรงกันทั้งหมด
-                print(f"DEBUG: Perfect sequence match found at {idx}", file=sys.stderr)
+                print(f"DEBUG: Step1 - Perfect sequence match found at {idx}", file=sys.stderr)
                 matched_count += 1
                 used_pdf_sequences.add(pdf_it["seq"])
+                matched_txt_indices.add(idx)
                 
                 diffs.append({
-                    "line_number":    pdf_it["seq"],  # ใช้ PDF sequence number
+                    "line_number":    pdf_it["seq"],
                     "type":           "correct",
                     "source_content": source_content,
                     "target_content": "\n".join(pdf_it["raw_lines"]),
-                    "note":           "ข้อมูลถูกต้อง"
+                    "note":           "ข้อมูลถูกต้อง (Step 1: Sequence Match)"
                 })
-                continue
+            else:
+                print(f"DEBUG: Step1 - Sequence position {idx} exists in PDF but doesn't match", file=sys.stderr)
+        else:
+            print(f"DEBUG: Step1 - No PDF item at sequence {idx} or already used", file=sys.stderr)
+    
+    print(f"DEBUG: Step1 completed - Matched: {len(matched_txt_indices)} items", file=sys.stderr)
+    
+    # ============ ขั้นตอนที่ 2: Flexible Search - Perfect Match (ทำทุกบรรทัดที่เหลือ) ============
+    print(f"DEBUG: === STEP 2: Flexible Search (Perfect Match) ===", file=sys.stderr)
+    
+    for idx, txt_it in enumerate(txt_items, start=1):
+        if idx in matched_txt_indices:
+            continue
+            
+        src_code = txt_it["code"]
+        src_w    = txt_it["width"]
+        src_h    = txt_it["height"]
+        src_q    = txt_it["quantity"]
+        source_content = f"{src_code} {src_w} * {src_h} = {src_q}"
         
-        # ขั้นตอนที่ 2: ค้นหาใน PDF sequences อื่นๆ (flexible matching)
-        print(f"DEBUG: Trying flexible search for TXT line {idx}", file=sys.stderr)
-        matching_pdf_item = find_matching_pdf_item(txt_it, pdf_items)
+        print(f"DEBUG: Step2 - Processing TXT line {idx}: {source_content}", file=sys.stderr)
+        
+        # ค้นหาใน PDF sequences อื่นๆ (flexible matching)
+        matching_pdf_item = None
+        for pdf_item in pdf_items:
+            if pdf_item["seq"] not in used_pdf_sequences and items_match(txt_it, pdf_item):
+                matching_pdf_item = pdf_item
+                break
         
         if matching_pdf_item:
             # พบรายการที่ตรงกันใน sequence อื่น
-            print(f"DEBUG: Flexible match found: TXT {idx} matches PDF {matching_pdf_item['seq']}", file=sys.stderr)
+            print(f"DEBUG: Step2 - Flexible perfect match found: TXT {idx} matches PDF {matching_pdf_item['seq']}", file=sys.stderr)
             matched_count += 1
             used_pdf_sequences.add(matching_pdf_item["seq"])
+            matched_txt_indices.add(idx)
             
             diffs.append({
-                "line_number":    matching_pdf_item["seq"],  # ใช้ PDF sequence number
+                "line_number":    matching_pdf_item["seq"],
                 "type":           "correct",
                 "source_content": source_content,
                 "target_content": "\n".join(matching_pdf_item["raw_lines"]),
-                "note":           "ข้อมูลถูกต้อง"
+                "note":           "ข้อมูลถูกต้อง "
             })
         else:
-            # ขั้นตอนที่ 3: Fallback - หาดรายการที่คล้ายกัน
-            print(f"DEBUG: No exact match found, trying fallback similar search for TXT line {idx}", file=sys.stderr)
-            similar_pdf_item = find_similar_pdf_item(txt_it, pdf_items)
-            
-            if similar_pdf_item:
-                # พบรายการที่คล้ายกัน - แสดงเป็น "แก้ไข"
-                print(f"DEBUG: Similar match found: TXT {idx} similar to PDF {similar_pdf_item['seq']}", file=sys.stderr)
-                used_pdf_sequences.add(similar_pdf_item["seq"])
-                
-                edit_notes = generate_edit_notes(txt_it, similar_pdf_item)
-                
-                diffs.append({
-                    "line_number":    similar_pdf_item["seq"],  # ใช้ PDF sequence number
-                    "type":           "modified",
-                    "source_content": source_content,
-                    "target_content": "\n".join(similar_pdf_item["raw_lines"]),
-                    "note":           edit_notes
-                })
-            else:
-                # ไม่พบรายการที่ตรงกันหรือคล้ายกัน - รายการหายไป
-                print(f"DEBUG: No match or similar item found for TXT line {idx} - missing item", file=sys.stderr)
-                
-                # สำหรับรายการที่หายไป ใช้ sequence number ที่เหมาะสม
-                missing_line_number = max([p["seq"] for p in pdf_items], default=0) + idx
-                
-                diffs.append({
-                    "line_number":    missing_line_number,
-                    "type":           "added",
-                    "source_content": source_content,
-                    "target_content": "",
-                    "note":           f"เพิ่มรายการ {source_content}"
-                })
+            print(f"DEBUG: Step2 - No perfect match found for TXT line {idx}", file=sys.stderr)
     
-    # ขั้นตอนที่ 3: ตรวจสอบ PDF items ที่เหลือ (รายการเกิน)
-    for pdf_it in pdf_items:
-        if pdf_it["seq"] not in used_pdf_sequences:
-            print(f"DEBUG: Unused PDF item at seq {pdf_it['seq']} - extra item", file=sys.stderr)
+    print(f"DEBUG: Step2 completed - Total matched so far: {len(matched_txt_indices)} items", file=sys.stderr)
+    
+    # ============ ขั้นตอนที่ 3: Fallback Similar Search (ทำทุกบรรทัดที่เหลือ) ============
+    print(f"DEBUG: === STEP 3: Fallback Similar Search ===", file=sys.stderr)
+    
+    for idx, txt_it in enumerate(txt_items, start=1):
+        if idx in matched_txt_indices:
+            continue
+            
+        src_code = txt_it["code"]
+        src_w    = txt_it["width"]
+        src_h    = txt_it["height"]
+        src_q    = txt_it["quantity"]
+        source_content = f"{src_code} {src_w} * {src_h} = {src_q}"
+        
+        print(f"DEBUG: Step3 - Processing TXT line {idx}: {source_content}", file=sys.stderr)
+        
+        # หาดรายการที่คล้ายกัน
+        best_similar_pdf_item = None
+        best_similarity = 0
+        
+        for pdf_item in pdf_items:
+            if pdf_item["seq"] not in used_pdf_sequences:
+                similarities = 0
+                
+                # นับความคล้ายคลึง
+                if str(pdf_item["code"]).strip() == str(txt_it["code"]).strip():
+                    similarities += 2  # code สำคัญมาก
+                if int(pdf_item["width"]) == int(txt_it["width"]):
+                    similarities += 1
+                if int(pdf_item["height"]) == int(txt_it["height"]):
+                    similarities += 1
+                if int(pdf_item["quantity"]) == int(txt_it["quantity"]):
+                    similarities += 1
+                
+                # ถ้าคล้ายกันมากกว่า และมีอย่างน้อย 3 คะแนน
+                if similarities > best_similarity and similarities >= 3:
+                    best_similarity = similarities
+                    best_similar_pdf_item = pdf_item
+        
+        if best_similar_pdf_item:
+            # พบรายการที่คล้ายกัน - แสดงเป็น "แก้ไข"
+            print(f"DEBUG: Step3 - Similar match found: TXT {idx} similar to PDF {best_similar_pdf_item['seq']} (similarity: {best_similarity})", file=sys.stderr)
+            used_pdf_sequences.add(best_similar_pdf_item["seq"])
+            matched_txt_indices.add(idx)
+            
+            edit_notes = generate_edit_notes(txt_it, best_similar_pdf_item)
             
             diffs.append({
-                "line_number":    pdf_it["seq"],  # ใช้ PDF sequence number
+                "line_number":    best_similar_pdf_item["seq"],
+                "type":           "modified",
+                "source_content": source_content,
+                "target_content": "\n".join(best_similar_pdf_item["raw_lines"]),
+                "note":           f"{edit_notes} "
+            })
+        else:
+            print(f"DEBUG: Step3 - No similar match found for TXT line {idx}", file=sys.stderr)
+    
+    print(f"DEBUG: Step3 completed - Total processed: {len(matched_txt_indices)} items", file=sys.stderr)
+    
+    # ============ ขั้นตอนที่ 4: ตรวจสอบ PDF items ที่เหลือ (รายการเกิน) ============
+    print(f"DEBUG: === STEP 4: Check for Extra PDF Items ===", file=sys.stderr)
+    
+    for pdf_it in pdf_items:
+        if pdf_it["seq"] not in used_pdf_sequences:
+            print(f"DEBUG: Step4 - Unused PDF item at seq {pdf_it['seq']} - extra item", file=sys.stderr)
+            
+            diffs.append({
+                "line_number":    pdf_it["seq"],
                 "type":           "removed",
                 "source_content": "",
                 "target_content": "\n".join(pdf_it["raw_lines"]),
-                "note":           "รายการใน PDF เกินมา"
+                "note":           "รายการใน PDF เกินมา "
             })
 
-    # เปรียบเทียบยอดรวม
+    # ============ ขั้นตอนที่ 5: เพิ่มรายการที่หายไปในลำดับที่เหมาะสม ============
+    print(f"DEBUG: === STEP 5: Add Missing TXT Items ===", file=sys.stderr)
+    
+    max_pdf_seq = max([p["seq"] for p in pdf_items], default=0)
+    missing_counter = 1
+    
+    for idx, txt_it in enumerate(txt_items, start=1):
+        if idx not in matched_txt_indices:
+            src_code = txt_it["code"]
+            src_w    = txt_it["width"]
+            src_h    = txt_it["height"]
+            src_q    = txt_it["quantity"]
+            source_content = f"{src_code} {src_w} * {src_h} = {src_q}"
+            
+            print(f"DEBUG: Step5 - Adding missing TXT item {idx}: {source_content}", file=sys.stderr)
+            
+            diffs.append({
+                "line_number":    max_pdf_seq + missing_counter,
+                "type":           "added",
+                "source_content": source_content,
+                "target_content": "",
+                "note":           f"เพิ่มรายการ {source_content} "
+            })
+            missing_counter += 1
+
+    # ============ เปรียบเทียบยอดรวม ============
     txt_total = provided_total if provided_total is not None else sum(i["quantity"] for i in txt_items)
     pdf_total = sum(i["quantity"] for i in pdf_items)
     if txt_total != pdf_total:
         diffs.append({
-            "line_number":    max(len(txt_items), max([p["seq"] for p in pdf_items], default=0)) + 1,
+            "line_number":    max(max_pdf_seq + missing_counter, max([d["line_number"] for d in diffs], default=0)) + 1,
             "type":           "modified",
             "source_content": f"Total Qty = {txt_total}",
             "target_content": f"Total Qty = {pdf_total}",
             "note":           "ยอดรวมไม่ตรง"
         })
 
-    # เรียงลำดับผลลัพธ์ตาม line_number (ซึ่งตอนนี้คือ sequence number)
+    # เรียงลำดับผลลัพธ์ตาม line_number
     diffs.sort(key=lambda x: x["line_number"])
 
+    # นับเฉพาะรายการที่แตกต่างจริงๆ (ไม่รวม "ถูก")
+    actual_differences = [d for d in diffs if d["type"] != "correct"]
+
+    print(f"DEBUG: Final Results - Matched: {matched_count}, Total Differences: {len(actual_differences)}", file=sys.stderr)
+
     return {
-        "differences":   diffs,
-        "matched_items": [],  # ใส่ทุกอย่างใน differences แล้ว
+        "differences":   actual_differences,  # ส่งเฉพาะรายการที่แตกต่าง
+        "matched_items": [d for d in diffs if d["type"] == "correct"],  # รายการที่ถูก
         "matched_count": matched_count,
         "txt_total":     txt_total,
         "pdf_total":     pdf_total
