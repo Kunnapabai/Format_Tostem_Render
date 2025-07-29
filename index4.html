@@ -813,6 +813,33 @@ Total Qty = 2"
                 const matchRate = result.parsing_info.matched_items > 0 ? 
                     Math.round((result.parsing_info.matched_items / Math.max(result.parsing_info.source_items_detected, result.parsing_info.target_items_detected)) * 100) : 0;
                 
+                // คำนวณผลต่าง Total Qty
+                const sourceTotalQty = result.parsing_info.source_total_qty;
+                const targetTotalQty = result.parsing_info.target_total_qty;
+                const qtyDiff = targetTotalQty - sourceTotalQty;
+                
+                let qtyDisplayText = '';
+                let qtyBgColor = '';
+                let qtyTextColor = '';
+                let qtyIcon = '';
+                
+                if (qtyDiff === 0) {
+                    qtyDisplayText = `ต้นฉบับและเปรียบเทียบตรงกัน ${sourceTotalQty} ชิ้น`;
+                    qtyBgColor = '#d4edda';
+                    qtyTextColor = '#155724';
+                    qtyIcon = '✅';
+                } else if (qtyDiff > 0) {
+                    qtyDisplayText = `ต้นฉบับ ${sourceTotalQty} ชิ้น → เปรียบเทียบ ${targetTotalQty} ชิ้น (เกิน ${qtyDiff} ชิ้น)`;
+                    qtyBgColor = '#fff3cd';
+                    qtyTextColor = '#856404';
+                    qtyIcon = '📈';
+                } else {
+                    qtyDisplayText = `ต้นฉบับ ${sourceTotalQty} ชิ้น → เปรียบเทียบ ${targetTotalQty} ชิ้น (ขาด ${Math.abs(qtyDiff)} ชิ้น)`;
+                    qtyBgColor = '#f8d7da';
+                    qtyTextColor = '#721c24';
+                    qtyIcon = '📉';
+                }
+                
                 infoHTML = `
                     <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #2196F3;">
                         <h4 style="margin: 0 0 10px 0; color: #1976D2;">📊 ข้อมูลการประมวลผล</h4>
@@ -826,14 +853,9 @@ Total Qty = 2"
                                 <p style="margin: 5px 0;"><strong>อัตราความตรง:</strong> <span style="color: ${matchRate >= 90 ? '#4caf50' : matchRate >= 70 ? '#ff9800' : '#f44336'}; font-weight: bold;">${matchRate}%</span></p>
                             </div>
                         </div>
-                        ${result.parsing_info.source_total_qty !== result.parsing_info.target_total_qty ? 
-                            `<div style="margin-top: 10px; padding: 10px; background: #fff3cd; border-radius: 5px;">
-                                <strong>⚠️ ยอดรวมไม่ตรงกัน:</strong> ต้นฉบับ ${result.parsing_info.source_total_qty} ชิ้น ≠ เปรียบเทียบ ${result.parsing_info.target_total_qty} ชิ้น
-                            </div>` : 
-                            `<div style="margin-top: 10px; padding: 10px; background: #d4edda; border-radius: 5px;">
-                                <strong>✅ ยอดรวมตรงกัน:</strong> ${result.parsing_info.source_total_qty} ชิ้น
-                            </div>`
-                        }
+                        <div style="margin-top: 10px; padding: 10px; background: ${qtyBgColor}; border-radius: 5px; color: ${qtyTextColor};">
+                            <strong>${qtyIcon} Total Qty:</strong> ${qtyDisplayText}
+                        </div>
                     </div>
                 `;
             }
@@ -917,8 +939,8 @@ Total Qty = 2"
                                 <th style="width: 10%;">ลำดับ</th>
                                 <th style="width: 10%;">ประเภท</th>
                                 <th style="width: 20%;">ไฟล์ต้นฉบับ (${sourceLabel})</th>
-                                <th style="width: 40%;">ไฟล์เปรียบเทียบ (PDF)</th>
-                                <th style="width: 20%;">รายละเอียด</th>
+                                <th style="width: 35%;">ไฟล์เปรียบเทียบ (PDF)</th>
+                                <th style="width: 25%;">รายละเอียด</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -955,7 +977,24 @@ Total Qty = 2"
                     
                     let detailsHTML = '';
                     if (item.note) {
-                        detailsHTML = `<div style="font-size: 0.8rem; color: ${item.type === 'correct' ? '#155724' : '#666'};">${item.note}</div>`;
+                        let noteStyle = '';
+                        let noteIcon = '';
+                        
+                        if (item.type === 'correct') {
+                            noteStyle = 'background: #d4edda; color: #155724; padding: 8px 12px; border-radius: 6px; font-weight: 600; border-left: 4px solid #28a745;';
+                            noteIcon = '✅ ';
+                        } else if (item.type === 'added') {
+                            noteStyle = 'background: #cce7ff; color: #004085; padding: 8px 12px; border-radius: 6px; font-weight: 600; border-left: 4px solid #007bff;';
+                            noteIcon = '➕ ';
+                        } else if (item.type === 'removed') {
+                            noteStyle = 'background: #f8d7da; color: #721c24; padding: 8px 12px; border-radius: 6px; font-weight: 600; border-left: 4px solid #dc3545;';
+                            noteIcon = '➖ ';
+                        } else if (item.type === 'modified') {
+                            noteStyle = 'background: #fff3cd; color: #856404; padding: 8px 12px; border-radius: 6px; font-weight: 600; border-left: 4px solid #ffc107;';
+                            noteIcon = '✏️ ';
+                        }
+                        
+                        detailsHTML = `<div style="${noteStyle}">${noteIcon}${item.note}</div>`;
                     }
                     
                     const typeStyle = item.type === 'correct' ? 
@@ -968,7 +1007,7 @@ Total Qty = 2"
                             <td style="text-align: center;"><span class="diff-type ${typeClass}" ${typeStyle}>${typeName}</span></td>
                             <td class="content-preview">${sourceContent}</td>
                             <td class="content-preview">${targetContent}</td>
-                            <td style="font-size: 0.8rem;">${detailsHTML || '-'}</td>
+                            <td style="font-size: 0.9rem; min-width: 200px;">${detailsHTML || '<span style="color: #999; font-style: italic;">ไม่มีรายละเอียดเพิ่มเติม</span>'}</td>
                         </tr>
                     `;
                 });
@@ -996,10 +1035,17 @@ Total Qty = 2"
                                 </div>
                                 <div>
                                     <strong style="color: #333;">📦 Total Qty:</strong> 
-                                    ${sourceTotalQty === targetTotalQty ? 
-                                        `<span style="color: #28a745;">${sourceTotalQty} ชิ้น (ตรงกัน)</span>` :
-                                        `<span style="color: #dc3545;">ต้นฉบับ ${sourceTotalQty} ≠ เปรียบเทียบ ${targetTotalQty} ชิ้น</span>`
-                                    }
+                                    ${(() => {
+                                        if (sourceTotalQty === targetTotalQty) {
+                                            return `<span style="color: #28a745;">${sourceTotalQty} ชิ้น (ตรงกัน)</span>`;
+                                        } else {
+                                            const diff = targetTotalQty - sourceTotalQty;
+                                            const diffText = diff > 0 ? `เกิน ${diff} ชิ้น` : `ขาด ${Math.abs(diff)} ชิ้น`;
+                                            const color = diff > 0 ? '#fd7e14' : '#dc3545';
+                                            const icon = diff > 0 ? '📈' : '📉';
+                                            return `<span style="color: ${color};">${icon} ต้นฉบับ ${sourceTotalQty} → เปรียบเทียบ ${targetTotalQty} ชิ้น (${diffText})</span>`;
+                                        }
+                                    })()}
                                 </div>
                             </div>
                         </div>
