@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Format Tostem</title>
+    <title>Format Tostem - Glass Checker</title>
     <style>
         * {
             margin: 0;
@@ -49,7 +49,6 @@
             transform: translateY(-5px);
         }
 
-        /* ปรับปรุง note-box ให้สวยงามและเข้าใจง่าย */
         .note-box {
             background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
             border: none;
@@ -127,7 +126,6 @@
             box-shadow: 0 2px 6px rgba(0,0,0,0.1);
         }
 
-        /* สำหรับ note-box ที่ 2 ใช้สีต่างออกไป */
         .note-box.step-2 {
             background: linear-gradient(135deg, #fff3e0 0%, #f3e5f5 100%);
             border-left-color: #FF9800;
@@ -241,12 +239,44 @@
         .results-header {
             display: flex;
             align-items: center;
+            justify-content: space-between;
             margin-bottom: 25px;
         }
 
         .results-header h3 {
             color: #333;
             font-size: 1.5rem;
+        }
+
+        .capture-btn {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 0.9rem;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 3px 10px rgba(40, 167, 69, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .capture-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
+        }
+
+        .capture-btn:active {
+            transform: translateY(0);
+        }
+
+        .capture-btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
         }
 
         .results-table {
@@ -409,6 +439,16 @@
                 height: 40px;
                 font-size: 1.3rem;
             }
+
+            .results-header {
+                flex-direction: column;
+                gap: 15px;
+                align-items: stretch;
+            }
+
+            .capture-btn {
+                align-self: center;
+            }
         }
 
         .subtitle{text-align:center;color:#666;margin-bottom:30px;font-size:1.1em;}
@@ -503,7 +543,7 @@
         <p class="subtitle">อัปโหลดไฟล์เพื่อเปรียบเทียบความแตกต่าง (รองรับทั้ง Text vs PDF และ PDF vs PDF)</p>
 
         <div class="upload-section">
-            <!-- ปรับปรุง Note Box แรก -->
+            <!-- Note Box แรก -->
             <div class="note-box">
                 <div class="note-content">
                     <div class="note-icon">📄</div>
@@ -565,7 +605,7 @@ Total Qty = 2"
                 </div>
             </div>
 
-            <!-- ปรับปรุง Note Box ที่สอง -->
+            <!-- Note Box ที่สอง -->
             <div class="note-box step-2">
                 <div class="note-content">
                     <div class="note-icon">🎯</div>
@@ -618,6 +658,12 @@ Total Qty = 2"
         <div class="results-section" id="resultsSection" style="display: none;">
             <div class="results-header">
                 <h3>ผลการเปรียบเทียบ</h3>
+                <button class="capture-btn" id="captureBtn" onclick="captureTable()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M19,12H17.74A7.5,7.5 0 0,0 12.26,6.26C12.59,5.59 13,4.81 13,4C13,2.89 12.1,2 11,2C9.89,2 9,2.89 9,4C9,4.81 9.4,5.59 9.73,6.26A7.5,7.5 0 0,0 4.26,12H3A1,1 0 0,0 2,13A1,1 0 0,0 3,14H4.26A7.5,7.5 0 0,0 9.73,19.74C9.4,20.41 9,21.19 9,22C9,23.11 9.89,24 11,24C12.11,24 13,23.11 13,22C13,21.19 12.6,20.41 12.27,19.74A7.5,7.5 0 0,0 17.74,14H19A1,1 0 0,0 20,13A1,1 0 0,0 19,12M7,12A5,5 0 0,1 12,7A5,5 0 0,1 17,12A5,5 0 0,1 12,17A5,5 0 0,1 7,12Z"/>
+                    </svg>
+                    แคปรายการที่ต้องแก้ไข
+                </button>
             </div>
             <div id="resultsContent"></div>
         </div>
@@ -869,7 +915,7 @@ Total Qty = 2"
             if (hasDifferences || hasMatchedItems) {
                 const sourceLabel = activeSourceType === 'pdf' ? 'PDF' : 'ข้อความ';
                 
-                // รวมรายการทั้งหมดและเรียงตาม line_number
+                // รวมรายการและเรียงตาม type priority
                 let allItems = [];
                 
                 // เพิ่มรายการที่ถูกต้อง
@@ -898,8 +944,14 @@ Total Qty = 2"
                     });
                 }
                 
-                // เรียงตาม line_number
-                allItems.sort((a, b) => a.line_number - b.line_number);
+                // เรียงตาม type priority (ถูก แก้ไข เพิ่ม ลบ)
+                const typePriority = {
+                    'correct': 1,
+                    'modified': 2,
+                    'added': 3,
+                    'removed': 4
+                };
+                allItems.sort((a, b) => (typePriority[a.type] || 999) - (typePriority[b.type] || 999));
                 
                 // Status badges
                 let statusHTML = '';
@@ -946,7 +998,7 @@ Total Qty = 2"
                         <tbody>
                 `;
 
-                // แสดงรายการตามลำดับ line_number
+                // แสดงรายการตามลำดับที่เรียงแล้ว
                 allItems.forEach((item, index) => {
                     let typeClass, typeName, backgroundColor;
                     
@@ -1003,7 +1055,7 @@ Total Qty = 2"
                     
                     tableHTML += `
                         <tr style="${backgroundColor}">
-                            <td style="text-align: center; font-weight: bold;">${item.line_number}</td>
+                            <td style="text-align: center; font-weight: bold;">${index + 1}</td>
                             <td style="text-align: center;"><span class="diff-type ${typeClass}" ${typeStyle}>${typeName}</span></td>
                             <td class="content-preview">${sourceContent}</td>
                             <td class="content-preview">${targetContent}</td>
@@ -1090,6 +1142,212 @@ Total Qty = 2"
 
         function hideError() {
             document.getElementById('errorMessage').style.display = 'none';
+        }
+
+        // Function to capture table as image
+        async function captureTable() {
+            const captureBtn = document.getElementById('captureBtn');
+            const originalText = captureBtn.innerHTML;
+            
+            try {
+                // Show loading state
+                captureBtn.innerHTML = `
+                    <div class="loading" style="width: 16px; height: 16px; border-width: 2px; margin: 0;"></div>
+                    กำลังแคป...
+                `;
+                captureBtn.disabled = true;
+
+                // Import html2canvas dynamically
+                if (!window.html2canvas) {
+                    const script = document.createElement('script');
+                    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+                    script.onload = () => performCapture();
+                    document.head.appendChild(script);
+                } else {
+                    performCapture();
+                }
+
+            } catch (error) {
+                console.error('Error capturing table:', error);
+                showError('เกิดข้อผิดพลาดในการแคปตาราง: ' + error.message);
+            } finally {
+                // Reset button
+                setTimeout(() => {
+                    captureBtn.innerHTML = originalText;
+                    captureBtn.disabled = false;
+                }, 1000);
+            }
+        }
+
+        async function performCapture() {
+            try {
+                const resultsContent = document.getElementById('resultsContent');
+                const resultsSection = document.getElementById('resultsSection');
+                
+                if (!resultsContent || !resultsSection) {
+                    throw new Error('ไม่พบตารางที่จะแคป');
+                }
+
+                // Create a temporary container for capture
+                const tempContainer = document.createElement('div');
+                tempContainer.style.cssText = `
+                    position: fixed;
+                    top: -10000px;
+                    left: -10000px;
+                    background: white;
+                    padding: 20px;
+                    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                    width: ${resultsContent.offsetWidth + 40}px;
+                `;
+                
+                // Clone the results content
+                const clonedContent = resultsContent.cloneNode(true);
+                
+                // Remove "ถูก" (correct) rows from the cloned table
+                const table = clonedContent.querySelector('.results-table');
+                if (table) {
+                    const tbody = table.querySelector('tbody');
+                    if (tbody) {
+                        const rows = Array.from(tbody.querySelectorAll('tr'));
+                        let newRowNumber = 1;
+                        
+                        rows.forEach(row => {
+                            const typeSpan = row.querySelector('.diff-type');
+                            if (typeSpan && typeSpan.textContent.trim() === 'ถูก') {
+                                // Remove "correct" rows
+                                row.remove();
+                            } else {
+                                // Update row numbers for remaining rows
+                                const firstCell = row.querySelector('td:first-child');
+                                if (firstCell) {
+                                    firstCell.textContent = newRowNumber;
+                                    newRowNumber++;
+                                }
+                            }
+                        });
+                    }
+                }
+                
+                // Update summary section to show only differences
+                const summaryDiv = clonedContent.querySelector('div[style*="margin-top: 20px"]');
+                if (summaryDiv) {
+                    // Update title
+                    const titleH4 = summaryDiv.querySelector('h4');
+                    if (titleH4) {
+                        titleH4.textContent = '📈 สรุปรายการที่ต้องแก้ไข:';
+                    }
+                    
+                    // Remove "ถูกต้อง" badge from stats
+                    const statsDiv = summaryDiv.querySelector('div[style*="display: flex"]');
+                    if (statsDiv) {
+                        const correctBadge = Array.from(statsDiv.querySelectorAll('span')).find(span => 
+                            span.textContent.includes('ถูกต้อง')
+                        );
+                        if (correctBadge) {
+                            correctBadge.remove();
+                        }
+                    }
+                }
+                
+                // Update status badges - remove "ถูกต้อง" badge
+                const statusBadges = clonedContent.querySelector('div[style*="margin-bottom: 15px"]');
+                if (statusBadges) {
+                    const correctBadge = Array.from(statusBadges.querySelectorAll('span')).find(span => 
+                        span.textContent.includes('ถูกต้อง')
+                    );
+                    if (correctBadge) {
+                        correctBadge.remove();
+                    }
+                }
+                
+                // Add header with focus on differences
+                const header = document.createElement('div');
+                header.innerHTML = `
+                    <div style="text-align: center; margin-bottom: 20px; border-bottom: 2px solid #dc3545; padding-bottom: 15px;">
+                        <h2 style="color: #333; margin: 0; font-size: 1.8rem;">🚨 รายการที่ต้องแก้ไข</h2>
+                        <p style="color: #666; margin: 5px 0 0 0; font-size: 1rem;">Glass Checker - Format Tostem</p>
+                        <p style="color: #999; margin: 5px 0 0 0; font-size: 0.9rem;">สร้างเมื่อ: ${new Date().toLocaleString('th-TH')}</p>
+                        <p style="color: #dc3545; margin: 10px 0 0 0; font-size: 0.95rem; font-weight: 600;">⚠️ แสดงเฉพาะรายการที่มีความแตกต่าง (ไม่รวมรายการที่ถูกต้อง)</p>
+                    </div>
+                `;
+                
+                tempContainer.appendChild(header);
+                tempContainer.appendChild(clonedContent);
+                document.body.appendChild(tempContainer);
+
+                // Capture the image
+                const canvas = await html2canvas(tempContainer, {
+                    backgroundColor: '#ffffff',
+                    scale: 2, // Higher quality
+                    useCORS: true,
+                    allowTaint: true,
+                    width: tempContainer.offsetWidth,
+                    height: tempContainer.offsetHeight,
+                    scrollX: 0,
+                    scrollY: 0
+                });
+
+                // Remove temporary container
+                document.body.removeChild(tempContainer);
+
+                // Convert to blob and download
+                canvas.toBlob(function(blob) {
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    
+                    // Generate filename with timestamp - focus on differences
+                    const now = new Date();
+                    const timestamp = now.toISOString().slice(0, 19).replace(/[:-]/g, '').replace('T', '_');
+                    link.download = `glass_differences_${timestamp}.png`;
+                    
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    
+                    // Clean up URL
+                    setTimeout(() => URL.revokeObjectURL(url), 1000);
+                    
+                    // Show success message
+                    showTemporaryMessage('✅ บันทึกรายการที่ต้องแก้ไขเรียบร้อยแล้ว', 'success');
+                }, 'image/png', 0.9);
+
+            } catch (error) {
+                console.error('Error in performCapture:', error);
+                throw error;
+            }
+        }
+
+        function showTemporaryMessage(message, type = 'info') {
+            const messageDiv = document.createElement('div');
+            messageDiv.style.cssText = `
+                position: fixed;
+                top: 100px;
+                right: 20px;
+                z-index: 10000;
+                padding: 15px 20px;
+                border-radius: 8px;
+                font-weight: 600;
+                box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+                transition: all 0.3s ease;
+                ${type === 'success' ? 
+                    'background: #d4edda; color: #155724; border: 1px solid #c3e6cb;' : 
+                    'background: #cce7ff; color: #004085; border: 1px solid #b6d7ff;'
+                }
+            `;
+            messageDiv.textContent = message;
+            
+            document.body.appendChild(messageDiv);
+            
+            // Animate in
+            setTimeout(() => messageDiv.style.transform = 'translateX(0)', 10);
+            
+            // Remove after 3 seconds
+            setTimeout(() => {
+                messageDiv.style.opacity = '0';
+                messageDiv.style.transform = 'translateX(100%)';
+                setTimeout(() => document.body.removeChild(messageDiv), 300);
+            }, 3000);
         }
     </script>
 </body>

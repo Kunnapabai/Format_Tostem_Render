@@ -478,7 +478,8 @@ def compare_items(txt_items, pdf_items, provided_total=None):
                     "type":           "correct",
                     "source_content": source_content,
                     "target_content": "\n".join(pdf_it["raw_lines"]),
-                    "note":           "ข้อมูลถูกต้อง (Step 1: Sequence Match)"
+                    "note":           "ข้อมูลถูกต้อง (Step 1: Sequence Match)",
+                    "sort_priority":  1  # เพิ่ม sort priority
                 })
             else:
                 print(f"DEBUG: Step1 - Sequence position {idx} exists in PDF but doesn't match", file=sys.stderr)
@@ -521,7 +522,8 @@ def compare_items(txt_items, pdf_items, provided_total=None):
                 "type":           "correct",
                 "source_content": source_content,
                 "target_content": "\n".join(matching_pdf_item["raw_lines"]),
-                "note":           "ข้อมูลถูกต้อง "
+                "note":           "ข้อมูลถูกต้อง",
+                "sort_priority":  1  # เพิ่ม sort priority
             })
         else:
             print(f"DEBUG: Step2 - No perfect match found for TXT line {idx}", file=sys.stderr)
@@ -547,42 +549,49 @@ def compare_items(txt_items, pdf_items, provided_total=None):
         best_similar_pdf_item = None
         best_similarity = 0
         
-        for pdf_item in pdf_items:
-            if pdf_item["seq"] not in used_pdf_sequences:
-                similarities = 0
-                
-                # นับความคล้ายคลึง
-                if str(pdf_item["code"]).strip() == str(txt_it["code"]).strip():
-                    similarities += 2  # code สำคัญมาก
-                if int(pdf_item["width"]) == int(txt_it["width"]):
-                    similarities += 1
-                if int(pdf_item["height"]) == int(txt_it["height"]):
-                    similarities += 1
-                if int(pdf_item["quantity"]) == int(txt_it["quantity"]):
-                    similarities += 1
-                
-                # ถ้าคล้ายกันมากกว่า และมีอย่างน้อย 3 คะแนน
-                if similarities > best_similarity and similarities >= 3:
-                    best_similarity = similarities
-                    best_similar_pdf_item = pdf_item
-        
-        if best_similar_pdf_item:
-            # พบรายการที่คล้ายกัน - แสดงเป็น "แก้ไข"
-            print(f"DEBUG: Step3 - Similar match found: TXT {idx} similar to PDF {best_similar_pdf_item['seq']} (similarity: {best_similarity})", file=sys.stderr)
-            used_pdf_sequences.add(best_similar_pdf_item["seq"])
-            matched_txt_indices.add(idx)
+        try:
+            for pdf_item in pdf_items:
+                if pdf_item["seq"] not in used_pdf_sequences:
+                    similarities = 0
+                    
+                    # นับความคล้ายคลึง
+                    if str(pdf_item["code"]).strip() == str(txt_it["code"]).strip():
+                        similarities += 2  # code สำคัญมาก
+                    if int(pdf_item["width"]) == int(txt_it["width"]):
+                        similarities += 1
+                    if int(pdf_item["height"]) == int(txt_it["height"]):
+                        similarities += 1
+                    if int(pdf_item["quantity"]) == int(txt_it["quantity"]):
+                        similarities += 1
+                    
+                    print(f"DEBUG: Step3 - Comparing with PDF {pdf_item['seq']}: {pdf_item['code']} {pdf_item['width']}*{pdf_item['height']}={pdf_item['quantity']} (similarity: {similarities})", file=sys.stderr)
+                    
+                    # ถ้าคล้ายกันมากกว่า และมีอย่างน้อย 3 คะแนน
+                    if similarities > best_similarity and similarities >= 3:
+                        best_similarity = similarities
+                        best_similar_pdf_item = pdf_item
             
-            edit_notes = generate_edit_notes(txt_it, best_similar_pdf_item)
-            
-            diffs.append({
-                "line_number":    best_similar_pdf_item["seq"],
-                "type":           "modified",
-                "source_content": source_content,
-                "target_content": "\n".join(best_similar_pdf_item["raw_lines"]),
-                "note":           f"{edit_notes} "
-            })
-        else:
-            print(f"DEBUG: Step3 - No similar match found for TXT line {idx}", file=sys.stderr)
+            if best_similar_pdf_item:
+                # พบรายการที่คล้ายกัน - แสดงเป็น "แก้ไข"
+                print(f"DEBUG: Step3 - Similar match found: TXT {idx} similar to PDF {best_similar_pdf_item['seq']} (similarity: {best_similarity})", file=sys.stderr)
+                used_pdf_sequences.add(best_similar_pdf_item["seq"])
+                matched_txt_indices.add(idx)
+                
+                edit_notes = generate_edit_notes(txt_it, best_similar_pdf_item)
+                
+                diffs.append({
+                    "line_number":    best_similar_pdf_item["seq"],
+                    "type":           "modified",
+                    "source_content": source_content,
+                    "target_content": "\n".join(best_similar_pdf_item["raw_lines"]),
+                    "note":           f"{edit_notes}",
+                    "sort_priority":  2  # เพิ่ม sort priority
+                })
+            else:
+                print(f"DEBUG: Step3 - No similar match found for TXT line {idx}", file=sys.stderr)
+                
+        except Exception as e:
+            print(f"DEBUG: Step3 - Error processing TXT line {idx}: {str(e)}", file=sys.stderr)
     
     print(f"DEBUG: Step3 completed - Total processed: {len(matched_txt_indices)} items", file=sys.stderr)
     
@@ -598,7 +607,8 @@ def compare_items(txt_items, pdf_items, provided_total=None):
                 "type":           "removed",
                 "source_content": "",
                 "target_content": "\n".join(pdf_it["raw_lines"]),
-                "note":           "รายการใน PDF เกินมา "
+                "note":           "รายการใน PDF เกินมา",
+                "sort_priority":  4  # เพิ่ม sort priority
             })
 
     # ============ ขั้นตอนที่ 5: เพิ่มรายการที่หายไปในลำดับที่เหมาะสม ============
@@ -622,7 +632,8 @@ def compare_items(txt_items, pdf_items, provided_total=None):
                 "type":           "added",
                 "source_content": source_content,
                 "target_content": "",
-                "note":           f"เพิ่มรายการ {source_content} "
+                "note":           f"เพิ่มรายการ {source_content}",
+                "sort_priority":  3  # เพิ่ม sort priority
             })
             missing_counter += 1
 
@@ -635,20 +646,25 @@ def compare_items(txt_items, pdf_items, provided_total=None):
             "type":           "modified",
             "source_content": f"Total Qty = {txt_total}",
             "target_content": f"Total Qty = {pdf_total}",
-            "note":           "ยอดรวมไม่ตรง"
+            "note":           "ยอดรวมไม่ตรง",
+            "sort_priority":  2  # เพิ่ม sort priority
         })
 
-    # เรียงลำดับผลลัพธ์ตาม line_number
-    diffs.sort(key=lambda x: x["line_number"])
+    # เรียงลำดับผลลัพธ์ตาม sort_priority แล้วตาม line_number
+    # Priority: 1=ถูก, 2=แก้ไข, 3=เพิ่ม, 4=ลบ
+    diffs.sort(key=lambda x: (x.get("sort_priority", 999), x["line_number"]))
 
     # นับเฉพาะรายการที่แตกต่างจริงๆ (ไม่รวม "ถูก")
     actual_differences = [d for d in diffs if d["type"] != "correct"]
 
+    # แยกรายการที่ถูกต้อง
+    correct_items = [d for d in diffs if d["type"] == "correct"]
+
     print(f"DEBUG: Final Results - Matched: {matched_count}, Total Differences: {len(actual_differences)}", file=sys.stderr)
 
     return {
-        "differences":   actual_differences,  # ส่งเฉพาะรายการที่แตกต่าง
-        "matched_items": [d for d in diffs if d["type"] == "correct"],  # รายการที่ถูก
+        "differences":   actual_differences,  # ส่งเฉพาะรายการที่แตกต่าง (เรียงตาม priority แล้ว)
+        "matched_items": correct_items,       # รายการที่ถูก
         "matched_count": matched_count,
         "txt_total":     txt_total,
         "pdf_total":     pdf_total
