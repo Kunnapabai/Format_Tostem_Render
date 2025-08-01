@@ -48,6 +48,90 @@ def extract_text_from_pdf(pdf_path: str, start_page: int = 1) -> str:
         raise RuntimeError("ติดตั้ง pdfplumber หรือ PyPDF2 ก่อนใช้งาน")
 
 
+def extract_project_info_from_pdf(pdf_path: str) -> Dict:
+    """Extract project information from PDF header"""
+    project_info = {
+        "project_name": "",
+        "quotation_number": "",
+        "client_name": ""
+    }
+    
+    try:
+        if _HAS_PDFPLUMBER:
+            with pdfplumber.open(pdf_path) as pdf:
+                # อ่านหน้าแรกเพื่อหาข้อมูลโครงการ
+                if len(pdf.pages) > 0:
+                    first_page_text = pdf.pages[0].extract_text() or ""
+                    
+                    # ค้นหาข้อมูลจากรูปแบบต่างๆ
+                    project_info.update(_parse_project_info(first_page_text))
+                    
+    except Exception as e:
+        print(f"Warning: Could not extract project info: {str(e)}", file=sys.stderr)
+    
+    return project_info
+
+
+def _parse_project_info(text: str) -> Dict:
+    """Parse project information from text"""
+    info = {
+        "project_name": "",
+        "quotation_number": "",
+        "client_name": ""
+    }
+    
+    lines = text.split('\n')
+    
+    for i, line in enumerate(lines):
+        line = line.strip()
+        
+        # ค้นหาเลขที่ใบเสนอราคา
+        quotation_patterns = [
+            r"เลขที่\s*[:：]\s*([A-Z]+-\d+)",  # เลขที่ : QT-0031682
+            r"เลขที่\s*([A-Z]+-\d+)",         # เลขที่ QT-0031682
+            r"(QT-\d+)",                      # QT-0031682
+            r"([A-Z]+-\d{6,})",              # รูปแบบทั่วไป
+        ]
+        
+        for pattern in quotation_patterns:
+            match = re.search(pattern, line)
+            if match:
+                info["quotation_number"] = match.group(1)
+                break
+        
+        # ค้นหาชื่อโครงการ
+        project_patterns = [
+            r"โครงการ\s*[:：]\s*(.+)",       # โครงการ : ชื่อโครงการ
+            r"โครงการ\s+(.+)",              # โครงการ ชื่อโครงการ
+            r"กำหนดวันยืนราคา\s*[:：]\s*(.+)", # อาจจะอยู่ใกล้กัน
+        ]
+        
+        for pattern in project_patterns:
+            match = re.search(pattern, line)
+            if match:
+                project_name = match.group(1).strip()
+
+                # ตรวจสอบว่าไม่ใช่ชื่อพนักงานหรือข้อมูลไม่เกี่ยวข้อง
+                def is_suspect_name(text):
+                    return any(word in text for word in ['พนักงาน', 'ฝ่าย', 'ท่าน', 'รหัส', 'เรียน', 'บริษัท'])
+
+                if is_suspect_name(project_name):
+                    continue  # ข้ามถ้าดูไม่น่าใช่ชื่อโครงการ
+
+                # ตัดข้อมูลด้านหลังที่ไม่เกี่ยวข้องออก เช่น การจัดส่ง :, หมายเหตุ :, พนักงาน:
+                stop_words = ['การจัดส่ง', 'หมายเหตุ', 'พนักงาน', 'กำหนด', 'โทร']
+                for stop in stop_words:
+                    if stop in project_name:
+                        project_name = project_name.split(stop)[0].strip()
+                        break
+
+                if len(project_name) > 3:
+                    info["project_name"] = project_name
+                    break
+
+    return info
+
+
 # ================== PDF Data Extraction for Structured Data ==================
 
 class PDFExtractor:
@@ -545,7 +629,7 @@ def compare_items(txt_items, pdf_items, provided_total=None):
         
         print(f"DEBUG: Step3 - Processing TXT line {idx}: {source_content}", file=sys.stderr)
         
-        # หาดรายการที่คล้ายกัน
+        # หาดรายการที่คล้ายกัน project_name
         best_similar_pdf_item = None
         best_similarity = 0
         
@@ -650,9 +734,8 @@ def compare_items(txt_items, pdf_items, provided_total=None):
             "sort_priority":  2  # เพิ่ม sort priority
         })
 
-    # เรียงลำดับผลลัพธ์ตาม sort_priority แล้วตาม line_number
-    # Priority: 1=ถูก, 2=แก้ไข, 3=เพิ่ม, 4=ลบ
-    diffs.sort(key=lambda x: (x.get("sort_priority", 999), x["line_number"]))
+    # เรียงลำดับผลลัพธ์ตาม line_number
+    diffs.sort(key=lambda x: x["line_number"])
 
     # นับเฉพาะรายการที่แตกต่างจริงๆ (ไม่รวม "ถูก")
     actual_differences = [d for d in diffs if d["type"] != "correct"]
@@ -663,7 +746,7 @@ def compare_items(txt_items, pdf_items, provided_total=None):
     print(f"DEBUG: Final Results - Matched: {matched_count}, Total Differences: {len(actual_differences)}", file=sys.stderr)
 
     return {
-        "differences":   actual_differences,  # ส่งเฉพาะรายการที่แตกต่าง (เรียงตาม priority แล้ว)
+        "differences":   actual_differences,  # ส่งเฉพาะรายการที่แตกต่าง (เรียงตาม line_number แล้ว)
         "matched_items": correct_items,       # รายการที่ถูก
         "matched_count": matched_count,
         "txt_total":     txt_total,
@@ -676,6 +759,9 @@ def compare_items(txt_items, pdf_items, provided_total=None):
 def process_pdf_vs_pdf_comparison(source_pdf_path: str, target_pdf_path: str, start_page: int = 3):
     """Process PDF vs PDF comparison"""
     try:
+        # Extract project info from target PDF
+        project_info = extract_project_info_from_pdf(target_pdf_path)
+        
         # Extract structured data from source PDF
         extractor = PDFExtractor()
         source_result = extractor.extract_structured_data_from_pdf(source_pdf_path, start_page)
@@ -691,7 +777,13 @@ def process_pdf_vs_pdf_comparison(source_pdf_path: str, target_pdf_path: str, st
             return {"success": False, "error": "ไม่พบข้อมูลที่สามารถใช้เปรียบเทียบได้ในไฟล์ PDF ต้นฉบับ"}
         
         # Process comparison with target PDF
-        return process_text_vs_pdf_comparison(source_text, target_pdf_path, 1)
+        result = process_text_vs_pdf_comparison(source_text, target_pdf_path, 1)
+        
+        # Add project info to result
+        if result.get("success"):
+            result["project_info"] = project_info
+        
+        return result
         
     except Exception as e:
         return {"success": False, "error": f"เกิดข้อผิดพลาดในการประมวลผล PDF vs PDF: {str(e)}"}
@@ -700,6 +792,9 @@ def process_pdf_vs_pdf_comparison(source_pdf_path: str, target_pdf_path: str, st
 def process_text_vs_pdf_comparison(text_block: str, pdf_path: str, start_page: int = 1):
     """Process Text vs PDF comparison"""
     try:
+        # Extract project info from PDF
+        project_info = extract_project_info_from_pdf(pdf_path)
+        
         pdf_text = extract_text_from_pdf(pdf_path, start_page)
         txt_items, provided_total = parse_txt_items(text_block)
         pdf_items = parse_pdf_items(pdf_text)
@@ -709,6 +804,7 @@ def process_text_vs_pdf_comparison(text_block: str, pdf_path: str, start_page: i
             "success":        True,
             "matched_count":  cmp_res["matched_count"],
             "matched_items":  cmp_res["matched_items"],
+            "project_info":   project_info,  # เพิ่มข้อมูลโครงการ
             "parsing_info": {
                 "source_items_detected":  len(txt_items),
                 "target_items_detected":  len(pdf_items),
