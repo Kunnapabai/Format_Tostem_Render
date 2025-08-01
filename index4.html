@@ -675,6 +675,10 @@ Total Qty = 2"
         let targetFile = null;
         let activeSourceType = null;
 
+        // Global variables for project information (fixed)
+        let currentProjectName = '-';
+        let currentQuotationNumber = '-';
+
         // Initialize event listeners
         document.addEventListener('DOMContentLoaded', function() {
             setupFileUploads();
@@ -853,6 +857,17 @@ Total Qty = 2"
             const resultsSection = document.getElementById('resultsSection');
             const resultsContent = document.getElementById('resultsContent');
 
+            // Update global project info variables (FIXED)
+            if (result.project_info) {
+                currentProjectName = result.project_info.project_name || result.project_info.client_name || '-';
+                currentQuotationNumber = result.project_info.quotation_number || '-';
+                
+                // Show project info status
+                if (result.project_info.project_name || result.project_info.quotation_number) {
+                    showTemporaryMessage('✅ อ่านข้อมูลโครงการจาก PDF สำเร็จ', 'success');
+                }
+            }
+
             // Show parsing info if available
             let infoHTML = '';
             if (result.parsing_info) {
@@ -944,14 +959,8 @@ Total Qty = 2"
                     });
                 }
                 
-                // เรียงตาม type priority (ถูก แก้ไข เพิ่ม ลบ)
-                const typePriority = {
-                    'correct': 1,
-                    'modified': 2,
-                    'added': 3,
-                    'removed': 4
-                };
-                allItems.sort((a, b) => (typePriority[a.type] || 999) - (typePriority[b.type] || 999));
+                // เรียงตามเลขลำดับ line_number แทนการเรียงตาม type priority
+                allItems.sort((a, b) => a.line_number - b.line_number);
                 
                 // Status badges
                 let statusHTML = '';
@@ -985,14 +994,26 @@ Total Qty = 2"
                 }
 
                 let tableHTML = infoHTML + statusHTML + `
+                    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #007bff;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: center;">
+                            <div>
+                                <strong style="color: #333; font-size: 1rem;">📋 โครงการ:</strong> 
+                                <span style="color: #666; margin-left: 8px;">${currentProjectName}</span>
+                            </div>
+                            <div>
+                                <strong style="color: #333; font-size: 1rem;">📄 ใบเสนอราคาเลขที่:</strong> 
+                                <span style="color: #666; margin-left: 8px;">${currentQuotationNumber}</span>
+                            </div>
+                        </div>
+                    </div>
                     <table class="results-table">
                         <thead>
                             <tr>
-                                <th style="width: 10%;">ลำดับ</th>
+                                <th style="width: 5%;">ลำดับ</th>
                                 <th style="width: 10%;">ประเภท</th>
-                                <th style="width: 20%;">ไฟล์ต้นฉบับ (${sourceLabel})</th>
-                                <th style="width: 35%;">ไฟล์เปรียบเทียบ (PDF)</th>
-                                <th style="width: 25%;">รายละเอียด</th>
+                                <th style="width: 20%;">KUNNAPAB </th>
+                                <th style="width: 35%;">ใบเสนอราคา TYK</th>
+                                <th style="width: 30%;">รายละเอียด</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -1144,32 +1165,50 @@ Total Qty = 2"
             document.getElementById('errorMessage').style.display = 'none';
         }
 
-        // Function to capture table as image
+        // Function to capture table as image (FIXED)
         async function captureTable() {
             const captureBtn = document.getElementById('captureBtn');
             const originalText = captureBtn.innerHTML;
             
+            // Show loading state immediately
+            captureBtn.innerHTML = `
+                <div class="loading" style="width: 16px; height: 16px; border-width: 2px; margin: 0;"></div>
+                กำลังเตรียม...
+            `;
+            captureBtn.disabled = true;
+            
             try {
-                // Show loading state
+                // Check if html2canvas is available
+                if (!window.html2canvas) {
+                    captureBtn.innerHTML = `
+                        <div class="loading" style="width: 16px; height: 16px; border-width: 2px; margin: 0;"></div>
+                        กำลังโหลดไลบรารี...
+                    `;
+                    
+                    // Load html2canvas
+                    await new Promise((resolve, reject) => {
+                        const script = document.createElement('script');
+                        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+                        script.onload = resolve;
+                        script.onerror = () => reject(new Error('ไม่สามารถโหลดไลบรารีแคปได้'));
+                        document.head.appendChild(script);
+                        
+                        // Timeout after 10 seconds
+                        setTimeout(() => reject(new Error('โหลดไลบรารีไม่สำเร็จ (timeout)')), 10000);
+                    });
+                }
+
                 captureBtn.innerHTML = `
                     <div class="loading" style="width: 16px; height: 16px; border-width: 2px; margin: 0;"></div>
                     กำลังแคป...
                 `;
-                captureBtn.disabled = true;
 
-                // Import html2canvas dynamically
-                if (!window.html2canvas) {
-                    const script = document.createElement('script');
-                    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
-                    script.onload = () => performCapture();
-                    document.head.appendChild(script);
-                } else {
-                    performCapture();
-                }
-
+                await performCapture();
+                
             } catch (error) {
                 console.error('Error capturing table:', error);
                 showError('เกิดข้อผิดพลาดในการแคปตาราง: ' + error.message);
+                
             } finally {
                 // Reset button
                 setTimeout(() => {
@@ -1180,126 +1219,141 @@ Total Qty = 2"
         }
 
         async function performCapture() {
-            try {
-                const resultsContent = document.getElementById('resultsContent');
-                const resultsSection = document.getElementById('resultsSection');
-                
-                if (!resultsContent || !resultsSection) {
-                    throw new Error('ไม่พบตารางที่จะแคป');
-                }
+            const resultsContent = document.getElementById('resultsContent');
+            
+            if (!resultsContent) {
+                throw new Error('ไม่พบตารางที่จะแคป');
+            }
 
-                // Create a temporary container for capture
-                const tempContainer = document.createElement('div');
-                tempContainer.style.cssText = `
-                    position: fixed;
-                    top: -10000px;
-                    left: -10000px;
-                    background: white;
-                    padding: 20px;
-                    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                    width: ${resultsContent.offsetWidth + 40}px;
-                `;
+            // Find the table element specifically
+            const tableElement = resultsContent.querySelector('.results-table');
+            if (!tableElement) {
+                throw new Error('ไม่พบตารางในผลลัพธ์');
+            }
+
+            // Create a temporary container for capture - only the table
+            const tempContainer = document.createElement('div');
+            tempContainer.style.cssText = `
+                position: fixed;
+                top: -10000px;
+                left: -10000px;
+                background: white;
+                padding: 20px;
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                width: ${Math.max(tableElement.offsetWidth + 40, 800)}px;
+                min-height: 200px;
+            `;
+            
+            // Clone ONLY the table
+            const clonedTable = tableElement.cloneNode(true);
+            
+            // Remove "ถูก" (correct) rows from the cloned table and count differences
+            const tbody = clonedTable.querySelector('tbody');
+            let totalDifferences = 0;
+            let addedCount = 0;
+            let removedCount = 0;
+            let modifiedCount = 0;
+            
+            if (tbody) {
+                const rows = Array.from(tbody.querySelectorAll('tr'));
+                let newRowNumber = 1;
                 
-                // Clone the results content
-                const clonedContent = resultsContent.cloneNode(true);
-                
-                // Remove "ถูก" (correct) rows from the cloned table
-                const table = clonedContent.querySelector('.results-table');
-                if (table) {
-                    const tbody = table.querySelector('tbody');
-                    if (tbody) {
-                        const rows = Array.from(tbody.querySelectorAll('tr'));
-                        let newRowNumber = 1;
+                rows.forEach(row => {
+                    const typeSpan = row.querySelector('.diff-type');
+                    if (typeSpan && typeSpan.textContent.trim() === 'ถูก') {
+                        // Remove "correct" rows
+                        row.remove();
+                    } else {
+                        // Count different types of differences
+                        const typeText = typeSpan ? typeSpan.textContent.trim() : '';
+                        if (typeText === 'เพิ่ม') {
+                            addedCount++;
+                        } else if (typeText === 'ลบ') {
+                            removedCount++;
+                        } else if (typeText === 'แก้ไข') {
+                            modifiedCount++;
+                        }
+                        totalDifferences++;
                         
-                        rows.forEach(row => {
-                            const typeSpan = row.querySelector('.diff-type');
-                            if (typeSpan && typeSpan.textContent.trim() === 'ถูก') {
-                                // Remove "correct" rows
-                                row.remove();
-                            } else {
-                                // Update row numbers for remaining rows
-                                const firstCell = row.querySelector('td:first-child');
-                                if (firstCell) {
-                                    firstCell.textContent = newRowNumber;
-                                    newRowNumber++;
-                                }
-                            }
-                        });
-                    }
-                }
-                
-                // Update summary section to show only differences
-                const summaryDiv = clonedContent.querySelector('div[style*="margin-top: 20px"]');
-                if (summaryDiv) {
-                    // Update title
-                    const titleH4 = summaryDiv.querySelector('h4');
-                    if (titleH4) {
-                        titleH4.textContent = '📈 สรุปรายการที่ต้องแก้ไข:';
-                    }
-                    
-                    // Remove "ถูกต้อง" badge from stats
-                    const statsDiv = summaryDiv.querySelector('div[style*="display: flex"]');
-                    if (statsDiv) {
-                        const correctBadge = Array.from(statsDiv.querySelectorAll('span')).find(span => 
-                            span.textContent.includes('ถูกต้อง')
-                        );
-                        if (correctBadge) {
-                            correctBadge.remove();
+                        // Update row numbers for remaining rows
+                        const firstCell = row.querySelector('td:first-child');
+                        if (firstCell) {
+                            firstCell.textContent = newRowNumber;
+                            newRowNumber++;
                         }
                     }
-                }
-                
-                // Update status badges - remove "ถูกต้อง" badge
-                const statusBadges = clonedContent.querySelector('div[style*="margin-bottom: 15px"]');
-                if (statusBadges) {
-                    const correctBadge = Array.from(statusBadges.querySelectorAll('span')).find(span => 
-                        span.textContent.includes('ถูกต้อง')
-                    );
-                    if (correctBadge) {
-                        correctBadge.remove();
-                    }
-                }
-                
-                // Add header with focus on differences
-                const header = document.createElement('div');
-                header.innerHTML = `
-                    <div style="text-align: center; margin-bottom: 20px; border-bottom: 2px solid #dc3545; padding-bottom: 15px;">
-                        <h2 style="color: #333; margin: 0; font-size: 1.8rem;">🚨 รายการที่ต้องแก้ไข</h2>
-                        <p style="color: #666; margin: 5px 0 0 0; font-size: 1rem;">Glass Checker - Format Tostem</p>
-                        <p style="color: #999; margin: 5px 0 0 0; font-size: 0.9rem;">สร้างเมื่อ: ${new Date().toLocaleString('th-TH')}</p>
-                        <p style="color: #dc3545; margin: 10px 0 0 0; font-size: 0.95rem; font-weight: 600;">⚠️ แสดงเฉพาะรายการที่มีความแตกต่าง (ไม่รวมรายการที่ถูกต้อง)</p>
+                });
+            }
+            
+            // Add header with project info (use stored global values)
+            const header = document.createElement('div');
+            header.innerHTML = `
+                <div style="text-align: center; margin-bottom: 15px; border-bottom: 2px solid #dc3545; padding-bottom: 10px;">
+                    <h2 style="color: #333; margin: 0; font-size: 1.5rem;">🚨 รายการที่ต้องแก้ไข</h2>
+                    <p style="color: #999; margin: 5px 0 0 0; font-size: 0.8rem;">สร้างเมื่อ: ${new Date().toLocaleString('th-TH')}</p>
+                </div>
+                <div style="background: #f8f9fa; padding: 10px; border-radius: 5px; margin-bottom: 15px; text-align: center;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 0.9rem;">
+                        <div><strong>📋 โครงการ:</strong> ${currentProjectName}</div>
+                        <div><strong>📄 ใบเสนอราคาเลขที่:</strong> ${currentQuotationNumber}</div>
+                    </div>
+                </div>
+            `;
+            
+            tempContainer.appendChild(header);
+            tempContainer.appendChild(clonedTable);
+            
+            // Add summary footer with difference count
+            if (totalDifferences > 0) {
+                const footer = document.createElement('div');
+                footer.innerHTML = `
+                    <div style="margin-top: 20px; padding: 15px; background: white; border-radius: 8px; border: 1px solid #ddd; text-align: center;">
+                        <div style="color: #333; font-weight: 600; font-size: 1rem;">
+                            แก้ไขทั้งหมด ${totalDifferences} รายการ
+                        </div>
                     </div>
                 `;
-                
-                tempContainer.appendChild(header);
-                tempContainer.appendChild(clonedContent);
-                document.body.appendChild(tempContainer);
+                tempContainer.appendChild(footer);
+            }
+            
+            document.body.appendChild(tempContainer);
 
-                // Capture the image
-                const canvas = await html2canvas(tempContainer, {
-                    backgroundColor: '#ffffff',
-                    scale: 2, // Higher quality
-                    useCORS: true,
-                    allowTaint: true,
-                    width: tempContainer.offsetWidth,
-                    height: tempContainer.offsetHeight,
-                    scrollX: 0,
-                    scrollY: 0
-                });
+            // Wait a moment for the DOM to update
+            await new Promise(resolve => setTimeout(resolve, 100));
 
-                // Remove temporary container
-                document.body.removeChild(tempContainer);
+            // Capture the image with better options
+            const canvas = await html2canvas(tempContainer, {
+                backgroundColor: '#ffffff',
+                scale: 1.5, // Reduced scale for better performance
+                useCORS: true,
+                allowTaint: false,
+                width: tempContainer.offsetWidth,
+                height: tempContainer.offsetHeight,
+                scrollX: 0,
+                scrollY: 0,
+                logging: false, // Disable logging
+                removeContainer: false
+            });
 
-                // Convert to blob and download
+            // Remove temporary container
+            document.body.removeChild(tempContainer);
+
+            // Convert to blob and download
+            return new Promise((resolve, reject) => {
                 canvas.toBlob(function(blob) {
+                    if (!blob) {
+                        reject(new Error('ไม่สามารถสร้างภาพได้'));
+                        return;
+                    }
+                    
                     const url = URL.createObjectURL(blob);
                     const link = document.createElement('a');
                     link.href = url;
                     
-                    // Generate filename with timestamp - focus on differences
+                    // Generate filename with timestamp - focus on table only
                     const now = new Date();
                     const timestamp = now.toISOString().slice(0, 19).replace(/[:-]/g, '').replace('T', '_');
-                    link.download = `glass_differences_${timestamp}.png`;
+                    link.download = `glass_table_${timestamp}.png`;
                     
                     document.body.appendChild(link);
                     link.click();
@@ -1309,13 +1363,11 @@ Total Qty = 2"
                     setTimeout(() => URL.revokeObjectURL(url), 1000);
                     
                     // Show success message
-                    showTemporaryMessage('✅ บันทึกรายการที่ต้องแก้ไขเรียบร้อยแล้ว', 'success');
-                }, 'image/png', 0.9);
-
-            } catch (error) {
-                console.error('Error in performCapture:', error);
-                throw error;
-            }
+                    showTemporaryMessage('✅ บันทึกตารางเรียบร้อยแล้ว', 'success');
+                    resolve();
+                    
+                }, 'image/png', 0.8); // Reduced quality for better performance
+            });
         }
 
         function showTemporaryMessage(message, type = 'info') {
