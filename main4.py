@@ -437,6 +437,10 @@ def parse_pdf_items(text: str):
                 r"#([A-Z]\d+[A-Z]\d*)",               # #D4A
                 r"#([A-Z]+\d+)",                      # #AD1A
                 r"#([A-Z]+\d*[A-Z]*\d*[-\.]?\d*)",    # รูปแบบทั่วไป
+                r"\b([A-Z]+\d+(?:\.\d+)?)\s*$",                    # D4, W1 (ท้ายบรรทัด)
+                r"([A-Z]+\d+[A-Z]*\d*(?:\.\d+)?)\s*$",             # D14.1, W1 (ท้ายบรรทัด)
+                r"([A-Z]+\d+(?:[A-Z]?\d+|-[A-Z]?\d+)*(?:\.\d+)?)\s*$" # D1A, D1-1 (ท้ายบรรทัด)
+
             ]
             
             for code_pattern in code_patterns:
