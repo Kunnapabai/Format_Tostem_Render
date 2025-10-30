@@ -1,0 +1,1887 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TOSTEM Work Process</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding-top: 80px;
+            padding-left: 20px;
+            padding-right: 20px;
+            padding-bottom: 20px;
+        }
+
+        /* Header */
+        header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+            padding: 1rem 0;
+            transition: all 0.3s ease;
+        }
+        
+        .container1 {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: white;
+            text-decoration: none;
+        }
+        
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 1rem;
+            margin: 0;
+            padding: 0;
+            flex-wrap: wrap;
+        }
+        
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            transition: color 0.3s ease;
+            font-weight: 500;
+            padding: 0.5rem;      
+            border-radius: 5px;   
+            font-size: 1.1rem;
+        }
+        
+        .nav-links a:hover {
+            color: #fff;
+        }
+        .nav-links a.active {
+            color: #764ba2;
+        }
+        
+        .nav-links li {
+            position: relative;
+        }
+
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: rgba(255, 255, 255, 1);
+            backdrop-filter: blur(5px);
+            list-style: none;
+            padding: 10px 0;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+            min-width: 220px;
+            z-index: 999;
+        }
+
+        /* Show submenu on hover */
+        .dropdown:hover .dropdown-menu {
+            display: block;
+        }
+
+        /* Menu link styles inside dropdown */
+        .dropdown-menu li a {
+            display: block;
+            padding: 10px 18px;
+            color: #333;
+            font-size: 1rem;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .dropdown-menu li a:hover {
+            background: #e9e9e9;
+            color: #333;
+        }
+
+        /* Dropdown arrow */
+        .dropdown > a::after {
+            content: " ▾";
+            font-size: 0.7rem;
+        }
+
+        /* --- Mobile adjustments --- */
+        @media (max-width: 768px) {
+        .dropdown-menu {
+            position: static;
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: none;
+            padding: 0.5rem 1rem;
+            border-radius: 0;
+        }
+
+        .dropdown-menu li a {
+            color: white;
+        }
+
+        .dropdown-menu li a:hover {
+            background: rgba(255, 255, 255, 0.15);
+            color: #ffd700;
+        }
+        }
+
+        /* Mobile Menu Toggle */
+        .mobile-menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            cursor: pointer;
+            flex-direction: column;
+            justify-content: space-around;
+            width: 30px;
+            height: 25px;
+            padding: 0;
+        }
+
+        .hamburger-line {
+            width: 100%;
+            height: 3px;
+            background-color: white;
+            border-radius: 2px;
+            transition: all 0.3s ease;
+        }
+
+        .mobile-menu-toggle.active .hamburger-line:nth-child(1) {
+            transform: rotate(45deg) translate(6px, 6px);
+        }
+
+        .mobile-menu-toggle.active .hamburger-line:nth-child(2) {
+            opacity: 0;
+        }
+
+        .mobile-menu-toggle.active .hamburger-line:nth-child(3) {
+            transform: rotate(-45deg) translate(6px, -6px);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto 30px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, .2);
+            overflow: hidden; 
+        }
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin: 15px 0 30px;
+            font-size: 1.1em;
+            font-weight: 400;
+            line-height: 1.6;
+        }
+        
+        .header{
+            text-align:center;
+            color:white;
+            margin-bottom:30px;
+            margin-top:20px;
+        }
+        .header h1{
+            font-size:2.5rem;
+            margin-bottom:10px;
+            text-shadow:2px 2px 4px rgba(0,0,0,.3);
+            font-weight:700;
+        }
+        
+        .status-bar {
+            background: #f8f9fa;
+            padding: 10px 30px;
+            border-bottom: 1px solid #dee2e6;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .status-item {
+            display: flex;
+            align-items: center;
+            margin: 5px 10px;
+        }
+        
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-healthy { background-color: #28a745; }
+        .status-error { background-color: #dc3545; }
+        .status-loading { background-color: #ffc107; animation: pulse 1.5s infinite; }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .main-content {
+            padding: 30px;
+        }
+        
+        .section {
+            padding: 0;
+        }
+        
+        .section-title {
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .section-title::before {
+            content: '';
+            width: 4px;
+            height: 24px;
+            background: linear-gradient(135deg, #2196F3, #21CBF3);
+            margin-right: 12px;
+            border-radius: 2px;
+        }
+        
+        .quotation-upload-area {
+            max-width: 600px;
+            background: #f9fafb;
+            border: 2px dashed #007bff;
+            border-radius: 12px;
+            padding: 6em 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 0 auto 10px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        .quotation-upload-area:hover {
+            background: #e3f2fd;
+            border-color: #0056b3;
+            transform: translateY(-2px);
+        }
+
+        .upload-icon {
+            font-size: 3em;
+            color: #28a745;
+            margin-bottom: 15px;
+        }
+        
+        .upload-text {
+            color: #666;
+            font-size: 1.7em;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        
+        .file-info {
+            font-size: 0.9em;
+            color: #666;
+        }
+        
+        .file-input {
+            display: none;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+        
+        .btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-danger:hover:not(:disabled) {
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #2196F3, #21CBF3);
+            box-shadow: 0 4px 15px rgba(33, 150, 243, 0.3);
+        }
+        
+        .btn-warning {
+            background: linear-gradient(45deg, #007bff, #0056b3);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn-danger {
+            background: rgb(255, 255, 255);
+            color: rgb(255, 49, 49);
+            padding: 0;
+            text-decoration: underline;
+            box-shadow: none;
+        }
+        
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 0.85em;
+            border-radius: 15px;
+        }
+        
+        .job-card {
+            box-shadow: none;
+        }
+        
+        .job-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .job-title {
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .job-status {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: 600;
+        }
+        
+        .job-status.completed {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .job-status.processing {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .job-status.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .job-info {
+            font-size: 14px;
+        }
+        
+        .job-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+        
+        .empty-state-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+        
+        .empty-state-text {
+            font-size: 1.2em;
+            margin-bottom: 10px;
+        }
+        
+        .empty-state-subtext {
+            font-size: 0.9em;
+            opacity: 0.7;
+        }
+
+        .photo-upload-section {
+            margin-top: 10px;
+        }
+
+        .photo-edit-item {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            display: grid;
+            grid-template-columns: 100px 1fr auto;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .photo-edit-thumbnail {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 2px solid #ddd;
+        }
+
+        .photo-edit-info {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .photo-edit-input {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 0.9em;
+            width: 100%;
+        }
+
+        .photo-edit-input:focus {
+            outline: none;
+            border-color: #2196F3;
+            box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.1);
+        }
+
+        .photo-match-status {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            font-weight: 600;
+            margin-top: 4px;
+        }
+
+        .photo-match-status.matched {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .photo-match-status.unmatched {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .ref-photo-group {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            height: 132px;
+        }
+
+        .ref-photo-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .ref-photo-title {
+            font-weight: 600;
+            color: #333;
+            font-size: 1.1em;
+        }
+
+        .ref-photo-count {
+            padding: 4px 10px;
+            border-radius: 30px;
+            font-size: 0.85em;
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .ref-photos-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 10px;
+        }
+
+        .ref-photo-item {
+            position: relative;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 2px solid #ddd;
+            transition: transform 0.2s;
+            cursor: pointer;
+        }
+
+        .ref-photo-item:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        .ref-photo-item img {
+            width: 100%;
+            height: 120px;
+            object-fit: cover;
+        }
+
+        .ref-photo-remove {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: rgba(220, 53, 69, 0.9);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 28px;
+            height: 28px;
+            cursor: pointer;
+            font-size: 16px;
+            line-height: 1;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .ref-photo-item:hover .ref-photo-remove {
+            opacity: 1;
+        }
+
+        .ref-photo-name {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 4px 8px;
+            font-size: 0.75em;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.7);
+        }
+        
+        .loading-overlay.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .loading-content {
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            min-width: 300px;
+        }
+        
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #2196F3;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            border-radius: 10px;
+            padding: 15px 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            z-index: 3000;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            border-left: 4px solid #28a745;
+            max-width: 350px;
+        }
+        
+        .toast.show {
+            transform: translateX(0);
+        }
+        
+        .toast.error {
+            border-left-color: #dc3545;
+        }
+        
+        .toast.warning {
+            border-left-color: #ffc107;
+        }
+        
+        .toast-header {
+            font-weight: 600;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .toast-body {
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .image-preview-modal {
+            display: none;
+            position: fixed;
+            z-index: 3000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.9);
+            cursor: pointer;
+        }
+
+        .image-preview-modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .image-preview-content {
+            max-width: 90%;
+            max-height: 90%;
+        }
+
+        .image-preview-content img {
+            max-width: 100%;
+            max-height: 90vh;
+            object-fit: contain;
+        }
+        
+        /* Media Queries */
+        @media(max-width: 768px){
+            body {
+                padding-top: 140px;
+            }
+            
+            nav {
+                flex-direction: column;
+                align-items: flex-start;
+                position: relative;
+            }
+            
+            .mobile-menu-toggle {
+                display: flex;
+                position: absolute;
+                top: 50%;
+                right: 0;
+                transform: translateY(-50%);
+            }
+            
+            .nav-links {
+                width: 100%;
+                flex-direction: column;
+                gap: 0.5rem;
+                margin-top: 1rem;
+                background: rgba(255, 255, 255, 0.1);
+                padding: 1rem;
+                border-radius: 10px;
+                display: none;
+            }
+            
+            .nav-links.show {
+                display: flex;
+            }
+            
+            .nav-links a {
+                padding: 0.75rem;
+                text-align: center;
+                width: 100%;
+                border-radius: 8px;
+                font-size: 1rem;
+            }
+            
+            .main-content {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .status-bar {
+                padding: 10px 20px;
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .job-actions {
+                justify-content: stretch;
+            }
+            
+            .job-actions .btn {
+                flex: 1;
+            }
+
+            .photo-edit-item {
+                grid-template-columns: 1fr;
+            }
+
+            .container {
+                margin: 10px;
+                border-radius: 10px;
+            }
+        }
+
+        @media(max-width: 480px){
+            body {
+                padding-top: 160px;
+            }
+            
+            .logo {
+                font-size: 1.2rem;
+            }
+            
+            .container {
+                margin: 5px;
+            }
+            
+            .nav-links a {
+                font-size: 0.9rem;
+                padding: 0.6rem;
+            }
+        }
+
+        #photoEditList {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        #uploadedPhotosContainer {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            background: rgb(248, 249, 250);
+            padding: 15px;
+            border-radius: 8px;
+        }
+        #quotationJobStatusContainer .job-card {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 10px;
+            border-radius: 8px;
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            font-size: 14px;
+            box-shadow: none;
+        }
+        #siteSurveyJobStatusContainer .job-card {
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 2px solid #8a8a8a;
+        }
+
+        .site-survey-center {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            gap: 5px;
+        }
+
+        .site-survey-center .job-actions {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .site-survey-center .btn {
+            width: 180px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="container1">
+            <a href="#" class="logo">TOSTEM Work Process</a>
+            <button class="mobile-menu-toggle" onclick="toggleMobileMenu()">
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
+            </button>
+
+            <ul class="nav-links" id="navLinks">
+            <!-- Work Process -->
+            <li class="dropdown">
+                <a href="#" class="corner-btn">Work Process</a>
+                <ul class="dropdown-menu">
+                <li><a href="/Quotation">Quotation comparison</a></li>
+                <li><a href="/text-glass2">Glass extract</a></li>
+                <li><a href="/glass-check">Glass check</a></li>
+                <li><a href="/Generate" class="active">Generate site survey</a></li>
+                <li><a href="/sitewithele">ELE check</a></li>
+                </ul>
+            </li>
+
+            <!-- Price Update -->
+            <li class="dropdown">
+                <a href="#" class="corner-btn">Price Update</a>
+                <ul class="dropdown-menu">
+                <li><a href="/matrix">Matrix price (Panel)</a></li>
+                <li><a href="/joint">Matrix price (Joint)</a></li>
+                </ul>
+            </li>
+
+            <li id="userManagementLink" style="display: none;">
+                <a href="/user-management" class="corner-btn">User</a>
+            </li>
+
+            </ul>
+        </nav>
+    </header>
+
+    <div class="header"><h1>Generate site survey</h1></div>
+    
+    <div class="container">
+        <div class="status-bar" style="display: none;">
+            <div class="status-item">
+                <div class="status-indicator status-loading" id="backendStatus"></div>
+                <span id="backendStatusText">กำลังเชื่อมต่อ Backend...</span>
+            </div>
+            <div class="status-item">
+                <span id="serverInfo">Backend Server: http://localhost:5000</span>
+            </div>
+            <div class="status-item">
+                <span id="lastUpdate">อัพเดตล่าสุด: -</span>
+            </div>
+        </div>
+        
+        <div class="main-content">
+            <p class="subtitle">สร้าง Site survey โดยใช้ข้อมูลจาก Quotation</p>
+            <div class="section">
+                <h2 class="section-title">อัพโหลด Quotation</h2>
+                
+                <div class="quotation-upload-area" id="quotationUploadArea">
+                    <div class="upload-text">Quotation</div>
+                    <div class="file-info">คลิกหรือลากไฟล์มาวาง (.xlsx, .xls, .csv, .pdf)</div>
+                </div>
+                
+                <input type="file" id="quotationInput" class="file-input" accept=".xlsx,.xls,.csv,.pdf">
+
+                <div id="quotationJobStatusContainer"></div>
+
+                <h2 class="section-title" style="margin-top: 40px;">อัปโหลดรูปภาพ</h2>
+                <p style="text-align: center; color: #666; margin-bottom: 20px;">แก้ไขชื่อไฟล์ให้ตรงกับ Ref Code (เช่น D1, W2)</p>
+                <div class="photo-upload-section">
+                    
+                    <div style="background: white; margin-bottom: 15px;">
+                        
+                        <input type="file" id="surveyPhotoInput" multiple accept="image/*" style="display: none;">
+                        
+                        <button class="btn btn-primary" onclick="document.getElementById('surveyPhotoInput').click()" style="width: 250px; display: block; margin: 0 auto; font-weight: 600;">
+                            เลือกรูปภาพ
+                        </button>
+                    </div>
+                    
+                    <div id="selectedPhotosEditor" style="display: none; background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                        <div id="photoEditList" style="max-height: 400px; overflow-y: auto;"></div>
+                        <div style="display: flex; justify-content: center; align-items: center; gap: 15px; margin-top: 15px;">
+                            <button class="btn btn-primary" style="width: 250px;" onclick="uploadEditedPhotos()" style="width:300px;">
+                                อัปโหลดทั้งหมด
+                            </button>
+                            <button class="btn btn-danger" style="background: rgb(248, 249, 250);" onclick="cancelPhotoSelection()">
+                                ยกเลิก
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div id="uploadedPhotosContainer"></div>        
+
+                </div>
+
+                <button class="btn btn-warning" id="generateSurveyBtn" disabled style="display: block; width: 350px; margin: 30px auto 0;">สร้าง Site Survey</button>
+                
+                <div id="siteSurveyJobStatusContainer">
+                </div>
+
+            </div><!-- end section -->
+                
+
+        </div>
+    </div><!-- end container -->
+    
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <div>กำลังประมวลผล...</div>
+            <div style="margin-top: 10px; font-size: 0.9em; color: #666;">กรุณารอสักครู่</div>
+        </div>
+    </div>
+    
+    <div class="toast" id="toast">
+        <div class="toast-header" id="toastHeader">แจ้งเตือน</div>
+        <div class="toast-body" id="toastBody">ข้อความแจ้งเตือน</div>
+    </div>
+
+    <div class="image-preview-modal" id="imagePreviewModal">
+        <div class="image-preview-content">
+            <img id="previewImage" src="" alt="Preview">
+        </div>
+    </div>
+
+    <script>
+        let currentQuotationJobId = null;
+        let currentSurveyJobId = null;
+        let backendUrl = window.location.origin;
+        let availableRefCodes = [];
+        let selectedPhotosForUpload = [];
+        let uploadedPhotosByRef = {};
+        
+        function toggleMobileMenu() {
+            const navLinks = document.getElementById('navLinks');
+            const toggleBtn = document.querySelector('.mobile-menu-toggle');
+            
+            navLinks.classList.toggle('show');
+            toggleBtn.classList.toggle('active');
+        }
+
+        // Close menu when clicking links
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.nav-links a').forEach(link => {
+                link.addEventListener('click', () => {
+                    document.getElementById('navLinks').classList.remove('show');
+                    document.querySelector('.mobile-menu-toggle').classList.remove('active');
+                });
+            });
+
+            // Close menu when clicking outside
+            document.addEventListener('click', (e) => {
+                const nav = document.querySelector('nav');
+                const navLinks = document.getElementById('navLinks');
+                const toggleBtn = document.querySelector('.mobile-menu-toggle');
+                
+                if (!nav.contains(e.target)) {
+                    navLinks.classList.remove('show');
+                    toggleBtn.classList.remove('active');
+                }
+            });
+            
+            initializeApp();
+        });
+        
+        async function initializeApp() {
+            await clearAllDataOnLoad();
+            await checkBackendHealth();
+            setupEventListeners();
+            updateLastUpdate();
+            setInterval(updateLastUpdate, 30000);
+            setInterval(refreshJobStatus, 5000);
+            await loadAllUploadedImages();
+        }
+
+        async function clearAllDataOnLoad() {
+            try {
+                console.log('🧹 Clearing all data on page load...');
+                
+                const response = await fetch(`${backendUrl}/api/cleanup-all`, {
+                    method: 'POST'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    console.log('✅ Data cleared successfully:', data.cleaned_items);
+                    
+                    // ✅ ADD THESE LINES - Reset all frontend state
+                    currentQuotationJobId = null;
+                    currentSurveyJobId = null;
+                    availableRefCodes = [];
+                    selectedPhotosForUpload = [];
+                    uploadedPhotosByRef = {};
+                    
+                    // ✅ ADD THIS - Clear the UI
+                    updateGenerateSurveyButton();
+                    renderUploadedPhotos();
+                    
+                    // ✅ ADD THIS - Clear job status display
+                    const container = document.getElementById('jobStatusContainer');
+                    if (container) {
+                        container.innerHTML = `
+                            <div class="empty-state">
+                                <div class="empty-state-icon">📋</div>
+                                <div class="empty-state-text">ยังไม่มีงาน</div>
+                                <div class="empty-state-subtext">เริ่มต้นด้วยการอัพโหลดไฟล์ Quotation</div>
+                            </div>
+                        `;
+                    }
+                    
+                } else {
+                    console.warn('⚠️ Failed to clear data:', data.error);
+                }
+            } catch (error) {
+                console.error('❌ Error clearing data:', error);
+            }
+        }
+        
+        function setupEventListeners() {
+            const selectQuotationBtn = document.getElementById('selectQuotationBtn');
+            const quotationInput = document.getElementById('quotationInput');
+            
+            if (selectQuotationBtn) {
+                selectQuotationBtn.addEventListener('click', () => quotationInput.click());
+            }
+            
+            if (quotationInput) {
+                quotationInput.addEventListener('change', handleQuotationSelect);
+            }
+            
+            const quotationUploadArea = document.getElementById('quotationUploadArea');
+            if (quotationUploadArea) {
+                quotationUploadArea.addEventListener('click', () => quotationInput.click());
+                quotationUploadArea.addEventListener('dragover', handleQuotationDragOver);
+                quotationUploadArea.addEventListener('dragleave', handleQuotationDragLeave);
+                quotationUploadArea.addEventListener('drop', handleQuotationDrop);
+            }
+            
+            const surveyPhotoInput = document.getElementById('surveyPhotoInput');
+            if (surveyPhotoInput) {
+                surveyPhotoInput.addEventListener('change', function() {
+                    const files = Array.from(this.files);
+                    if (files.length > 0) {
+                        handlePhotoSelection(files);
+                    }
+                });
+            }
+            
+            const generateSurveyBtn = document.getElementById('generateSurveyBtn');
+            if (generateSurveyBtn) {
+                generateSurveyBtn.addEventListener('click', generateSiteSurvey);
+            }
+
+            const imageModal = document.getElementById('imagePreviewModal');
+            if (imageModal) {
+                imageModal.addEventListener('click', function(e) {
+                    if (e.target === this) closeImagePreview();
+                });
+            }
+        }
+        
+        async function checkBackendHealth() {
+            const statusIndicator = document.getElementById('backendStatus');
+            const statusText = document.getElementById('backendStatusText');
+            
+            try {
+                const response = await fetch(`${backendUrl}/api/health`);
+                const data = await response.json();
+                
+                if (data.status === 'healthy') {
+                    statusIndicator.className = 'status-indicator status-healthy';
+                    statusText.textContent = 'Backend พร้อมใช้งาน';
+                } else {
+                    throw new Error(data.message);
+                }
+            } catch (error) {
+                statusIndicator.className = 'status-indicator status-error';
+                statusText.textContent = `Backend ไม่พร้อม: ${error.message}`;
+                showToast('ข้อผิดพลาด', `ไม่สามารถเชื่อมต่อ Backend: ${error.message}`, 'error');
+            }
+        }
+        
+        function handleQuotationSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                uploadQuotation(file);
+            }
+        }
+        
+        function handleQuotationDragOver(event) {
+            event.preventDefault();
+            event.currentTarget.classList.add('dragover');
+        }
+        
+        function handleQuotationDragLeave(event) {
+            event.currentTarget.classList.remove('dragover');
+        }
+        
+        function handleQuotationDrop(event) {
+            event.preventDefault();
+            event.currentTarget.classList.remove('dragover');
+            const files = Array.from(event.dataTransfer.files);
+            const quotationFiles = files.filter(file => {
+                const ext = file.name.split('.').pop().toLowerCase();
+                return ['xlsx', 'xls', 'csv', 'pdf'].includes(ext);
+            });
+            
+            if (quotationFiles.length > 0) {
+                uploadQuotation(quotationFiles[0]);
+            } else {
+                showToast('ข้อผิดพลาด', 'กรุณาเลือกไฟล์ .xlsx, .xls, .csv หรือ .pdf', 'error');
+            }
+        }
+        
+        async function uploadQuotation(file) {
+            if (!file) return;
+            
+            document.getElementById('loadingOverlay').classList.add('show');
+            
+            try {
+                const formData = new FormData();
+                formData.append('file', file);
+                
+                const response = await fetch(`${backendUrl}/api/quotation/upload`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    currentQuotationJobId = data.job_id;
+                    await loadQuotationRefCodes(data.job_id);
+                    showToast('สำเร็จ', `อัปโหลด Quotation สำเร็จ: ${data.message}`, 'success');
+                    updateGenerateSurveyButton();
+                    refreshJobStatus();
+                } else {
+                    throw new Error(data.message);
+                }
+                
+            } catch (error) {
+                showToast('ข้อผิดพลาด', error.message || 'เกิดข้อผิดพลาดในการอัปโหลด', 'error');
+            } finally {
+                document.getElementById('loadingOverlay').classList.remove('show');
+            }
+        }
+
+        async function loadQuotationRefCodes(jobId) {
+            try {
+                const response = await fetch(`${backendUrl}/api/quotation/refs/${jobId}`);
+                const data = await response.json();
+                
+                if (data.success && data.refs) {
+                    availableRefCodes = data.refs;
+                    console.log(`✅ Loaded ${data.refs.length} ref codes:`, data.refs);
+                    await loadAllUploadedImages();
+                }
+            } catch (error) {
+                console.error('Error loading ref codes:', error);
+            }
+        }
+
+        async function loadAllUploadedImages() {
+            try {
+                const response = await fetch(`${backendUrl}/api/site-survey/list-images`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    uploadedPhotosByRef = {};
+                    
+                    for (let ref in data.images_by_ref) {
+                        uploadedPhotosByRef[ref] = data.images_by_ref[ref].images.map(img => ({
+                            filename: img.filename,
+                            path: img.path,
+                            uploadedAt: img.uploaded_at
+                        }));
+                    }
+                    
+                    renderUploadedPhotos();
+                }
+            } catch (error) {
+                console.error('Error loading uploaded images:', error);
+            }
+        }
+
+        function handlePhotoSelection(files) {
+            selectedPhotosForUpload = files.map((file) => {
+                const filename = file.name;
+                const nameWithoutExt = filename.substring(0, filename.lastIndexOf('.')) || filename;
+                const matchedRef = findMatchingRef(nameWithoutExt);
+                
+                return {
+                    file: file,
+                    originalName: filename,
+                    suggestedName: matchedRef || nameWithoutExt,
+                    ref: matchedRef || '',
+                    preview: URL.createObjectURL(file)
+                };
+            });
+            
+            renderPhotoEditor();
+        }
+
+        function findMatchingRef(filename) {
+            const upperFilename = filename.toUpperCase();
+            
+            // ✅ IMPROVED: Use same patterns as server-side
+            const refPatterns = [
+                /^([DW][A-Z]?\d+(?:\.\d+)?)\b/i,           // Start of filename
+                /([DW][A-Z]?\d+(?:\.\d+)?)$/i,              // End of filename  
+                /[_\-\s]([DW][A-Z]?\d+(?:\.\d+)?)[_\-\s]/i, // Between separators
+                /([DW][A-Z]?\d+(?:\.\d+)?)/i                // Anywhere (last resort)
+            ];
+            
+            // First pass: Try exact pattern matching
+            for (let pattern of refPatterns) {
+                const match = filename.match(pattern);
+                if (match) {
+                    const extractedRef = match[1].toUpperCase();
+                    
+                    // ✅ CRITICAL: Check for EXACT match in available ref codes
+                    if (availableRefCodes.includes(extractedRef)) {
+                        console.log(`✅ Exact match found: "${filename}" -> "${extractedRef}"`);
+                        return extractedRef;
+                    }
+                }
+            }
+            
+            console.log(`⚠️ No exact match found for: "${filename}"`);
+            return null;
+        }
+
+        function renderPhotoEditor() {
+            const editor = document.getElementById('selectedPhotosEditor');
+            const photoEditList = document.getElementById('photoEditList');
+            
+            photoEditList.innerHTML = '';
+            
+            selectedPhotosForUpload.forEach((photo, index) => {
+                const item = document.createElement('div');
+                item.className = 'photo-edit-item';
+                
+                const matchStatus = photo.ref ? 
+                    `<span class="photo-match-status matched">✓ ตรงกับ ${photo.ref}</span>` :
+                    `<span class="photo-match-status unmatched">⚠ ยังไม่ตรงกับ Ref</span>`;
+                
+                item.innerHTML = `
+                    <img src="${photo.preview}" class="photo-edit-thumbnail" alt="Preview">
+                    <div class="photo-edit-info">
+                        <div style="font-size: 0.85em; color: #666;">ชื่อเดิม: ${photo.originalName}</div>
+                        <input type="text" 
+                            class="photo-edit-input" 
+                            value="${photo.suggestedName}"
+                            placeholder="ใส่ชื่อไฟล์ หรือ Ref Code (เช่น D1, W2)"
+                            onchange="updatePhotoName(${index}, this.value)">
+                        ${matchStatus}
+                    </div>
+                    <button class="btn btn-danger btn-small" onclick="removePhotoFromSelection(${index})">
+                        ✖ ลบ
+                    </button>
+                `;
+                
+                photoEditList.appendChild(item);
+            });
+            
+            editor.style.display = 'block';
+        }
+
+        function updatePhotoName(index, newName) {
+            if (selectedPhotosForUpload[index]) {
+                selectedPhotosForUpload[index].suggestedName = newName;
+                const matchedRef = findMatchingRef(newName);
+                selectedPhotosForUpload[index].ref = matchedRef || '';
+                renderPhotoEditor();
+            }
+        }
+
+        function removePhotoFromSelection(index) {
+            if (selectedPhotosForUpload[index].preview) {
+                URL.revokeObjectURL(selectedPhotosForUpload[index].preview);
+            }
+            
+            selectedPhotosForUpload.splice(index, 1);
+            
+            if (selectedPhotosForUpload.length === 0) {
+                cancelPhotoSelection();
+            } else {
+                renderPhotoEditor();
+            }
+        }
+
+        function cancelPhotoSelection() {
+            selectedPhotosForUpload.forEach(photo => {
+                if (photo.preview) {
+                    URL.revokeObjectURL(photo.preview);
+                }
+            });
+            
+            selectedPhotosForUpload = [];
+            document.getElementById('selectedPhotosEditor').style.display = 'none';
+            document.getElementById('surveyPhotoInput').value = '';
+        }
+
+        async function uploadEditedPhotos() {
+            if (selectedPhotosForUpload.length === 0) {
+                showToast('ข้อผิดพลาด', 'ไม่มีรูปที่จะอัปโหลด', 'error');
+                return;
+            }
+            
+            document.getElementById('loadingOverlay').classList.add('show');
+            
+            try {
+                let uploadedCount = 0;
+                let errorCount = 0;
+                const errors = [];
+                
+                for (let photo of selectedPhotosForUpload) {
+                    const formData = new FormData();
+                    
+                    // ✅ Create renamed file
+                    const fileExt = photo.originalName.substring(photo.originalName.lastIndexOf('.'));
+                    const newFilename = photo.suggestedName + fileExt;
+                    const renamedFile = new File([photo.file], newFilename, { type: photo.file.type });
+                    
+                    formData.append('file', renamedFile);
+                    if (photo.ref) {
+                        formData.append('ref', photo.ref);
+                    }
+                    
+                    try {
+                        console.log(`📤 Uploading: ${newFilename}, Size: ${photo.file.size}, Ref: ${photo.ref || 'auto-detect'}`);
+                        
+                        const response = await fetch(`${backendUrl}/api/site-survey/upload-image`, {
+                            method: 'POST',
+                            body: formData
+                        });
+
+                        const result = await response.json();
+                        
+                        // ✅ Better error handling
+                        if (!response.ok) {
+                            console.error(`❌ Upload failed (${response.status}):`, result);
+                            throw new Error(result.error || `Server error: ${response.status}`);
+                        }
+                        
+                        if (result.success) {
+                            uploadedCount++;
+                            console.log(`✅ Upload success:`, result);
+                            
+                            const ref = result.ref || 'UNMATCHED';
+                            if (!uploadedPhotosByRef[ref]) {
+                                uploadedPhotosByRef[ref] = [];
+                            }
+                            uploadedPhotosByRef[ref].push({
+                                filename: newFilename,
+                                path: result.file_path,
+                                uploadedAt: new Date().toISOString()
+                            });
+                        } else {
+                            throw new Error(result.error || 'Unknown error');
+                        }
+                    } catch (error) {
+                        errorCount++;
+                        errors.push(`${newFilename}: ${error.message}`);
+                        console.error(`❌ Upload error for ${newFilename}:`, error);
+                    }
+                }
+                
+                // ✅ Show detailed result
+                if (uploadedCount > 0) {
+                    let message = `อัปโหลดสำเร็จ ${uploadedCount} รูป`;
+                    if (errorCount > 0) {
+                        message += `\n\nล้มเหลว ${errorCount} รูป:\n${errors.slice(0, 3).join('\n')}`;
+                        if (errors.length > 3) {
+                            message += `\n... และอีก ${errors.length - 3} รูป`;
+                        }
+                    }
+                    
+                    showToast('สำเร็จ', message, errorCount > 0 ? 'warning' : 'success');
+                    renderUploadedPhotos();
+                    cancelPhotoSelection();
+                } else {
+                    throw new Error(`ไม่สามารถอัปโหลดรูปใดๆ ได้\n\nข้อผิดพลาด:\n${errors.join('\n')}`);
+                }
+                
+            } catch (error) {
+                console.error('❌ Upload process error:', error);
+                showToast('ข้อผิดพลาด', error.message, 'error');
+            } finally {
+                document.getElementById('loadingOverlay').classList.remove('show');
+            }
+        }
+
+        async function handleImageUpload(file, ref) {
+            const formData = new FormData();
+            formData.append('file', file);
+            if (ref) {
+                formData.append('ref', ref);
+            }
+
+            try {
+                console.log(`📤 Uploading: ${file.name}, Size: ${file.size}, Ref: ${ref || 'auto-detect'}`);
+                
+                const response = await fetch(`${backendUrl}/api/site-survey/upload-image`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+                
+                // ✅ Better error handling
+                if (!response.ok) {
+                    console.error(`❌ Upload failed (${response.status}):`, result);
+                    throw new Error(result.error || `Server error: ${response.status}`);
+                }
+
+                if (result.success) {
+                    console.log(`✅ Upload success:`, result);
+                    
+                    // Show detailed match info
+                    if (result.matched) {
+                        showToast('สำเร็จ', `✅ อัปโหลดสำเร็จ!\n\nไฟล์: ${file.name}\nRef: ${result.ref}\nบันทึกเป็น: ${result.filename}`, 'success');
+                    } else {
+                        showToast('คำเตือน', `⚠️ อัปโหลดสำเร็จ แต่ไม่พบ ref ที่ตรงกัน\n\nไฟล์: ${file.name}\nบันทึกเป็น: ${result.filename}\n\nสามารถเลือก ref ด้วยตนเองได้`, 'warning');
+                    }
+                    
+                    return result;
+                } else {
+                    throw new Error(result.error || 'Unknown error');
+                }
+                
+            } catch (error) {
+                console.error(`❌ Upload error for ${file.name}:`, error);
+                showToast('ข้อผิดพลาด', `❌ ไม่สามารถอัปโหลดไฟล์ ${file.name}\n\nข้อผิดพลาด: ${error.message}`, 'error');
+                throw error;
+            }
+        }
+
+        function renderUploadedPhotos() {
+            const container = document.getElementById('uploadedPhotosContainer');
+            
+            if (Object.keys(uploadedPhotosByRef).length === 0) {
+                container.innerHTML = '';
+                container.style.background = 'rgb(255, 255, 255)'; // ⬅ white when empty
+                return;
+            }
+            
+            let html = '';
+            
+            for (let ref of Object.keys(uploadedPhotosByRef).sort()) {
+                const photos = uploadedPhotosByRef[ref];
+                const refTitle = ref === 'UNMATCHED' ? 'ไม่ระบุ Ref' : ref;
+                
+                html += `
+                    <div class="ref-photo-group">
+                        <div class="ref-photo-header">
+                            <div class="ref-photo-title">${refTitle}</div>
+                            <div class="ref-photo-count">อัพโหลดสำเร็จ</div>
+                        </div>
+                        <div class="ref-photos-grid">
+                `;
+                
+                photos.forEach((photo, index) => {
+                    html += `
+                        <div class="ref-photo-item">
+                            <img src="/${photo.path}" 
+                                alt="${photo.filename}"
+                                onclick="showImagePreview('/${photo.path}')"
+                                title="คลิกเพื่อดูขนาดเต็ม">
+                            <button class="ref-photo-remove" 
+                                    onclick="removeUploadedPhoto('${ref}', ${index})" 
+                                    title="ลบรูป">×</button>
+                            <div class="ref-photo-name">${photo.filename}</div>
+                        </div>
+                    `;
+                });
+                
+                html += `</div></div>`;
+            }
+            
+            container.innerHTML = html;
+            container.style.background = 'rgb(248, 249, 250)'; // ⬅ gray when content exists
+        }
+
+        function removeUploadedPhoto(ref, photoIndex) {
+            if (!confirm('ต้องการลบรูปนี้ใช่หรือไม่?')) {
+                return;
+            }
+            
+            if (uploadedPhotosByRef[ref] && uploadedPhotosByRef[ref][photoIndex]) {
+                uploadedPhotosByRef[ref].splice(photoIndex, 1);
+                
+                if (uploadedPhotosByRef[ref].length === 0) {
+                    delete uploadedPhotosByRef[ref];
+                }
+                
+                renderUploadedPhotos();
+                showToast('สำเร็จ', 'ลบรูปแล้ว', 'success');
+            }
+        }
+
+        function showImagePreview(imagePath) {
+            const modal = document.getElementById('imagePreviewModal');
+            const previewImg = document.getElementById('previewImage');
+            
+            if (!modal || !previewImg) return;
+            
+            previewImg.src = imagePath;
+            modal.classList.add('show');
+        }
+        
+        function closeImagePreview() {
+            const modal = document.getElementById('imagePreviewModal');
+            if (modal) {
+                modal.classList.remove('show');
+            }
+        }
+        
+        async function generateSiteSurvey() {
+            if (!currentQuotationJobId) {
+                showToast('คำเตือน', 'ต้องมีข้อมูล Quotation ก่อน', 'warning');
+                return;
+            }
+            
+            document.getElementById('loadingOverlay').classList.add('show');
+            
+            try {
+                const requestData = {
+                    quotation_job_id: currentQuotationJobId
+                };
+                
+                const response = await fetch(`${backendUrl}/api/site-survey/generate`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestData)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    currentSurveyJobId = data.survey_job_id;
+                    showToast('สำเร็จ', `สร้าง Site Survey สำเร็จ: ${data.message}`, 'success');
+                    refreshJobStatus();
+                } else {
+                    throw new Error(data.message);
+                }
+                
+            } catch (error) {
+                showToast('ข้อผิดพลาด', error.message, 'error');
+            } finally {
+                document.getElementById('loadingOverlay').classList.remove('show');
+            }
+        }
+        
+        async function downloadSiteSurvey(surveyJobId, fileType) {
+            try {
+                const response = await fetch(`${backendUrl}/api/site-survey/download/${surveyJobId}/${fileType}`);
+                
+                if (!response.ok) {
+                    // ✅ ถ้า PDF ไม่มี ลอง DOCX แทน
+                    if (fileType === 'pdf') {
+                        console.log('PDF not available, trying DOCX...');
+                        return downloadSiteSurvey(surveyJobId, 'docx');
+                    }
+                    throw new Error('ไม่สามารถดาวน์โหลดได้');
+                }
+                
+                const blob = await response.blob();
+                
+                // ✅ ตรวจสอบว่า blob มีข้อมูลจริง
+                if (blob.size < 1000) {
+                    console.warn('File size too small, might be corrupted');
+                    if (fileType === 'pdf') {
+                        console.log('Trying DOCX instead...');
+                        return downloadSiteSurvey(surveyJobId, 'docx');
+                    }
+                }
+                
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `site_survey_${surveyJobId}.${fileType}`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+                
+                showToast('สำเร็จ', `ดาวน์โหลดไฟล์ ${fileType.toUpperCase()} แล้ว`, 'success');
+                
+            } catch (error) {
+                console.error('Download error:', error);
+                
+                // ✅ ถ้า PDF ล้มเหลว แนะนำให้ลอง DOCX
+                if (fileType === 'pdf') {
+                    showToast(
+                        'PDF ไม่พร้อมใช้งาน', 
+                        'กำลังดาวน์โหลด DOCX แทน...', 
+                        'warning'
+                    );
+                    setTimeout(() => downloadSiteSurvey(surveyJobId, 'docx'), 1000);
+                } else {
+                    showToast('ข้อผิดพลาด', error.message, 'error');
+                }
+            }
+        }
+        
+        async function refreshJobStatus() {
+            try {
+                const response = await fetch(`${backendUrl}/api/jobs/list`);
+                const data = await response.json();
+                
+                updateJobStatusDisplay(data);
+                
+            } catch (error) {
+                console.warn('Failed to refresh job status:', error);
+            }
+        }
+        
+        function updateJobStatusDisplay(jobsData) {
+            const quotationContainer = document.getElementById('quotationJobStatusContainer');
+            const siteSurveyContainer = document.getElementById('siteSurveyJobStatusContainer');
+
+            let quotationHtml = '';
+            let surveyHtml = '';
+            
+            let latestQuotationJob = null;
+            let latestSurveyJob = null;
+            
+            const quotationJobs = Object.entries(jobsData.quotation_jobs || {});
+            if (quotationJobs.length > 0) {
+                latestQuotationJob = quotationJobs.find(([jobId]) => jobId === currentQuotationJobId) || quotationJobs[quotationJobs.length - 1];
+            }
+            
+            const surveyJobs = Object.entries(jobsData.site_survey_jobs || {});
+            if (surveyJobs.length > 0) {
+                latestSurveyJob = surveyJobs.find(([jobId]) => jobId === currentSurveyJobId) || surveyJobs[surveyJobs.length - 1];
+            }
+            
+            if (latestQuotationJob) {
+                const [jobId, job] = latestQuotationJob;
+                quotationHtml += createJobCard(jobId, 'Quotation', job.status, 'ไฟล์ข้อมูล', job.original_filename || '');
+            }
+
+            if (latestSurveyJob) {
+                const [jobId, job] = latestSurveyJob;
+                
+                // ✅ Only show the Site Survey card when status = 'completed'
+                if (job.status === 'completed') {
+                    surveyHtml += createJobCard(jobId, 'Site Survey', job.status, 'รายงาน', '', jobId);
+                } else {
+                    // Optional: you can show a subtle “กำลังสร้าง...” message, or nothing
+                    surveyHtml += `
+                        <div style="text-align:center; padding:20px; color:#777;">
+                            ⏳ กำลังสร้าง Site Survey...
+                        </div>
+                    `;
+                }
+            }
+            
+           quotationContainer.innerHTML = quotationHtml || ``;
+
+            siteSurveyContainer.innerHTML = surveyHtml || `
+            `;
+        }
+        
+        function createJobCard(jobId, type, status, description, filename, surveyJobId = null) {
+            const statusClass =
+                status === 'completed' ? 'completed' :
+                status === 'processing' ? 'processing' : 'error';
+
+            let actions = '';
+            if (type === 'Site Survey' && status === 'completed') {
+                actions = `
+                    <div class="job-actions" style="margin-top:10px; display:flex; gap:10px; flex-wrap:wrap;">
+                        <button class="btn" style="width: 200px;" onclick="downloadSiteSurvey('${surveyJobId}', 'docx')">.docx</button>
+                        <button class="btn" style="width: 200px;" onclick="downloadSiteSurvey('${surveyJobId}', 'pdf')">.pdf</button>
+                    </div>
+                `;
+            }
+
+            // ✅ Remove the “Quotation: ไฟล์ข้อมูล” header text
+            // Only show “ไฟล์: filename” for Quotation jobs
+            const showFileOnly = type === 'Quotation';
+
+            return `
+                <div class="job-card ${type === 'Site Survey' ? 'site-survey-card' : ''}">
+                    ${
+                        type === 'Site Survey'
+                            ? `
+                                <div class="site-survey-center">
+                                    <div class="job-title">Download Site Survey</div>
+                                    ${actions}
+                                </div>
+                            `
+                            : `
+                                <div class="job-header" style="display: none;">
+                                    <div class="job-title">${type}: ${description}</div>
+                                </div>
+                                ${filename ? `<div class="job-info">ไฟล์: ${filename}</div>` : ''}
+                            `
+                    }
+                </div>
+            `;
+        }
+
+        
+        function getStatusText(status) {
+            switch (status) {
+                case 'completed': return 'เสร็จสิ้น';
+                case 'processing': return 'กำลังประมวลผล';
+                case 'error': return 'ข้อผิดพลาด';
+                default: return 'ไม่ทราบสถานะ';
+            }
+        }
+        
+        async function cleanupJob(jobId) {
+            if (!confirm('คุณต้องการลบงานนี้ใช่หรือไม่?')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${backendUrl}/api/cleanup/${jobId}`, {
+                    method: 'DELETE'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showToast('สำเร็จ', 'ลบงานแล้ว', 'success');
+                    refreshJobStatus();
+                    
+                    if (jobId === currentQuotationJobId) currentQuotationJobId = null;
+                    if (jobId === currentSurveyJobId) currentSurveyJobId = null;
+                    
+                    updateGenerateSurveyButton();
+                } else {
+                    throw new Error(data.message);
+                }
+                
+            } catch (error) {
+                showToast('ข้อผิดพลาด', error.message, 'error');
+            }
+        }
+        
+        function updateGenerateSurveyButton() {
+            const generateSurveyBtn = document.getElementById('generateSurveyBtn');
+            if (generateSurveyBtn) {
+                generateSurveyBtn.disabled = !currentQuotationJobId;
+            }
+        }
+        
+        function showToast(title, message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const toastHeader = document.getElementById('toastHeader');
+            const toastBody = document.getElementById('toastBody');
+            
+            let icon = '✅';
+            toast.className = 'toast';
+            
+            switch (type) {
+                case 'error':
+                    icon = '❌';
+                    toast.classList.add('error');
+                    break;
+                case 'warning':
+                    icon = '⚠️';
+                    toast.classList.add('warning');
+                    break;
+                case 'success':
+                default:
+                    icon = '✅';
+                    break;
+            }
+            
+            toastHeader.innerHTML = `${icon} ${title}`;
+            toastBody.textContent = message;
+            
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 4000);
+        }
+        
+        function updateLastUpdate() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('th-TH');
+            document.getElementById('lastUpdate').textContent = `อัพเดตล่าสุด: ${timeString}`;
+        }
+        
+        setInterval(checkBackendHealth, 30000);
+
+        document.querySelectorAll('.nav-links a').forEach(link => {
+            link.addEventListener('click', () => {
+                document.getElementById('navLinks').classList.remove('show');
+                document.querySelector('.mobile-menu-toggle').classList.remove('active');
+            });
+        });
+
+        document.addEventListener('DOMContentLoaded', async function() {
+            // เรียกฟังก์ชันตรวจสอบ Admin
+            await checkAndShowAdminMenu();
+        });
+
+        // ✅ ฟังก์ชันตรวจสอบ Admin (เก็บไว้ที่บรรทัด 1027)
+        async function checkAndShowAdminMenu() {
+            try {
+                const username = sessionStorage.getItem('username');
+                
+                if (!username) {
+                    return;
+                }
+                
+                const response = await fetch('/api/users/check-admin', {
+                    headers: {
+                        'X-Username': username
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success && data.is_admin) {
+                    const userManagementLink = document.getElementById('userManagementLink');
+                    if (userManagementLink) {
+                        userManagementLink.style.display = 'block';
+                    }
+                }
+                
+            } catch (error) {
+                console.error('Error checking admin status:', error);
+            }
+        }
+        
+    </script>
+</body>
+</html>

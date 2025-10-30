@@ -1,0 +1,1720 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Format Tostem</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body{
+            font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height:1.6;
+            background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
+            min-height:100vh;
+            padding-top:80px;
+        }
+
+        header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            padding: 1rem 0;
+            transition: all 0.3s ease;
+        }
+        
+        .container1 {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: white;
+            text-decoration: none;
+        }
+        
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 1rem;
+            margin: 0;
+            padding: 0;
+            flex-wrap: wrap;
+        }
+        
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            transition: color 0.3s ease;
+            font-weight: 500;
+            padding: 0.5rem;      
+            border-radius: 5px;   
+            font-size: 1.1rem;
+        }
+        
+        .nav-links a:hover {
+            color: #fff;
+        }
+        .nav-links a.active {
+            color: #764ba2;
+        }
+        
+        .nav-links li {
+            position: relative;
+        }
+
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: rgba(255, 255, 255, 1);
+            backdrop-filter: blur(5px);
+            list-style: none;
+            padding: 10px 0;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+            min-width: 220px;
+            z-index: 999;
+        }
+
+        /* Show submenu on hover */
+        .dropdown:hover .dropdown-menu {
+            display: block;
+        }
+
+        /* Menu link styles inside dropdown */
+        .dropdown-menu li a {
+            display: block;
+            padding: 10px 18px;
+            color: #333;
+            font-size: 1rem;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .dropdown-menu li a:hover {
+            background: #e9e9e9;
+            color: #333;
+        }
+
+        /* Dropdown arrow */
+        .dropdown > a::after {
+            content: " ▾";
+            font-size: 0.7rem;
+        }
+
+        /* --- Mobile adjustments --- */
+        @media (max-width: 768px) {
+        .dropdown-menu {
+            position: static;
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: none;
+            padding: 0.5rem 1rem;
+            border-radius: 0;
+        }
+
+        .dropdown-menu li a {
+            color: white;
+        }
+
+        .dropdown-menu li a:hover {
+            background: rgba(255, 255, 255, 0.15);
+            color: #ffd700;
+        }
+        }
+
+        /* Mobile Menu Toggle */
+        .mobile-menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            cursor: pointer;
+            flex-direction: column;
+            justify-content: space-around;
+            width: 30px;
+            height: 25px;
+            padding: 0;
+        }
+
+        .hamburger-line {
+            width: 100%;
+            height: 3px;
+            background-color: white;
+            border-radius: 2px;
+            transition: all 0.3s ease;
+        }
+
+        .mobile-menu-toggle.active .hamburger-line:nth-child(1) {
+            transform: rotate(45deg) translate(6px, 6px);
+        }
+
+        .mobile-menu-toggle.active .hamburger-line:nth-child(2) {
+            opacity: 0;
+        }
+
+        .mobile-menu-toggle.active .hamburger-line:nth-child(3) {
+            transform: rotate(-45deg) translate(6px, -6px);
+        }
+        
+        .header{
+            text-align:center;
+            color:white;
+            margin-bottom:30px;
+            margin-top:20px;
+        }
+        .header h1{
+            font-size:2.5rem;
+            margin-bottom:10px;
+            text-shadow:2px 2px 4px rgba(0,0,0,.3);
+            font-weight:700;
+        }
+        .container{
+            max-width:1200px;
+            margin:0 auto 50px;
+            background:white;
+            padding:30px;
+            border-radius:15px;
+            box-shadow:0 10px 30px rgba(0,0,0,.2);
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin: 15px 0 30px;
+            font-size: 1.1em;
+            font-weight: 400;
+            line-height: 1.6;
+        }
+
+        .upload-section {
+            padding: 0px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .target-file-row {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 30px;
+        }
+
+        .upload-box {
+            background: white;
+            border-radius: 12px;
+            transition: transform 0.3s ease;
+        }
+
+        .upload-box:hover {
+            transform: translateY(-5px);
+        }
+
+        .note-box {
+            background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
+            border: none;
+            border-left: 5px solid #2196F3;
+            padding: 20px 25px;
+            margin: 20px 0;
+            border-radius: 12px;
+            box-shadow: 0 3px 12px rgba(33, 150, 243, 0.15);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .note-box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #2196F3, #9c27b0);
+        }
+
+        .note-box:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(33, 150, 243, 0.25);
+        }
+
+        .note-content {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .note-icon {
+            background: linear-gradient(135deg, #2196F3, #1976D2);
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            flex-shrink: 0;
+            box-shadow: 0 3px 10px rgba(33, 150, 243, 0.3);
+        }
+
+        .note-text {
+            flex: 1;
+        }
+
+        .note-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #1565C0;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .note-description {
+            font-size: 0.95rem;
+            color: #666;
+            line-height: 1.5;
+        }
+
+        .step-indicator {
+            background: #FFF;
+            color: #2196F3;
+            font-weight: bold;
+            font-size: 0.9rem;
+            padding: 4px 12px;
+            border-radius: 20px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+
+        .note-box.step-2 {
+            background: linear-gradient(135deg, #fff3e0 0%, #f3e5f5 100%);
+            border-left-color: #FF9800;
+        }
+
+        .note-box.step-2::before {
+            background: linear-gradient(90deg, #FF9800, #f57c00);
+        }
+
+        .note-box.step-2 .note-icon {
+            background: linear-gradient(135deg, #FF9800, #f57c00);
+            box-shadow: 0 3px 10px rgba(255, 152, 0, 0.3);
+        }
+
+        .note-box.step-2:hover {
+            box-shadow: 0 5px 20px rgba(255, 152, 0, 0.25);
+        }
+
+        .note-box.step-2 .note-title {
+            color: #e65100;
+        }
+
+        .note-box.step-2 .step-indicator {
+            color: #FF9800;
+        }
+
+        .upload-box h3 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .icon {
+            width: 24px;
+            height: 24px;
+            margin-right: 10px;
+        }
+
+        .file-upload-area {
+            background: #f9fafb;
+            border: 2px dashed #007bff;
+            border-radius: 12px;
+            padding: 6em 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .file-upload-area:hover {
+            background: #e3f2fd;
+            border-color: #0056b3;
+            transform: translateY(-2px);
+        }
+
+        .file-upload-area.dragover {
+            background: #e3f2fd;
+            border-color: #1976d2;
+            transform: scale(1.02);
+        }
+
+        .upload-icon {
+            width: 50px;
+            height: 50px;
+            opacity: 0.7;
+            margin-bottom: 10px;
+        }
+
+        .file-upload-area p {
+            font-size: 1rem;
+            color: #333;
+        }
+
+        .file-upload-area small {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .upload-icon {
+            width: 48px;
+            height: 48px;
+            margin: 0 auto 15px;
+            opacity: 0.5;
+        }
+
+        .file-info {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 8px;
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            font-size: 14px;
+        }
+
+        .compare-section {
+            padding: 30px 0 0;
+            text-align: center;
+            background: white;
+        }
+
+        .compare-btn {
+            background: linear-gradient(45deg, #007bff, #0056b3);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.1rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+            font-weight: 600;
+        }
+
+        .compare-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .compare-btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .results-section {
+            padding: 40px 0 0;
+        }
+
+        .results-header {
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .results-header h3 {
+            color: #333;
+            font-size: 1.5rem;
+        }
+
+        .capture-btn {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 0.9rem;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 3px 10px rgba(40, 167, 69, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .capture-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
+        }
+
+        .capture-btn:active {
+            transform: translateY(0);
+        }
+
+        .capture-btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        }
+
+        .results-table th {
+            background: #83a4ff;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .results-table td {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            vertical-align: top;
+        }
+
+        .results-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .diff-type {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .diff-added { background: #d7e5f8; color: #1c3c72; }
+        .diff-removed { background: #f8d7da; color: #721c24; }
+        .diff-modified { background: #fff3cd; color: #856404; }
+        .diff-correct { background: #d4edda; color: #155724; }
+
+        .content-preview {
+            max-width: 300px;
+            word-wrap: break-word;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        .text-input-area {
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            padding: 15px;
+            min-height: 200px;
+            background: #f9f9f9;
+            transition: all 0.3s ease;
+        }
+
+        .text-input-area:focus-within {
+            border-color: #4facfe;
+            background: #f0f8ff;
+        }
+
+        .text-input-area textarea {
+            width: 100%;
+            height: 200px;
+            border: none;
+            background: transparent;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            resize: vertical;
+            outline: none;
+            line-height: 1.5;
+        }
+
+        .text-input-area textarea::placeholder {
+            color: #999;
+            font-style: italic;
+        }
+
+        .char-counter {
+            text-align: right;
+            font-size: 0.8rem;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #4facfe;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .no-differences {
+            text-align: center;
+            padding: 40px;
+            background: #d4edda;
+            color: #155724;
+            border-radius: 10px;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            border: 1px solid #f5c6cb;
+        }
+
+        /* Media Queries */
+        @media(max-width: 768px){
+            body {
+                padding-top: 140px;
+            }
+            
+            nav {
+                flex-direction: column;
+                align-items: flex-start;
+                position: relative;
+            }
+            
+            .mobile-menu-toggle {
+                display: flex;
+                position: absolute;
+                top: 50%;
+                right: 0;
+                transform: translateY(-50%);
+            }
+            
+            .nav-links {
+                width: 100%;
+                flex-direction: column;
+                gap: 0.5rem;
+                margin-top: 1rem;
+                background: rgba(255, 255, 255, 0.1);
+                padding: 1rem;
+                border-radius: 10px;
+                display: none;
+            }
+            
+            .nav-links.show {
+                display: flex;
+            }
+            
+            .nav-links a {
+                padding: 0.75rem;
+                text-align: center;
+                width: 100%;
+                border-radius: 8px;
+                font-size: 1rem;
+            }
+            
+            .target-file-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .results-table {
+                font-size: 0.9rem;
+            }
+            
+            .results-table th,
+            .results-table td {
+                padding: 10px;
+            }
+
+            .note-content {
+                flex-direction: column;
+                text-align: center;
+                gap: 10px;
+            }
+
+            .note-icon {
+                width: 40px;
+                height: 40px;
+                font-size: 1.3rem;
+            }
+
+            .results-header {
+                flex-direction: column;
+                gap: 15px;
+                align-items: stretch;
+            }
+
+            .capture-btn {
+                align-self: center;
+            }
+        }
+
+        @media(max-width: 480px){
+            body {
+                padding-top: 160px;
+            }
+            
+            .logo {
+                font-size: 1.2rem;
+            }
+            
+            .header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .container {
+                margin: 5px;
+                padding: 15px;
+            }
+            
+            .nav-links a {
+                font-size: 0.9rem;
+                padding: 0.6rem;
+            }
+        }
+
+        /* TYK Upload Style*/
+        #targetUpload {
+            border-color: #28a745;
+        }
+
+        #targetUpload:hover {
+            background: #e8f5e8;
+        }
+        
+        h2 {
+            margin-bottom: 10px;
+        }
+        /* === Vertical divider with "or" text === */
+        .source-files-row {
+            display: grid;
+            grid-template-columns: 1fr 40px 1fr; /* left | middle | right */
+            align-items: stretch;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .vertical-divider {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .vertical-divider::before {
+            content: "";
+            position: absolute;
+            width: 1px;
+            height: 100%;
+            background: #ccc;
+        }
+
+        .vertical-divider span {
+            position: relative;
+            background: #fff;
+            color: #ccc;
+            font-weight: bold;
+            padding: 4px 10px;
+            border-radius: 6px;
+            z-index: 1;
+            font-size: 1rem;
+            font-weight: 400;
+        }
+
+        .results-divider {
+            width: 100%;
+            margin-bottom: 30px;
+            height: 2px;
+            background: #8a8a8a;
+            border: none;
+        }
+
+
+        /* === Processing Summary Boxes === */
+        .summary-container {
+            padding: 0;
+        }
+
+        .summary-container h4 {
+            margin: 0 0 15px 0;
+            color: #1976D2;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .summary-grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;   /* nicely centers on wide screens */
+            gap: 25px; 
+        }
+
+        .summary-box {
+            flex: 1 1 250px;           /* grow/shrink but base width 250px */
+            max-width: 250px;          /* don’t grow larger than 250px */
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            font-weight: 600;
+            color: #2c3e50;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        } 
+
+        .summary-box .label {
+            font-size: 1em;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .summary-box .value {
+            font-size: 1.7rem;
+            font-weight: 600;
+            margin: 10px 0 5px;
+            color: #007bff;
+        }
+
+        .summary-box .subtext {
+            font-size: 0.9em;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        /* Red version for “ไม่ตรงกัน” box */
+        .summary-box.error {
+            color: #D32F2F;
+            border-color: #F44336;
+            background: #ffeeee;
+            box-shadow: 0 2px 6px rgba(244, 67, 54, 0.15);
+         }
+
+        .summary-box.error .label,
+        .summary-box.error .value,
+        .summary-box.error .subtext {
+            color: #D32F2F;
+         }
+
+        .summary-box.success {
+            color: #2e7d32;
+            border-color: #4caf50;
+            background: #e8f5e9;
+            box-shadow: 0 2px 6px rgba(76, 175, 80, 0.15);
+        }
+
+        .summary-box.success .label,
+        .summary-box.success .value,
+        .summary-box.success .subtext {
+            color: #2e7d32;
+         }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <nav class="container1">
+            <a href="#" class="logo">TOSTEM Work Process</a>
+            <button class="mobile-menu-toggle" onclick="toggleMobileMenu()">
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
+            </button>
+
+            <ul class="nav-links" id="navLinks">
+            <!-- Work Process -->
+            <li class="dropdown">
+                <a href="#" class="corner-btn">Work Process</a>
+                <ul class="dropdown-menu">
+                <li><a href="/Quotation">Quotation comparison</a></li>
+                <li><a href="/text-glass2">Glass extract</a></li>
+                <li><a href="/glass-check" class="active">Glass check</a></li>
+                <li><a href="/Generate">Generate site survey</a></li>
+                <li><a href="/sitewithele">ELE check</a></li>
+                </ul>
+            </li>
+
+            <!-- Price Update -->
+            <li class="dropdown">
+                <a href="#" class="corner-btn">Price Update</a>
+                <ul class="dropdown-menu">
+                <li><a href="/matrix">Matrix price (Panel)</a></li>
+                <li><a href="/joint">Matrix price (Joint)</a></li>
+                </ul>
+            </li>
+
+            <li id="userManagementLink" style="display: none;">
+                <a href="/user-management" class="corner-btn">User</a>
+            </li>
+            </ul>
+
+        </nav>
+    </header>
+
+    <div class="header"><h1>Glass Check</h1></div>
+
+    <div class="container">
+        <p class="subtitle">โปรแกรมตรวจสอบใบเสนอราคาของบริษัทกระจก TYK ว่าถูกต้องตรงตามข้อมูลกระจกที่เราส่งไปหรือไม่ โดยเปรียบเทียบกับ ELE หรือ text</p>
+
+        <div class="upload-section">
+            <h2>ELE Data</h2>
+            <div class="source-files-row">
+                
+                <!-- PDF Source File -->
+                <div class="upload-box">
+                    <div class="file-upload-area" id="pdfSourceUpload">
+                        <strong style="font-size: 1.7em;">ELE</strong><br>
+                        <small>คลิกหรือลากไฟล์มาวาง (.pdf)</small>
+                        <input type="file" id="pdfSourceFile" style="display: none;" accept=".pdf">
+                    </div>
+                    <div id="pdfSourceFileInfo" class="file-info" style="display: none;"></div>
+                </div>
+
+                <div class="vertical-divider">
+                    <span>หรือ</span>
+                </div>
+
+                <!-- TXT Source Text Input -->
+                <div class="upload-box">
+
+                    <div class="text-input-area">
+                        <textarea 
+                            id="txtContent" 
+                            placeholder="พิมพ์หรือวางข้อความที่ต้องการเปรียบเทียบที่นี่...
+
+ตัวอย่าง:
+D1.2 1268 * 488 = 2
+Total Qty = 2"
+                        ></textarea>
+                        <div class="char-counter">
+                            <span id="charCount">0</span> ตัวอักษร
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            
+            <h2>TYK Data</h2>
+            <!-- Target File Row -->
+            <div class="target-file-row">
+                <div class="upload-box">
+                    <div class="file-upload-area" id="targetUpload">
+                        <strong style="font-size: 1.7em;">TYK</strong><br>
+                        <small>คลิกหรือลากไฟล์มาวาง (.pdf)</small>
+                        <input type="file" id="targetFile" style="display: none;" accept=".pdf">
+                    </div>
+                    <div id="targetFileInfo" class="file-info" style="display: none;"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="compare-section">
+            <button class="compare-btn" id="compareBtn" disabled>
+                เปรียบเทียบไฟล์
+            </button>
+            <div id="loadingIndicator" style="display: none; margin-top: 20px;">
+                <div class="loading"></div>
+                กำลังประมวลผล...
+            </div>
+            <div id="errorMessage" class="error-message" style="display: none;"></div>
+        </div>
+
+        <div class="results-section" id="resultsSection" style="display: none;">
+            <hr class="results-divider">
+            <div class="results-header">
+                <h3 style="text-align: center; font-size: 1.4em; font-weight: 600;">ผลการเปรียบเทียบ</h3>
+            </div>
+            <div id="resultsContent"></div>
+        </div>
+    </div>
+
+    <script>
+        let pdfSourceFile = null;
+        let txtContent = '';
+        let targetFile = null;
+        let activeSourceType = null;
+
+        // Global variables for project information (fixed)
+        let currentProjectName = '-';
+        let currentQuotationNumber = '-';
+
+        // Initialize event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            setupFileUploads();
+            setupTextInput();
+            setupCompareButton();
+        });
+
+        function toggleMobileMenu() {
+            const navLinks = document.getElementById('navLinks');
+            const toggleBtn = document.querySelector('.mobile-menu-toggle');
+            
+            navLinks.classList.toggle('show');
+            toggleBtn.classList.toggle('active');
+        }
+
+        // ปิดเมนูเมื่อคลิกลิงก์
+        document.querySelectorAll('.nav-links a').forEach(link => {
+            link.addEventListener('click', () => {
+                document.getElementById('navLinks').classList.remove('show');
+                document.querySelector('.mobile-menu-toggle').classList.remove('active');
+            });
+        });
+
+        // ปิดเมนูเมื่อคลิกนอกพื้นที่
+        document.addEventListener('click', (e) => {
+            const nav = document.querySelector('nav');
+            const navLinks = document.getElementById('navLinks');
+            const toggleBtn = document.querySelector('.mobile-menu-toggle');
+            
+            if (!nav.contains(e.target)) {
+                navLinks.classList.remove('show');
+                toggleBtn.classList.remove('active');
+            }
+        });
+
+        function setupFileUploads() {
+            // PDF Source Upload
+            const pdfSourceUpload = document.getElementById('pdfSourceUpload');
+            const pdfSourceFileInput = document.getElementById('pdfSourceFile');
+            
+            pdfSourceUpload.addEventListener('click', () => pdfSourceFileInput.click());
+            pdfSourceUpload.addEventListener('dragover', handleDragOver);
+            pdfSourceUpload.addEventListener('drop', (e) => handleDrop(e, 'pdfSource'));
+            pdfSourceFileInput.addEventListener('change', (e) => handleFileSelect(e, 'pdfSource'));
+
+            // Target Upload
+            const targetUpload = document.getElementById('targetUpload');
+            const targetFileInput = document.getElementById('targetFile');
+            
+            targetUpload.addEventListener('click', () => targetFileInput.click());
+            targetUpload.addEventListener('dragover', handleDragOver);
+            targetUpload.addEventListener('drop', (e) => handleDrop(e, 'target'));
+            targetFileInput.addEventListener('change', (e) => handleFileSelect(e, 'target'));
+        }
+
+        function setupTextInput() {
+            const txtTextarea = document.getElementById('txtContent');
+            const charCount = document.getElementById('charCount');
+            
+            txtTextarea.addEventListener('input', function() {
+                const content = this.value.trim();
+                txtContent = content;
+                charCount.textContent = content.length;
+                
+                // Clear PDF source if text is entered
+                if (content && pdfSourceFile) {
+                    resetPdfSource();
+                }
+                
+                // Set active source type
+                if (content) {
+                    activeSourceType = 'txt';
+                } else if (!pdfSourceFile) {
+                    activeSourceType = null;
+                }
+                
+                updateCompareButton();
+            });
+        }
+
+        function setupCompareButton() {
+            document.getElementById('compareBtn').addEventListener('click', compareFiles);
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.currentTarget.classList.add('dragover');
+        }
+
+        function handleDrop(e, type) {
+            e.preventDefault();
+            e.currentTarget.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFileSelect({ target: { files: files } }, type);
+            }
+        }
+
+        function handleFileSelect(e, type) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            if (type === 'pdfSource') {
+                if (!file.name.toLowerCase().endsWith('.pdf')) {
+                    showError('กรุณาเลือกไฟล์ PDF สำหรับไฟล์ต้นฉบับ PDF');
+                    return;
+                }
+                // Clear text content if PDF is selected
+                if (txtContent) {
+                    resetTxtContent();
+                }
+                pdfSourceFile = file;
+                activeSourceType = 'pdf';
+                document.getElementById('pdfSourceFileInfo').textContent = `ไฟล์: ${file.name}`;
+                document.getElementById('pdfSourceFileInfo').style.display = 'block';
+                
+            } else if (type === 'target') {
+                if (!file.name.toLowerCase().endsWith('.pdf')) {
+                    showError('กรุณาเลือกไฟล์ PDF สำหรับไฟล์เปรียบเทียบ');
+                    return;
+                }
+                targetFile = file;
+                document.getElementById('targetFileInfo').textContent = `ไฟล์: ${file.name}`;
+                document.getElementById('targetFileInfo').style.display = 'block';
+            }
+
+            updateCompareButton();
+            hideError();
+        }
+
+        function resetPdfSource() {
+            pdfSourceFile = null;
+            document.getElementById('pdfSourceFileInfo').style.display = 'none';
+            document.getElementById('pdfSourceFile').value = '';
+            if (activeSourceType === 'pdf') {
+                activeSourceType = txtContent ? 'txt' : null;
+            }
+        }
+
+        function resetTxtContent() {
+            txtContent = '';
+            document.getElementById('txtContent').value = '';
+            document.getElementById('charCount').textContent = '0';
+            if (activeSourceType === 'txt') {
+                activeSourceType = pdfSourceFile ? 'pdf' : null;
+            }
+        }
+
+        function updateCompareButton() {
+            const compareBtn = document.getElementById('compareBtn');
+            const hasSourceContent = pdfSourceFile || txtContent;
+            compareBtn.disabled = !hasSourceContent || !targetFile;
+        }
+
+        async function compareFiles() {
+            const loadingIndicator = document.getElementById('loadingIndicator');
+            const compareBtn = document.getElementById('compareBtn');
+            
+            loadingIndicator.style.display = 'block';
+            compareBtn.disabled = true;
+            hideError();
+
+            try {
+                const formData = new FormData();
+                
+                if (activeSourceType === 'pdf' && pdfSourceFile) {
+                    // PDF vs PDF mode
+                    formData.append('pdf_source_file', pdfSourceFile);
+                    formData.append('pdf_file', targetFile);
+                    formData.append('start_page', '1');
+                } else if (activeSourceType === 'txt' && txtContent) {
+                    // Text vs PDF mode
+                    formData.append('text_block', txtContent);
+                    formData.append('pdf_file', targetFile);
+                    formData.append('start_page', '1');
+                } else {
+                    throw new Error('กรุณาใส่ข้อความหรือเลือกไฟล์ต้นฉบับ');
+                }
+
+                const response = await fetch('/compare', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'เกิดข้อผิดพลาดในการประมวลผล');
+                }
+
+                const result = await response.json();
+                displayResults(result);
+
+            } catch (error) {
+                showError('เกิดข้อผิดพลาด: ' + error.message);
+            } finally {
+                loadingIndicator.style.display = 'none';
+                compareBtn.disabled = false;
+            }
+        }
+
+        function displayResults(result) {
+            console.log('Result received:', result);
+            
+            const resultsSection = document.getElementById('resultsSection');
+            const resultsContent = document.getElementById('resultsContent');
+
+            // Update global project info variables (FIXED)
+            if (result.project_info) {
+                currentProjectName = result.project_info.project_name || result.project_info.client_name || '-';
+                currentQuotationNumber = result.project_info.quotation_number || '-';
+                
+                // Show project info status
+                if (result.project_info.project_name || result.project_info.quotation_number) {
+                    showTemporaryMessage('✅ อ่านข้อมูลโครงการจาก PDF สำเร็จ', 'success');
+                }
+            }
+
+            // Show parsing info if available
+            let infoHTML = '';
+            if (result.parsing_info) {
+                const matchRate = result.parsing_info.matched_items > 0 ? 
+                    Math.round((result.parsing_info.matched_items / Math.max(result.parsing_info.source_items_detected, result.parsing_info.target_items_detected)) * 100) : 0;
+                
+                // คำนวดผลต่าง Total Qty
+                const sourceTotalQty = result.parsing_info.source_total_qty;
+                const targetTotalQty = result.parsing_info.target_total_qty;
+                const qtyDiff = targetTotalQty - sourceTotalQty;
+                
+                let qtyDisplayText = '';
+                let qtyBgColor = '';
+                let qtyTextColor = '';
+                let qtyIcon = '';
+                
+                if (qtyDiff === 0) {
+                    qtyDisplayText = `ต้นฉบับและเปรียบเทียบตรงกัน ${sourceTotalQty} ชิ้น`;
+                    qtyBgColor = '#d4edda';
+                    qtyTextColor = '#155724';
+                    qtyIcon = '✅';
+                } else if (qtyDiff > 0) {
+                    qtyDisplayText = `ต้นฉบับ ${sourceTotalQty} ชิ้น → เปรียบเทียบ ${targetTotalQty} ชิ้น (เกิน ${qtyDiff} ชิ้น)`;
+                    qtyBgColor = '#fff3cd';
+                    qtyTextColor = '#856404';
+                    qtyIcon = '📈';
+                } else {
+                    qtyDisplayText = `ต้นฉบับ ${sourceTotalQty} ชิ้น → เปรียบเทียบ ${targetTotalQty} ชิ้น (ขาด ${Math.abs(qtyDiff)} ชิ้น)`;
+                    qtyBgColor = '#f8d7da';
+                    qtyTextColor = '#721c24';
+                    qtyIcon = '📉';
+                }
+
+                const notMatchRate = matchRate != null ? (100 - Math.round(matchRate)) : 0;
+                const summaryClass = matchRate >= 100 ? 'success' : 'error';
+                infoHTML = `
+                    <div class="summary-container">
+                        <div class="summary-grid">
+
+                        <div class="summary-box">
+                            <div class="label">ELE</div>
+                            <div class="value">${result.parsing_info.source_items_detected} <span style="font-size:0.75em;">รายการ</span></div>
+                            <div class="subtext">(${result.parsing_info.source_total_qty} ชิ้น)</div>
+                        </div>
+
+                        <div class="summary-box">
+                            <div class="label">TYK</div>
+                            <div class="value">${result.parsing_info.target_items_detected} <span style="font-size:0.75em;">รายการ</span></div>
+                            <div class="subtext">(${result.parsing_info.target_total_qty} ชิ้น)</div>
+                        </div>
+                        
+
+                        <div class="summary-box ${summaryClass}">
+                            <div class="label">รายการไม่ตรงกัน</div>
+                            <div class="value">${result.differences ? result.differences.length : 0} <span style="font-size:0.75em;">รายการ</span></div>
+                            <div class="subtext">(${notMatchRate}%)</div>
+                        </div
+
+                        </div>
+                    </div>
+                `;
+
+            }
+
+            // Check if we have differences or matched items
+            const hasDifferences = result.differences && result.differences.length > 0;
+            const hasMatchedItems = result.matched_items && result.matched_items.length > 0;
+
+            console.log('Has differences:', hasDifferences, 'Has matched:', hasMatchedItems);
+
+            if (hasDifferences || hasMatchedItems) {
+                const sourceLabel = activeSourceType === 'pdf' ? 'PDF' : 'ข้อความ';
+                
+                // รวมรายการและเรียงตาม type priority
+                let allItems = [];
+                
+                // เพิ่มรายการที่ถูกต้อง
+                if (hasMatchedItems) {
+                    result.matched_items.forEach(match => {
+                        allItems.push({
+                            line_number: match.line_number,
+                            type: 'correct',
+                            source_content: match.source_content,
+                            target_content: match.target_content,
+                            note: 'ข้อมูลตรงกันทุกประการ'
+                        });
+                    });
+                }
+                
+                // เพิ่มรายการที่แตกต่าง
+                if (hasDifferences) {
+                    result.differences.forEach(diff => {
+                        allItems.push({
+                            line_number: diff.line_number,
+                            type: diff.type,
+                            source_content: diff.source_content,
+                            target_content: diff.target_content,
+                            note: diff.note
+                        });
+                    });
+                }
+                
+                // เรียงตามเลขลำดับ line_number แทนการเรียงตาม type priority
+                allItems.sort((a, b) => a.line_number - b.line_number);
+
+                let tableHTML = infoHTML + `
+                    <div style="margin: 40px 0 15px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <span style="color: #666; margin-left: 8px;"><strong style="color: #333; font-size: 1rem;">${currentProjectName}</strong>  (${currentQuotationNumber})</span>
+                            </div>
+                            <div>
+                                <button class="capture-btn" id="captureBtn" onclick="captureTable()">
+                                    แคปรายการที่ต้องแก้ไข
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <table class="results-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 5%;">ลำดับ</th>
+                                <th style="width: 10%;">ประเภท</th>
+                                <th style="width: 20%;">ELE</th>
+                                <th style="width: 35%;">TYK</th>
+                                <th style="width: 30%;">รายละเอียด</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+
+                // แสดงรายการตามลำดับที่เรียงแล้ว
+                allItems.forEach((item, index) => {
+                    let typeClass, typeName, backgroundColor;
+                    
+                    if (item.type === 'correct') {
+                        typeClass = 'diff-type';
+                        typeName = 'ถูก';
+                        backgroundColor = 'background: #f8fff8;';
+                    } else {
+                        typeClass = `diff-${item.type}`;
+                        
+                        if (item.type === 'added') {
+                            typeName = 'เพิ่ม';
+                            backgroundColor = 'background: #f8fbff';
+                        } else if (item.type === 'removed') {
+                            typeName = 'ลบ';
+                            backgroundColor = 'background: #fff8f8';
+                        } else if (item.type === 'modified') {
+                            typeName = 'แก้ไข';
+                            backgroundColor = 'background: #fffef8'; 
+                        } else {
+                            typeName = 'แก้ไข';
+                            backgroundColor = 'background: #fffef8';
+                        }
+                    }
+                    
+                    const sourceContent = item.source_content || '<em style="color: #999;">ไม่มีข้อมูล</em>';
+                    const targetContent = item.target_content || '<em style="color: #999;">ไม่มีข้อมูล</em>';
+                    
+                    let detailsHTML = '';
+                    if (item.note) {
+                        let noteStyle = '';
+                        let noteIcon = '';
+                        
+                        if (item.type === 'correct') {
+                            noteStyle = 'background: #d4edda; color: #155724; padding: 8px 12px; border-radius: 6px; font-weight: 600; border-left: 4px solid #28a745;';
+                            noteIcon = '✅ ';
+                        } else if (item.type === 'added') {
+                            noteStyle = 'background: #cce7ff; color: #004085; padding: 8px 12px; border-radius: 6px; font-weight: 600; border-left: 4px solid #007bff;';
+                            noteIcon = '➕ ';
+                        } else if (item.type === 'removed') {
+                            noteStyle = 'background: #f8d7da; color: #721c24; padding: 8px 12px; border-radius: 6px; font-weight: 600; border-left: 4px solid #dc3545;';
+                            noteIcon = '➖ ';
+                        } else if (item.type === 'modified') {
+                            noteStyle = 'background: #fff3cd; color: #856404; padding: 8px 12px; border-radius: 6px; font-weight: 600; border-left: 4px solid #ffc107;';
+                            noteIcon = '✏️ ';
+                        }
+                        
+                        detailsHTML = `<div style="${noteStyle}">${noteIcon}${item.note}</div>`;
+                    }
+                    
+                    const typeStyle = item.type === 'correct' ? 
+                        'style="background: #d4edda; color: #155724;"' : 
+                        '';
+                    
+                    tableHTML += `
+                        <tr style="${backgroundColor}">
+                            <td style="text-align: center; font-weight: bold;">${index + 1}</td>
+                            <td style="text-align: center;"><span class="diff-type ${typeClass}" ${typeStyle}>${typeName}</span></td>
+                            <td class="content-preview">${sourceContent}</td>
+                            <td class="content-preview">${targetContent}</td>
+                            <td style="font-size: 0.9rem; min-width: 200px;">${detailsHTML || '<span style="color: #999; font-style: italic;">ไม่มีรายละเอียดเพิ่มเติม</span>'}</td>
+                        </tr>
+                    `;
+                });
+
+                tableHTML += '</tbody></table>';
+                
+                // Add enhanced summary
+                const addedCount = hasDifferences ? result.differences.filter(d => d.type === 'added').length : 0;
+                const removedCount = hasDifferences ? result.differences.filter(d => d.type === 'removed').length : 0;
+                const modifiedCount = hasDifferences ? result.differences.filter(d => d.type === 'modified').length : 0;
+                const matchedCount = hasMatchedItems ? result.matched_items.length : 0;
+                
+                const totalLines = allItems.length;
+                const sourceTotalQty = result.parsing_info ? result.parsing_info.source_total_qty : 0;
+                const targetTotalQty = result.parsing_info ? result.parsing_info.target_total_qty : 0;
+                
+                tableHTML += `
+                    <div style="margin-top: 20px; text-align: center;">
+                        <div style="display: flex; gap: 15px; flex-wrap: wrap; justify-content: center;">
+                            ${matchedCount > 0 ? `<span class="diff-type" style="background: #d4edda; color: #155724; margin: 0; display: flex; align-items: center; gap: 5px;">✅ ถูกต้อง: ${matchedCount} รายการ</span>` : ''}
+                            ${modifiedCount > 0 ? `<span class="diff-type diff-modified" style="margin: 0; display: flex; align-items: center; gap: 5px;">✏️ แก้ไข: ${modifiedCount} รายการ</span>` : ''}
+                            ${addedCount > 0 ? `<span class="diff-type diff-added" style="margin: 0; display: flex; align-items: center; gap: 5px;">➕ เพิ่ม: ${addedCount} รายการ</span>` : ''}
+                            ${removedCount > 0 ? `<span class="diff-type diff-removed" style="margin: 0; display: flex; align-items: center; gap: 5px;">➖ ลบ: ${removedCount} รายการ</span>` : ''}
+                        </div>
+                    </div>
+                `;
+                
+                resultsContent.innerHTML = tableHTML;
+            } else {
+                resultsContent.innerHTML = infoHTML + `
+                    <div class="no-differences">
+                        <div style="font-size: 3rem; margin-bottom: 15px;">⚠️</div>
+                        <div style="font-size: 1.3rem; font-weight: bold; margin-bottom: 10px;">ไม่พบข้อมูลที่สามารถเปรียบเทียบได้</div>
+                        <div style="color: #666; margin-bottom: 15px;">กรุณาตรวจสอบรูปแบบข้อมูลในไฟล์</div>
+                        <div style="background: #fff; padding: 15px; border-radius: 5px; color: #333; margin-top: 15px;">
+                            <strong>รูปแบบข้อความที่ถูกต้อง:</strong><br>
+                            D1.2 1268 * 488 = 2<br>
+                            Total Qty = 2
+                        </div>
+                    </div>
+                `;
+            }
+
+            resultsSection.style.display = 'block';
+            resultsSection.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+        }
+
+        function hideError() {
+            document.getElementById('errorMessage').style.display = 'none';
+        }
+
+        // Function to capture table as image (FIXED)
+        async function captureTable() {
+            const captureBtn = document.getElementById('captureBtn');
+            const originalText = captureBtn.innerHTML;
+            
+            // Show loading state immediately
+            captureBtn.innerHTML = `
+                <div class="loading" style="width: 16px; height: 16px; border-width: 2px; margin: 0;"></div>
+                กำลังเตรียม...
+            `;
+            captureBtn.disabled = true;
+            
+            try {
+                // Check if html2canvas is available
+                if (!window.html2canvas) {
+                    captureBtn.innerHTML = `
+                        <div class="loading" style="width: 16px; height: 16px; border-width: 2px; margin: 0;"></div>
+                        กำลังโหลดไลบรารี...
+                    `;
+                    
+                    // Load html2canvas
+                    await new Promise((resolve, reject) => {
+                        const script = document.createElement('script');
+                        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+                        script.onload = resolve;
+                        script.onerror = () => reject(new Error('ไม่สามารถโหลดไลบรารีแคปได้'));
+                        document.head.appendChild(script);
+                        
+                        // Timeout after 10 seconds
+                        setTimeout(() => reject(new Error('โหลดไลบรารีไม่สำเร็จ (timeout)')), 10000);
+                    });
+                }
+
+                captureBtn.innerHTML = `
+                    <div class="loading" style="width: 16px; height: 16px; border-width: 2px; margin: 0;"></div>
+                    กำลังแคป...
+                `;
+
+                await performCapture();
+                
+            } catch (error) {
+                console.error('Error capturing table:', error);
+                showError('เกิดข้อผิดพลาดในการแคปตาราง: ' + error.message);
+                
+            } finally {
+                // Reset button
+                setTimeout(() => {
+                    captureBtn.innerHTML = originalText;
+                    captureBtn.disabled = false;
+                }, 1000);
+            }
+        }
+
+        async function performCapture() {
+            const resultsContent = document.getElementById('resultsContent');
+            
+            if (!resultsContent) {
+                throw new Error('ไม่พบตารางที่จะแคป');
+            }
+
+            // Find the table element specifically
+            const tableElement = resultsContent.querySelector('.results-table');
+            if (!tableElement) {
+                throw new Error('ไม่พบตารางในผลลัพธ์');
+            }
+
+            // Create a temporary container for capture - only the table
+            const tempContainer = document.createElement('div');
+            tempContainer.style.cssText = `
+                position: fixed;
+                top: -10000px;
+                left: -10000px;
+                background: white;
+                padding: 20px;
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                width: ${Math.max(tableElement.offsetWidth + 40, 800)}px;
+                min-height: 200px;
+            `;
+            
+            // Clone ONLY the table
+            const clonedTable = tableElement.cloneNode(true);
+            
+            // Remove "ถูก" (correct) rows from the cloned table and count differences
+            const tbody = clonedTable.querySelector('tbody');
+            let totalDifferences = 0;
+            let addedCount = 0;
+            let removedCount = 0;
+            let modifiedCount = 0;
+            
+            if (tbody) {
+                const rows = Array.from(tbody.querySelectorAll('tr'));
+                let newRowNumber = 1;
+                
+                rows.forEach(row => {
+                    const typeSpan = row.querySelector('.diff-type');
+                    if (typeSpan && typeSpan.textContent.trim() === 'ถูก') {
+                        // Remove "correct" rows
+                        row.remove();
+                    } else {
+                        // Count different types of differences
+                        const typeText = typeSpan ? typeSpan.textContent.trim() : '';
+                        if (typeText === 'เพิ่ม') {
+                            addedCount++;
+                        } else if (typeText === 'ลบ') {
+                            removedCount++;
+                        } else if (typeText === 'แก้ไข') {
+                            modifiedCount++;
+                        }
+                        totalDifferences++;
+                        
+                        // Update row numbers for remaining rows
+                        const firstCell = row.querySelector('td:first-child');
+                        if (firstCell) {
+                            firstCell.textContent = newRowNumber;
+                            newRowNumber++;
+                        }
+                    }
+                });
+            }
+            
+            // Add header with project info (use stored global values)
+            const header = document.createElement('div');
+            header.innerHTML = `
+                <div style="text-align: center; margin-bottom: 15px; border-bottom: 2px solid #dc3545; padding-bottom: 10px;">
+                    <h2 style="color: #333; margin: 0; font-size: 1.5rem;">🚨 รายการที่ต้องแก้ไข</h2>
+                    <p style="color: #999; margin: 5px 0 0 0; font-size: 0.8rem;">สร้างเมื่อ: ${new Date().toLocaleString('th-TH')}</p>
+                </div>
+                <div style="background: #f8f9fa; padding: 10px; border-radius: 5px; margin-bottom: 15px; text-align: center;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 0.9rem;">
+                        <div><strong>📋 โครงการ:</strong> ${currentProjectName}</div>
+                        <div><strong>📄 ใบเสนอราคาเลขที่:</strong> ${currentQuotationNumber}</div>
+                    </div>
+                </div>
+            `;
+            
+            tempContainer.appendChild(header);
+            tempContainer.appendChild(clonedTable);
+            
+            // Add summary footer with difference count
+            if (totalDifferences > 0) {
+                const footer = document.createElement('div');
+                footer.innerHTML = `
+                    <div style="margin-top: 20px; padding: 15px; background: white; border-radius: 8px; border: 1px solid #ddd; text-align: center;">
+                        <div style="color: #333; font-weight: 600; font-size: 1rem;">
+                            แก้ไขทั้งหมด ${totalDifferences} รายการ
+                        </div>
+                    </div>
+                `;
+                tempContainer.appendChild(footer);
+            }
+            
+            document.body.appendChild(tempContainer);
+
+            // Wait a moment for the DOM to update
+            await new Promise(resolve => setTimeout(resolve, 100));
+
+            // Capture the image with better options
+            const canvas = await html2canvas(tempContainer, {
+                backgroundColor: '#ffffff',
+                scale: 1.5, // Reduced scale for better performance
+                useCORS: true,
+                allowTaint: false,
+                width: tempContainer.offsetWidth,
+                height: tempContainer.offsetHeight,
+                scrollX: 0,
+                scrollY: 0,
+                logging: false, // Disable logging
+                removeContainer: false
+            });
+
+            // Remove temporary container
+            document.body.removeChild(tempContainer);
+
+            // Convert to blob and download
+            return new Promise((resolve, reject) => {
+                canvas.toBlob(function(blob) {
+                    if (!blob) {
+                        reject(new Error('ไม่สามารถสร้างภาพได้'));
+                        return;
+                    }
+                    
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    
+                    // Generate filename with timestamp - focus on table only
+                    const now = new Date();
+                    const timestamp = now.toISOString().slice(0, 19).replace(/[:-]/g, '').replace('T', '_');
+                    link.download = `glass_table_${timestamp}.png`;
+                    
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    
+                    // Clean up URL
+                    setTimeout(() => URL.revokeObjectURL(url), 1000);
+                    
+                    // Show success message
+                    showTemporaryMessage('✅ บันทึกตารางเรียบร้อยแล้ว', 'success');
+                    resolve();
+                    
+                }, 'image/png', 0.8); // Reduced quality for better performance
+            });
+        }
+
+        function showTemporaryMessage(message, type = 'info') {
+            const messageDiv = document.createElement('div');
+            messageDiv.style.cssText = `
+                position: fixed;
+                top: 100px;
+                right: 20px;
+                z-index: 10000;
+                padding: 15px 20px;
+                border-radius: 8px;
+                font-weight: 600;
+                box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+                transition: all 0.3s ease;
+                ${type === 'success' ? 
+                    'background: #d4edda; color: #155724; border: 1px solid #c3e6cb;' : 
+                    'background: #cce7ff; color: #004085; border: 1px solid #b6d7ff;'
+                }
+            `;
+            messageDiv.textContent = message;
+            
+            document.body.appendChild(messageDiv);
+            
+            // Animate in
+            setTimeout(() => messageDiv.style.transform = 'translateX(0)', 10);
+            
+            // Remove after 3 seconds
+            setTimeout(() => {
+                messageDiv.style.opacity = '0';
+                messageDiv.style.transform = 'translateX(100%)';
+                setTimeout(() => document.body.removeChild(messageDiv), 300);
+            }, 3000);
+        }
+
+        document.querySelectorAll('.nav-links a').forEach(link => {
+            link.addEventListener('click', () => {
+                document.getElementById('navLinks').classList.remove('show');
+                document.querySelector('.mobile-menu-toggle').classList.remove('active');
+            });
+        });
+
+        document.addEventListener('DOMContentLoaded', async function() {
+            // เรียกฟังก์ชันตรวจสอบ Admin
+            await checkAndShowAdminMenu();
+        });
+
+        // ✅ ฟังก์ชันตรวจสอบ Admin (เก็บไว้ที่บรรทัด 1027)
+        async function checkAndShowAdminMenu() {
+            try {
+                const username = sessionStorage.getItem('username');
+                
+                if (!username) {
+                    return;
+                }
+                
+                const response = await fetch('/api/users/check-admin', {
+                    headers: {
+                        'X-Username': username
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success && data.is_admin) {
+                    const userManagementLink = document.getElementById('userManagementLink');
+                    if (userManagementLink) {
+                        userManagementLink.style.display = 'block';
+                    }
+                }
+                
+            } catch (error) {
+                console.error('Error checking admin status:', error);
+            }
+        }
+
+    </script>
+</body>
+</html>

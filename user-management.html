@@ -1,0 +1,1093 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>จัดการผู้ใช้ - TOSTEM</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            padding-top: 100px;
+        }
+
+        header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+            padding: 1rem 0;
+            transition: all 0.3s ease;
+        }
+        
+        .container1 {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: white;
+            text-decoration: none;
+        }
+        
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 1rem;
+            margin: 0;
+            padding: 0;
+            flex-wrap: wrap;
+        }
+        
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            transition: color 0.3s ease;
+            font-weight: 500;
+            padding: 0.5rem;
+            border-radius: 5px;
+            font-size: 1.1rem;
+        }
+        
+        .nav-links a:hover {
+            color: #fff;
+        }
+
+        .nav-links a.active {
+            color: #764ba2;
+        }
+        
+        .nav-links li {
+            position: relative;
+        }
+
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: rgba(255, 255, 255, 1);
+            backdrop-filter: blur(5px);
+            list-style: none;
+            padding: 10px 0;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+            min-width: 220px;
+            z-index: 999;
+        }
+
+        .dropdown:hover .dropdown-menu {
+            display: block;
+        }
+
+        .dropdown-menu li a {
+            display: block;
+            padding: 10px 18px;
+            color: #333;
+            font-size: 1rem;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .dropdown-menu li a:hover {
+            background: #e9e9e9;
+            color: #333;
+        }
+
+        .dropdown > a::after {
+            content: " ▾";
+            font-size: 0.7rem;
+        }
+
+        .mobile-menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            cursor: pointer;
+            flex-direction: column;
+            justify-content: space-around;
+            width: 30px;
+            height: 25px;
+            padding: 0;
+        }
+
+        .hamburger-line {
+            width: 100%;
+            height: 3px;
+            background-color: white;
+            border-radius: 2px;
+            transition: all 0.3s ease;
+        }
+
+        .mobile-menu-toggle.active .hamburger-line:nth-child(1) {
+            transform: rotate(45deg) translate(6px, 6px);
+        }
+
+        .mobile-menu-toggle.active .hamburger-line:nth-child(2) {
+            opacity: 0;
+        }
+
+        .mobile-menu-toggle.active .hamburger-line:nth-child(3) {
+            transform: rotate(-45deg) translate(6px, -6px);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding-top: 0;
+        }
+
+        .header {
+            text-align:center;
+            color:white;
+            margin-bottom:30px;
+            margin-top:20px;
+        }
+
+        .header h1{
+            font-size:2.5rem;
+            margin-bottom:10px;
+            text-shadow:2px 2px 4px rgba(0,0,0,.3);
+            font-weight:700;
+        }
+
+        .admin-badge {
+            font-size: 0.5em;
+            color: #ffd700;
+            background: rgba(255,215,0,0.2);
+            padding: 5px 15px;
+            border-radius: 20px;
+            margin-left: 15px;
+            font-weight: 600;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .btn-danger {
+            background: #f44336;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #d32f2f;
+        }
+
+        .btn-success {
+            background: #4caf50;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #388e3c;
+        }
+
+        .btn-warning {
+            background: #fde8aa;
+            color: #333;
+        }
+
+        .btn-warning:hover {
+            background: #f7e1ad;
+        }
+
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            margin-bottom: 30px;
+        }
+
+        .card h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 22px;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .card-header h2 {
+            margin-bottom: 0;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .user-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .user-table th,
+        .user-table td {
+            padding: 15px;
+            text-align: center;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .user-table th {
+            background: #7b9cfa;
+            color: white;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 14px;
+        }
+        
+        .user-table th:first-child {
+            border-top-left-radius: 10px;
+        }
+        
+        .user-table th:last-child {
+            border-top-right-radius: 10px;
+        }
+
+        .user-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .user-table td {
+            color: #555;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .action-buttons button {
+            padding: 8px 16px;
+            font-size: 13px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
+            width: 90%;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            margin-bottom: 30px;
+        }
+
+        .modal-header h2 {
+            color: #333;
+            font-size: 24px;
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 15px;
+            justify-content: flex-end;
+            margin-top: 30px;
+        }
+
+        .alert {
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .alert.active {
+            display: block;
+        }
+
+        .alert-success {
+            background: #e8f5e9;
+            color: #2e7d32;
+            border-left: 4px solid #4caf50;
+        }
+
+        .alert-error {
+            background: #ffebee;
+            color: #c62828;
+            border-left: 4px solid #f44336;
+        }
+
+        .alert-info {
+            background: #e3f2fd;
+            color: #1565c0;
+            border-left: 4px solid #2196f3;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .empty-state svg {
+            width: 100px;
+            height: 100px;
+            margin-bottom: 20px;
+            opacity: 0.3;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge-admin {
+            background: #fce4ec;
+            color: #c2185b;
+        }
+
+        .badge-user {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+
+        .loading-overlay.active {
+            display: flex;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media(max-width: 768px) {
+            body {
+                padding-top: 140px;
+            }
+            
+            nav {
+                flex-direction: column;
+                align-items: flex-start;
+                position: relative;
+            }
+            
+            .mobile-menu-toggle {
+                display: flex;
+                position: absolute;
+                top: 50%;
+                right: 0;
+                transform: translateY(-50%);
+            }
+            
+            .nav-links {
+                width: 100%;
+                flex-direction: column;
+                gap: 0.5rem;
+                margin-top: 1rem;
+                background: rgba(255, 255, 255, 0.1);
+                padding: 1rem;
+                border-radius: 10px;
+                display: none;
+            }
+            
+            .nav-links.show {
+                display: flex;
+            }
+            
+            .nav-links a {
+                padding: 0.75rem;
+                text-align: center;
+                width: 100%;
+                border-radius: 8px;
+                font-size: 1rem;
+            }
+
+            .dropdown-menu {
+                position: static;
+                background: rgba(255, 255, 255, 0.1);
+                box-shadow: none;
+                padding: 0.5rem 1rem;
+                border-radius: 0;
+            }
+
+            .dropdown-menu li a {
+                color: white;
+            }
+
+            .dropdown-menu li a:hover {
+                background: rgba(255, 255, 255, 0.15);
+                color: #ffd700;
+            }
+
+            .card-header {
+                flex-direction: column;
+                gap: 15px;
+                align-items: stretch;
+            }
+
+            .card-header > div {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        @media(max-width: 480px) {
+            body {
+                padding-top: 160px;
+            }
+            
+            .logo {
+                font-size: 1.2rem;
+            }
+            
+            .container {
+                margin: 5px;
+                padding: 15px;
+            }
+            
+            .nav-links a {
+                font-size: 0.9rem;
+                padding: 0.6rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="container1">
+            <a href="#" class="logo">TOSTEM Work Process</a>
+            <button class="mobile-menu-toggle" onclick="toggleMobileMenu()">
+                <span class="hamburger-line"></span>
+                <span class="hamburger-line"></span>
+                <span class="hamburger-line"></span>
+            </button>
+
+            <ul class="nav-links" id="navLinks">
+                <li class="dropdown">
+                    <a href="#" class="corner-btn">Work Process</a>
+                    <ul class="dropdown-menu">
+                        <li><a href="/Quotation">Quotation comparison</a></li>
+                        <li><a href="/text-glass2">Glass extract</a></li>
+                        <li><a href="/glass-check">Glass check</a></li>
+                        <li><a href="/Generate">Generate site survey</a></li>
+                        <li><a href="/sitewithele">ELE check</a></li>
+                    </ul>
+                </li>
+
+                <li class="dropdown">
+                    <a href="#" class="corner-btn">Price Update</a>
+                    <ul class="dropdown-menu">
+                        <li><a href="/matrix">Matrix price (Panel)</a></li>
+                        <li><a href="/joint">Matrix price (Joint)</a></li>
+                    </ul>
+                </li>
+
+                <li id="userManagementLink" style="display: block;">
+                    <a href="/user-management" class="corner-btn active">User</a>
+                </li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="header">
+        <h1>User</h1>
+    </div>
+
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+    </div>
+
+    <div class="container">
+        <div id="alertContainer"></div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2>รายการผู้ใช้งาน</h2>
+                <div style="display: flex; gap: 15px;">
+                    <button class="btn btn-success" onclick="openAddModal()">
+                        เพิ่มผู้ใช้
+                    </button>
+                </div>
+            </div>
+            <div id="userTableContainer">
+                <table class="user-table" id="userTable">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>ชื่อผู้ใช้ / อีเมล</th>
+                            <th>รหัสผ่าน</th>
+                            <th>สิทธิ์</th>
+                            <th>วันที่สร้าง</th>
+                            <th>การจัดการ</th>
+                        </tr>
+                    </thead>
+                    <tbody id="userTableBody"></tbody>
+                </table>
+                <div id="emptyState" class="empty-state" style="display: none;">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                    <h3>ยังไม่มีผู้ใช้งานในระบบ</h3>
+                    <p>คลิกปุ่ม "เพิ่มผู้ใช้" เพื่อเริ่มต้น</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="userModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">เพิ่มผู้ใช้ใหม่</h2>
+            </div>
+            <form id="userForm">
+                <input type="hidden" id="editUsername">
+                <div class="form-group">
+                    <label for="username">ชื่อผู้ใช้ / อีเมล *</label>
+                    <input type="text" id="username" placeholder="example@email.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">รหัสผ่าน *</label>
+                    <input type="password" id="password" placeholder="กรอกรหัสผ่าน" required>
+                </div>
+                <div class="form-group">
+                    <label for="confirmPassword">ยืนยันรหัสผ่าน *</label>
+                    <input type="password" id="confirmPassword" placeholder="กรอกรหัสผ่านอีกครั้ง" required>
+                </div>
+                <div class="form-group">
+                    <label for="userRole">สิทธิ์การใช้งาน *</label>
+                    <select id="userRole">
+                        <option value="user">USER - ผู้ใช้ทั่วไป</option>
+                        <option value="admin">ADMIN - ผู้ดูแลระบบ</option>
+                    </select>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal()">ยกเลิก</button>
+                    <button type="submit" class="btn btn-primary" id="submitBtn">บันทึก</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="deleteModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>⚠️ ยืนยันการลบ</h2>
+            </div>
+            <div id="deleteModalMessage" style="color: #666; margin-bottom: 30px;"></div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeDeleteModal()">ยกเลิก</button>
+                <button type="button" class="btn btn-danger" onclick="confirmDelete()">ลบผู้ใช้</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentDeleteUsername = null;
+        let isEditMode = false;
+        let currentUser = null;
+
+        function toggleMobileMenu() {
+            const navLinks = document.getElementById('navLinks');
+            const toggleBtn = document.querySelector('.mobile-menu-toggle');
+            navLinks.classList.toggle('show');
+            toggleBtn.classList.toggle('active');
+        }
+
+        document.querySelectorAll('.nav-links a').forEach(link => {
+            link.addEventListener('click', (e) => {
+                if (!link.classList.contains('corner-btn') || link.getAttribute('href') !== '#') {
+                    document.getElementById('navLinks').classList.remove('show');
+                    document.querySelector('.mobile-menu-toggle').classList.remove('active');
+                }
+            });
+        });
+
+        document.addEventListener('click', (e) => {
+            const nav = document.querySelector('nav');
+            const navLinks = document.getElementById('navLinks');
+            const toggleBtn = document.querySelector('.mobile-menu-toggle');
+            if (!nav.contains(e.target)) {
+                navLinks.classList.remove('show');
+                toggleBtn.classList.remove('active');
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            showLoading();
+            const username = sessionStorage.getItem('username');
+            if (!username) {
+                currentUser = 'demo_user';
+                console.warn('No username in session, using demo_user');
+            } else {
+                currentUser = username;
+            }
+            
+            const isAuthorized = await checkAdminAccess();
+            if (!isAuthorized) {
+                hideLoading();
+                return;
+            }
+            await loadUsers();
+            hideLoading();
+        });
+
+        async function checkAdminAccess() {
+            const username = sessionStorage.getItem('username') || getCookie('username');
+            if (!username) {
+                console.warn('No username found, allowing access for development');
+                return true;
+            }
+            try {
+                const response = await fetch('/api/users/check-admin', {
+                    headers: { 'X-Username': username }
+                });
+                
+                if (!response.ok) {
+                    console.warn('Admin check API not available, allowing access for development');
+                    return true;
+                }
+                
+                const data = await response.json();
+                if (!data.success || !data.is_admin) {
+                    showAlert('error', 'คุณไม่มีสิทธิ์ Admin แต่สามารถใช้งานได้ในโหมดทดสอบ');
+                }
+                currentUser = username;
+                return true;
+            } catch (error) {
+                console.warn('Check admin error:', error);
+                console.warn('Allowing access for development mode');
+                return true;
+            }
+        }
+
+        function redirectToLogin(message) {
+            alert(message);
+            window.location.href = '/login';
+        }
+
+        function redirectToMatrix(message) {
+            alert(message);
+            window.location.href = '/matrix';
+        }
+
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+        }
+
+        function showLoading() {
+            document.getElementById('loadingOverlay').classList.add('active');
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingOverlay').classList.remove('active');
+        }
+
+        function getAuthHeaders() {
+            return {
+                'Content-Type': 'application/json',
+                'X-Username': currentUser
+            };
+        }
+
+        async function loadUsers() {
+            try {
+                const response = await fetch('/api/users/list', {
+                    headers: { 'X-Username': currentUser }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                if (data.success) {
+                    renderUsers(data.users);
+                } else {
+                    showAlert('error', data.error || 'ไม่สามารถโหลดข้อมูลผู้ใช้ได้');
+                }
+            } catch (error) {
+                console.error('Load users error:', error);
+                showAlert('error', 'ไม่สามารถเชื่อมต่อกับ API ได้ กรุณาตรวจสอบ Backend');
+                const tbody = document.getElementById('userTableBody');
+                const emptyState = document.getElementById('emptyState');
+                const userTable = document.getElementById('userTable');
+                userTable.style.display = 'none';
+                emptyState.style.display = 'block';
+            }
+        }
+
+        function renderUsers(users) {
+            const tbody = document.getElementById('userTableBody');
+            const emptyState = document.getElementById('emptyState');
+            const userTable = document.getElementById('userTable');
+
+            if (!users || Object.keys(users).length === 0) {
+                userTable.style.display = 'none';
+                emptyState.style.display = 'block';
+                return;
+            }
+
+            userTable.style.display = 'table';
+            emptyState.style.display = 'none';
+            tbody.innerHTML = '';
+            let index = 1;
+
+            for (const [username, userInfo] of Object.entries(users)) {
+                const row = document.createElement('tr');
+                const maskedPassword = '*'.repeat(userInfo.password.length);
+                const createdAt = userInfo.created_at ? new Date(userInfo.created_at).toLocaleDateString('th-TH') : '-';
+                const isAdmin = userInfo.role === 'admin';
+                const roleBadge = isAdmin ? 
+                    '<span class="badge badge-admin">ADMIN</span>' : 
+                    '<span class="badge badge-user">USER</span>';
+
+                row.innerHTML = `
+                    <td>${index}</td>
+                    <td><strong>${username}</strong></td>
+                    <td><code>${maskedPassword}</code></td>
+                    <td>${roleBadge}</td>
+                    <td>${createdAt}</td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="btn btn-warning" onclick="openEditModal('${username}', '${userInfo.password}', '${userInfo.role || 'user'}')">
+                                แก้ไข
+                            </button>
+                            <button class="btn btn-danger" onclick="openDeleteModal('${username}')">
+                                ลบ
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(row);
+                index++;
+            }
+        }
+
+        function openAddModal() {
+            isEditMode = false;
+            document.getElementById('modalTitle').textContent = 'เพิ่มผู้ใช้ใหม่';
+            document.getElementById('userForm').reset();
+            document.getElementById('editUsername').value = '';
+            document.getElementById('username').disabled = false;
+            document.getElementById('password').disabled = false;
+            document.getElementById('confirmPassword').disabled = false;
+            document.getElementById('userRole').value = 'user';
+            document.getElementById('submitBtn').textContent = 'บันทึก';
+            document.getElementById('userModal').classList.add('active');
+        }
+
+        function openEditModal(username, password, role) {
+            isEditMode = true;
+            document.getElementById('modalTitle').textContent = 'แก้ไขผู้ใช้';
+            document.getElementById('editUsername').value = username;
+            document.getElementById('username').value = username;
+            document.getElementById('username').disabled = true;
+            document.getElementById('password').value = password;
+            document.getElementById('confirmPassword').value = password;
+            document.getElementById('userRole').value = role || 'user';
+            document.getElementById('submitBtn').textContent = 'บันทึกการแก้ไข';
+            document.getElementById('userModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('userModal').classList.remove('active');
+            document.getElementById('userForm').reset();
+        }
+
+        function openDeleteModal(username) {
+            currentDeleteUsername = username;
+            const deleteModalMessage = document.getElementById('deleteModalMessage');
+            const deleteModal = document.getElementById('deleteModal');
+            
+            if (!deleteModalMessage || !deleteModal) {
+                showAlert('error', 'เกิดข้อผิดพลาดในการเปิด modal');
+                return;
+            }
+            
+            deleteModalMessage.innerHTML = `คุณแน่ใจหรือไม่ว่าต้องการลบผู้ใช้ "<strong>${username}</strong>"?<br><br>การดำเนินการนี้ไม่สามารถย้อนกลับได้`;
+            
+            fetch('/api/users/list', {
+                headers: { 'X-Username': currentUser }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success && data.users[username]?.role === 'admin') {
+                    deleteModalMessage.innerHTML = `
+                        คุณแน่ใจหรือไม่ว่าต้องการลบผู้ใช้ "<strong>${username}</strong>"?<br><br>
+                        <div class="warning-text">
+                            ⚠️ คำเตือน: นี่คือบัญชี ADMIN!<br>
+                            หากลบบัญชีนี้แล้วไม่มี Admin อื่นในระบบ คุณจะไม่สามารถเข้าถึงหน้าจัดการผู้ใช้ได้อีก
+                        </div><br>
+                        การดำเนินการนี้ไม่สามารถย้อนกลับได้
+                    `;
+                }
+            })
+            .catch(err => console.error('Error checking user role:', err));
+            
+            deleteModal.classList.add('active');
+        }
+
+        function closeDeleteModal() {
+            currentDeleteUsername = null;
+            document.getElementById('deleteModal').classList.remove('active');
+        }
+
+        document.getElementById('userForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const role = document.getElementById('userRole').value;
+
+            if (!username || !password || !confirmPassword) {
+                showAlert('error', 'กรุณากรอกข้อมูลให้ครบถ้วน');
+                return;
+            }
+            if (password !== confirmPassword) {
+                showAlert('error', 'รหัสผ่านไม่ตรงกัน');
+                return;
+            }
+            if (password.length < 4) {
+                showAlert('error', 'รหัสผ่านต้องมีอย่างน้อย 4 ตัวอักษร');
+                return;
+            }
+
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'กำลังบันทึก...';
+
+            try {
+                const endpoint = isEditMode ? '/api/users/update' : '/api/users/add';
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({ username, password, role })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    showAlert('success', data.message);
+                    closeModal();
+                    await loadUsers();
+                } else {
+                    if (response.status === 401 || response.status === 403) {
+                        redirectToLogin(data.error || 'กรุณาเข้าสู่ระบบอีกครั้ง');
+                    } else {
+                        showAlert('error', data.error || 'เกิดข้อผิดพลาด');
+                    }
+                }
+            } catch (error) {
+                showAlert('error', 'เกิดข้อผิดพลาด: ' + error.message);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = isEditMode ? 'บันทึกการแก้ไข' : 'บันทึก';
+            }
+        });
+
+        async function confirmDelete() {
+            if (!currentDeleteUsername) {
+                showAlert('error', 'ไม่พบข้อมูลผู้ใช้ที่ต้องการลบ');
+                return;
+            }
+
+            const deleteBtn = document.querySelector('#deleteModal .btn-danger');
+            if (!deleteBtn) {
+                showAlert('error', 'เกิดข้อผิดพลาดในการลบ');
+                return;
+            }
+
+            const originalText = deleteBtn.textContent;
+            deleteBtn.disabled = true;
+            deleteBtn.textContent = 'กำลังลบ...';
+
+            try {
+                const response = await fetch('/api/users/delete', {
+                    method: 'POST',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({ username: currentDeleteUsername })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    showAlert('success', data.message);
+                    closeDeleteModal();
+                    await loadUsers();
+                } else {
+                    if (response.status === 401 || response.status === 403) {
+                        redirectToLogin(data.error || 'กรุณาเข้าสู่ระบบอีกครั้ง');
+                    } else {
+                        showAlert('error', data.error || 'เกิดข้อผิดพลาด');
+                    }
+                }
+            } catch (error) {
+                showAlert('error', 'เกิดข้อผิดพลาด: ' + error.message);
+            } finally {
+                deleteBtn.disabled = false;
+                deleteBtn.textContent = originalText;
+            }
+        }
+
+        function showAlert(type, message) {
+            const container = document.getElementById('alertContainer');
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type === 'error' ? 'error' : type} active`;
+            alert.textContent = message;
+            container.innerHTML = '';
+            container.appendChild(alert);
+            setTimeout(() => {
+                alert.classList.remove('active');
+                setTimeout(() => alert.remove(), 300);
+            }, 5000);
+        }
+
+        window.onclick = function(event) {
+            const userModal = document.getElementById('userModal');
+            const deleteModal = document.getElementById('deleteModal');
+            if (event.target === userModal) closeModal();
+            if (event.target === deleteModal) closeDeleteModal();
+        }
+
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                const userModal = document.getElementById('userModal');
+                const deleteModal = document.getElementById('deleteModal');
+                if (userModal && userModal.classList.contains('active')) closeModal();
+                if (deleteModal && deleteModal.classList.contains('active')) closeDeleteModal();
+            }
+        });
+    </script>
+</body>
+</html>

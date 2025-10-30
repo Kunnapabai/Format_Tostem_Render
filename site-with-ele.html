@@ -1,0 +1,2050 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Site Survey vs ELE Comparison - Integrated Analysis</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding-top: 80px;
+            line-height: 1.6;
+        }
+        
+        /* Header styles */
+        header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            padding: 1rem 0;
+            transition: all 0.3s ease;
+        }
+        
+        .container1 {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: white;
+            text-decoration: none;
+        }
+        
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 1rem;
+            margin: 0;
+            padding: 0;
+            flex-wrap: wrap;
+        }
+        
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            transition: color 0.3s ease;
+            font-weight: 500;
+            padding: 0.5rem;      
+            border-radius: 5px;   
+            font-size: 1.1rem;
+        }
+        
+        .nav-links a:hover {
+            color: #fff;
+        }
+        .nav-links a.active {
+            color: #764ba2;
+        }
+        
+        .nav-links li {
+            position: relative;
+        }
+
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: rgba(255, 255, 255, 1);
+            backdrop-filter: blur(5px);
+            list-style: none;
+            padding: 10px 0;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+            min-width: 220px;
+            z-index: 999;
+        }
+
+        /* Show submenu on hover */
+        .dropdown:hover .dropdown-menu {
+            display: block;
+        }
+
+        /* Menu link styles inside dropdown */
+        .dropdown-menu li a {
+            display: block;
+            padding: 10px 18px;
+            color: #333;
+            font-size: 1rem;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .dropdown-menu li a:hover {
+            background: #e9e9e9;
+            color: #333;
+        }
+
+        /* Dropdown arrow */
+        .dropdown > a::after {
+            content: " ▾";
+            font-size: 0.7rem;
+        }
+
+
+        /* Mobile Menu Toggle */
+        .mobile-menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            cursor: pointer;
+            flex-direction: column;
+            justify-content: space-around;
+            width: 30px;
+            height: 25px;
+            padding: 0;
+        }
+
+        /* Animation เมื่อเมนูเปิด */
+        .mobile-menu-toggle.active .hamburger-line:nth-child(1) {
+            transform: rotate(45deg) translate(6px, 6px);
+        }
+
+        .mobile-menu-toggle.active .hamburger-line:nth-child(2) {
+            opacity: 0;
+        }
+
+        .mobile-menu-toggle.active .hamburger-line:nth-child(3) {
+            transform: rotate(-45deg) translate(6px, -6px);
+        }
+        
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            margin-top: 20px;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,.3);
+            font-weight: 700;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin: 15px 0 30px;
+            font-size: 1.1em;
+            font-weight: 400;
+            line-height: 1.6;
+        }
+        
+        .main-container {
+            background: #ffffff;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, .2);
+            backdrop-filter: blur(10px);
+            margin: 0;
+            padding: 30px !important;
+        }
+        
+        .upload-area {
+            max-width: 450px;
+            border: 2px dashed #007bff;
+            border-radius: 12px;
+            padding: 4.5em 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+            margin: 0 auto;
+        }
+
+        .upload-area#eleUploadArea {
+            border-color: #28a745;
+        }
+        
+        .upload-area:hover {
+            border-color: #0056b3;
+            background: rgba(0, 123, 255, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .upload-area#eleUploadArea:hover {
+            background: #e8f5e8;
+        }
+        
+        .upload-area.dragover {
+            border-color: #28a745;
+            background: rgba(40, 167, 69, 0.1);
+        }
+        
+        .upload-area {
+            position: relative; /* required for absolute overlay */
+            cursor: pointer;
+        }
+
+        /* ensure visual elements are under the input */
+        .upload-area i,
+        .upload-area h5,
+        .upload-area p,
+        .upload-area .file-info {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Transparent input overlay — do NOT use display:none here */
+        .file-input {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+            z-index: 2; /* must be above the content */
+            border: none;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .upload-btn {
+            background: linear-gradient(45deg, #007bff, #0056b3);
+            border: none;
+            border-radius: 50px;
+            padding: 15px 30px;
+            color: white;
+            font-size: 1.1em;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            margin: 30px auto 0;
+            display: block;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+        
+        .upload-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 123, 255, 0.4);
+            background: linear-gradient(45deg, #0056b3, #004085);
+        }
+        
+        .progress-container {
+            display: none;
+            margin-top: 1rem;
+        }
+        
+        .results-container {
+            display: none;
+            margin-top: 40px;
+            animation: fadeInUp 0.6s ease;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Updated Summary Section Styles */
+        .summary-section {
+            padding: 0;
+        }
+        
+        .summary-header {
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .summary-header i {
+            background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-right: 1rem;
+            box-shadow: 0 8px 20px rgba(108, 92, 231, 0.3);
+        }
+        
+        .summary-header h3 {
+            text-align: center;
+            font-size: 1.4em;
+            font-weight: 600;
+            margin: 0;
+        }
+        
+        .token-info {
+            text-align: center;
+            color: #6c757d;
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-top: 0.25rem;
+        }
+        
+        .summary-cards {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            justify-content: center;
+        }
+        
+        .summary-card {
+            border: 1px solid #ddd;
+            background: #f8f9fa;
+            color: #007bff;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            padding: 1.5rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            min-width: 200px;
+            flex: 1;
+            max-width: 220px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .summary-card.success {
+            color: #2e7d32;
+            border-color: #4caf50;
+            background: #e8f5e9;
+            box-shadow: 0 2px 6px rgba(76, 175, 80, 0.12);
+        }
+
+        .summary-card.success .summary-number,
+        .summary-card.success .summary-label {
+            color: #2e7d32;
+        }
+
+        .summary-card.error {
+            color: #D32F2F;
+            border-color: #F44336!important;
+            background: #fff0f0;
+            box-shadow: 0 2px 6px rgba(244, 67, 54, 0.12);
+        }
+
+        .summary-card.error .summary-number,
+        .summary-card.error .summary-label {
+            color: #D32F2F;
+        }
+        
+        .summary-number {
+            font-size: 2.45em;
+            font-weight: 700;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+        
+        .summary-label {
+            font-weight: 600;
+            line-height: 1.3;
+            font-size: 1em;
+            color: #2c3e50;
+        }
+        
+        .summary-icon {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            opacity: 0.2;
+            font-size: 1.5rem;
+            color: var(--card-color, #6c5ce7);
+        }
+        
+        .comparison-table {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        .table-responsive {
+            border-radius: 15px;
+            border: 2px solid #dee2e6;
+        }
+
+        .table {
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-bottom: 0;
+        }
+
+        .table th {
+            background: linear-gradient(135deg, #6c757d, #495057);
+            color: white;
+            font-weight: 600;
+            border: 1px solid #495057;
+            padding: 0.5rem 0.3rem;
+            font-size: 0.75rem;
+            text-align: center;
+            white-space: normal;
+            word-wrap: break-word;
+        }
+
+        .table td {
+            padding: 0.4rem 0.3rem;
+            border: 1px solid #dee2e6;
+            vertical-align: middle;
+            text-align: center;
+            font-size: 0.75rem;
+            white-space: normal;
+            word-wrap: break-word;
+        }
+
+        /* Sticky first column */
+        .table td:first-child {
+            position: sticky;
+            left: 0;
+            background: #f8f9fa;
+            font-weight: bold;
+            z-index: 5;
+            border-right: 2px solid #6c757d;
+        }
+
+        /* Enhanced styling for integrated table */
+        .opening-row {
+            background-color: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            font-weight: 500;
+        }
+
+        .sub-panel-row {
+            background-color: #f8f9fa;
+            border-left: 4px solid #6c757d;
+            font-size: 0.85em;
+        }
+
+        .sub-panel-row td {
+            padding: 0.3rem 0.25rem;
+        }
+
+        /* Color-coded cell backgrounds */
+        .result-product {
+            background-color: #e8f4fd;
+        }
+
+        .result-series {
+            background-color: #e8f4fd;
+        }
+
+        .result-color {
+            background-color: #f3e5f5;
+        }
+
+        .result-dimension {
+            background-color: #fff3e0;
+        }
+
+        .result-screen {
+            background-color: #eceff1;
+        }
+
+        .result-transom {
+            background-color: #eceff1;
+        }
+
+        /* Mismatch cell highlighting only */
+        .cell-mismatch {
+            background-color: #ffebee !important;
+            border: 1px solid #ffcdd2 !important;
+        }
+
+        .match-cell {
+            background-color: #ffebee;
+        }
+
+        .note-cell {
+            background-color: #f5f5f5;
+            word-wrap: break-word;
+            white-space: normal;
+            text-align: left;
+            overflow-wrap: break-word;
+        }
+
+        /* Match result styling */
+        .match-yes {
+            background-color: #f0f8f0;
+            color: #2e7d32;
+            font-weight: bold;
+        }
+
+        .match-no {
+            background-color: #fce8e8;
+            color: #c62828;
+            font-weight: bold;
+        }
+        
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+        
+        .status-perfect {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status-match {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status-mismatch {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .status-missing {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .status-other {
+            background: #ffeaa7;
+            color: #6c5ce7;
+            border: 1px solid #fdcb6e;
+        }
+        
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .file-info {
+            max-width: 450px;
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            margin: 10px auto 0;
+            width: 100%;
+            box-sizing: border-box;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 14px;
+            text-align: left;
+        }
+        
+        .error-alert {
+            background: linear-gradient(135deg, #dc3545, #c82333);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .download-btn {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            border: none;
+            border-radius: 25px;
+            font-size: 0.9rem;
+            padding: 10px 20px;
+            color: white;
+            transition: all 0.3s ease;
+            box-shadow: 0 3px 10px rgba(40, 167, 69, 0.3);
+            margin: 2rem auto 1rem;
+        }
+        
+        .download-btn:hover {
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
+        }
+        
+        .cancel-btn {
+            background: linear-gradient(45deg, #dc3545, #c82333);
+            border: none;
+            border-radius: 25px;
+            padding: 0.75rem 2rem;
+            color: white;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
+        }
+        
+        .cancel-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(220, 53, 69, 0.4);
+            background: linear-gradient(45deg, #c82333, #bd2130);
+        }
+        
+        .no-data-message {
+            background: rgba(108, 117, 125, 0.1);
+            border-radius: 10px;
+            padding: 2rem;
+            text-align: center;
+            color: #6c757d;
+            margin-bottom: 1rem;
+        }
+
+        /* Empty cell styling */
+        .empty-cell {
+            color: #6c757d;
+            font-style: italic;
+        }
+
+        /* Panel identifier styling */
+        .panel-id {
+            background: rgba(0, 123, 255, 0.1);
+            padding: 0.25rem 0.5rem;
+            border-radius: 5px;
+            font-size: 0.85rem;
+        }
+
+        /* Color cell styling */
+        .color-cell {
+            background: rgba(255, 193, 7, 0.1);
+            padding: 0.25rem 0.5rem;
+            border-radius: 5px;
+            font-size: 0.85rem;
+            max-width: 120px;
+            word-wrap: break-word;
+        }
+
+        /* Reference group separator styling */
+        .reference-group-separator {
+            border-top: 3px solid #212529 !important;
+        }
+
+        .reference-group-separator td {
+            border-top: 3px solid #212529 !important;
+        }
+
+        /* Direction cell styling */
+        .result-direction {
+            background-color: #f3e5ab;
+        }
+        
+        /* Animation for numbers */
+        @keyframes countUp {
+            from {
+                transform: scale(0.8);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+        
+        .summary-number.animate {
+            animation: countUp 0.6s ease-out;
+        }
+
+        /* Media Queries - Mobile First Approach */
+        @media (max-width: 768px) {
+            body {
+                padding-top: 140px;
+            }
+            
+            nav {
+                flex-direction: column;
+                align-items: flex-start;
+                position: relative;
+            }
+            
+            .mobile-menu-toggle {
+                display: flex;
+                position: absolute;
+                top: 50%;
+                right: 0;
+                transform: translateY(-50%);
+            }
+            
+            .nav-links {
+                width: 100%;
+                flex-direction: column;
+                gap: 0.5rem;
+                margin-top: 1rem;
+                background: rgba(255, 255, 255, 0.1);
+                padding: 1rem;
+                border-radius: 10px;
+                display: none;
+            }
+            
+            .nav-links.show {
+                display: flex;
+            }
+
+            .summary-cards {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .summary-card {
+                max-width: 100%;
+                min-width: 280px;
+            }
+            
+            .summary-header {
+                flex-direction: column;
+                text-align: center;
+                gap: 1rem;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .upload-area {
+                padding: 1.5rem;
+            }
+
+            .comparison-table {
+                font-size: 0.7rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .summary-section {
+                padding: 1.5rem;
+                margin: 1rem 0;
+            }
+            
+            .summary-number {
+                font-size: 2rem;
+            }
+
+            .header h1 {
+                font-size: 1.75rem;
+            }
+
+            .upload-area {
+                padding: 1rem;
+            }
+
+            .container1 {
+                padding: 0 15px;
+            }
+            
+            .hamburger-line {
+                width: 100%;
+                height: 3px;
+                background-color: white;
+                border-radius: 2px;
+                transition: all 0.3s ease;
+            }
+
+        }
+        .btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            box-shadow: none;
+            opacity: 1;
+        }
+        .mb-4 {
+            margin-bottom: 0!important;
+        }
+
+        .upload-area small{
+            color: #666;
+                font-size: 0.9rem;
+        }
+
+        .upload-row {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 20px; /* space between boxes */
+        }
+
+        /* each child box wrapper */
+        .upload-row > div {
+            flex: 0 0 450px;   /* fixed width 450px, does not shrink */
+            max-width: 450px;
+        }
+
+        /* ensure upload box and file-info fill wrapper */
+        .upload-row .upload-area,
+        .upload-row .file-info {
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .results-divider {
+            width: 100%;
+            margin: 0 0 30px;
+            height: 2px;
+            background: #8a8a8a;
+            border: none;
+        }
+
+        .container-fluid {
+            margin-bottom: 50px;
+        }
+
+
+        .summary-box {
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            background: #f8f9fa;
+            transition: all 0.3s ease;
+        }
+
+        .summary-box.success {
+            color: #2e7d32;
+            border-color: #4caf50;
+            background: #e8f5e9;
+            box-shadow: 0 2px 6px rgba(76, 175, 80, 0.15);
+        }
+
+        .summary-box.error {
+            color: #d32f2f;
+            border-color: #f44336;
+            background: #ffebee;
+            box-shadow: 0 2px 6px rgba(244, 67, 54, 0.15);
+        }
+
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="container1">
+            <a href="#" class="logo">TOSTEM Work Process</a>
+            <button class="mobile-menu-toggle" id="mobileMenuToggle" onclick="toggleMobileMenu()"></button>    
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
+            </button>
+
+            <ul class="nav-links" id="navLinks">
+            <!-- Work Process -->
+            <li class="dropdown">
+                <a href="#" class="corner-btn">Work Process</a>
+                <ul class="dropdown-menu">
+                <li><a href="/Quotation">Quotation comparison</a></li>
+                <li><a href="/text-glass2">Glass extract</a></li>
+                <li><a href="/glass-check">Glass check</a></li>
+                <li><a href="/Generate">Generate site survey</a></li>
+                <li><a href="/sitewithele" class="active">ELE check</a></li>
+                </ul>
+            </li>
+
+            <!-- Price Update -->
+            <li class="dropdown">
+                <a href="#" class="corner-btn">Price Update</a>
+                <ul class="dropdown-menu">
+                <li><a href="/matrix">Matrix price (Panel)</a></li>
+                <li><a href="/joint">Matrix price (Joint)</a></li>
+                </ul>
+            </li>
+
+            <li id="userManagementLink" style="display: none;">
+                <a href="/user-management" class="corner-btn">User</a>
+            </li>
+
+            </ul>
+        </nav>
+    </header>
+    
+    <div class="header"><h1>ELE Check</h1></div>
+
+    <div class="container-fluid">
+        <div class="row justify-content-center">
+            <div class="col-12 col-xl-11">
+                <div class="main-container p-4">
+                    <p class="subtitle">เปรียบเทียบ Site survey และ ELE</p>
+                    <!-- Upload Section -->
+
+                    <div class="upload-row mb-4">
+                        <!-- Site Upload -->
+                        <div>
+                            <div class="upload-area" id="siteUploadArea">
+                                <strong style="font-size: 1.7em;">Site Survey</strong><br>
+                                <small>คลิกหรือลากไฟล์มาวางที่นี่ (.PDF)</small>
+                                <input type="file" id="siteFile" class="file-input" accept=".pdf">
+                            </div>
+                            <div id="siteFileInfo" class="file-info" style="display:none;">
+                                Site survey: <span id="siteFileName"></span>
+                            </div>
+                        </div>
+
+                        <!-- ELE Upload -->
+                        <div>
+                            <div class="upload-area" id="eleUploadArea">
+                                <strong style="font-size: 1.7em;">ELE</strong><br>
+                                <small>คลิกหรือลากไฟล์มาวางที่นี่ (.PDF)</small>
+                                <input type="file" id="eleFile" class="file-input" accept=".pdf">
+                            </div>
+                            <div id="eleFileInfo" class="file-info" style="display:none;">
+                                ELE: <span id="eleFileName"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Process Button -->
+                    <div class="text-center mb-4">
+                        <button id="processBtn" class="btn upload-btn btn-lg" disabled onclick="processFiles()">
+                            <span id="processBtnText">เปรียบเทียบไฟล์</span>
+                        </button>
+                    </div>
+
+                    <!-- Progress Bar -->
+                    <div id="progressContainer" class="progress-container">
+                        <div class="progress mb-3" style="height: 25px;">
+                            <div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated" 
+                                 style="width: 0%"></div>
+                        </div>
+                        <div id="progressText" class="text-center text-muted"></div>
+                    </div>
+
+                    <!-- Error Alert -->
+                    <div id="errorAlert" class="error-alert" style="display: none;">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <span id="errorMessage"></span>
+                    </div>
+
+                    <!-- Results Section -->
+                    <div id="resultsContainer" class="results-container">
+                        <!-- Updated Summary Cards -->
+                        <hr class="results-divider">
+                        <div class="summary-section">
+                            <div class="summary-header">
+                                <div>
+                                    <h3 id="summaryTitle">สรุปผลการเปรียบเทียบ</h3>
+                                    <div class="token-info" id="tokenInfo" style="display: none;">
+                                        ใช้ Token: <span id="tokenCount">0</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="summary-cards">
+                                <div class="summary-card site-total">
+                                    <div class="summary-label">ทั้งหมด</div>
+                                    <span id="totalSiteItems" class="summary-number">0</span>
+                                    <div class="summary-label">รายการ (Site Survey)</div>
+                                </div>
+                                
+                                <div class="summary-card ele-total">
+                                    <div class="summary-label">รายการทั้งหมด</div>
+                                    <span id="totalEleItems" class="summary-number">0</span>
+                                    <div class="summary-label">รายการ (ELE)</div>
+                                </div>
+                                
+                                <div class="summary-card mismatch">
+                                    <div class="summary-label">ไม่ตรงกัน</div>
+                                    <span id="mismatchItems" class="summary-number">0</span>
+                                    <div class="summary-label">รายการ</div>
+                                </div>
+                                
+                                <div class="summary-card added">
+                                    <div class="summary-label">เพิ่มมา</div>
+                                    <span id="addedItems" class="summary-number">0</span>
+                                    <div class="summary-label">รายการ</div>
+                                </div>
+                                
+                                <div class="summary-card deleted">
+                                    <div class="summary-label">หายไป</div>
+                                    <span id="deletedItems" class="summary-number">0</span>
+                                    <div class="summary-label">รายการ</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Download Button -->
+                        <div class="text-center">
+                            <button id="downloadBtn" class="btn download-btn" onclick="downloadExcel()">
+                                ดาวน์โหลด Excel
+                            </button>
+                        </div>
+
+                        <!-- Integrated Main Comparison Table -->
+                        <div class="comparison-table" id="mainComparisonSection">
+                            
+                            <div class="table-container" style="max-height: 80vh; overflow: auto; border: 2px solid #dee2e6; border-radius: 15px;">
+                                <table class="table table-hover mb-0" style="min-width: 1500px; margin: 0;">
+                                    <thead>
+                                        <tr>
+                                            <th rowspan="2" 
+                                                style="min-width: 80px; position: sticky; left: 0; top: 0; 
+                                                    background: #495057; z-index: 50; vertical-align: middle; color: white;">
+                                                Ref
+                                            </th>
+                                            <th colspan="2" 
+                                                style="position: sticky; top: 0; text-align: center; background: #6c9bd1; 
+                                                    color: white; border: 1px solid #5a8bc4; z-index: 30;">
+                                                Series
+                                            </th>
+                                            <th colspan="2" 
+                                                style="position: sticky; top: 0; text-align: center; background: #74a9d8; 
+                                                    color: white; border: 1px solid #6699cc; z-index: 30;">
+                                                Product Type
+                                            </th>
+                                            <th colspan="2" 
+                                                style="position: sticky; top: 0; text-align: center; background: #a889c8; 
+                                                    color: white; border: 1px solid #9966cc; z-index: 30;">
+                                                Color
+                                            </th>
+                                            <th colspan="2" 
+                                                style="position: sticky; top: 0; text-align: center; background: #d4a574; 
+                                                    color: white; border: 1px solid #cc9966; z-index: 30;">
+                                                Width
+                                            </th>
+                                            <th colspan="2" 
+                                                style="position: sticky; top: 0; text-align: center; background: #d4a574; 
+                                                    color: white; border: 1px solid #cc9966; z-index: 30;">
+                                                Height
+                                            </th>
+                                            <th colspan="2" 
+                                                style="position: sticky; top: 0; text-align: center; background: #8fa8a3; 
+                                                    color: white; border: 1px solid #7a9590; z-index: 30;">
+                                                Insect Screen
+                                            </th>
+                                            <th colspan="1" 
+                                                style="position: sticky; top: 0; text-align: center; background: #a8a88f; 
+                                                    color: white; border: 1px solid #95947a; z-index: 30;">
+                                                Transom
+                                            </th>
+                                            <th colspan="2" 
+                                                style="position: sticky; top: 0; text-align: center; background: #c8a889; 
+                                                    color: white; border: 1px solid #b8976b; z-index: 30;">
+                                                Direction
+                                            </th>
+                                            <th rowspan="2" 
+                                                style="min-width: 100px; position: sticky; top: 0; background: #cc7a7a; 
+                                                    color: white; vertical-align: middle; border: 1px solid #b86b6b; z-index: 30;">
+                                                Match (Yes/No)
+                                            </th>
+                                            <th rowspan="2" 
+                                                style="min-width: 200px; position: sticky; top: 0; background: #8b9aa3; 
+                                                    color: white; vertical-align: middle; border: 1px solid #7a8a93; z-index: 30;">
+                                                Notes
+                                            </th>
+                                        </tr>
+                                        <tr>
+                                            <th style="position: sticky; top: 35px; min-width: 100px; background: #6c9bd1; color: white; border: 1px solid #5a8bc4; z-index: 25;">site-survey</th>
+                                            <th style="position: sticky; top: 35px; min-width: 100px; background: #6c9bd1; color: white; border: 1px solid #5a8bc4; z-index: 25;">ele</th>
+                                            <th style="position: sticky; top: 35px; min-width: 150px; background: #74a9d8; color: white; border: 1px solid #6699cc; z-index: 25;">site-survey</th>
+                                            <th style="position: sticky; top: 35px; min-width: 150px; background: #74a9d8; color: white; border: 1px solid #6699cc; z-index: 25;">ele</th>
+                                            <th style="position: sticky; top: 35px; min-width: 100px; background: #a889c8; color: white; border: 1px solid #9966cc; z-index: 25;">site-survey</th>
+                                            <th style="position: sticky; top: 35px; min-width: 100px; background: #a889c8; color: white; border: 1px solid #9966cc; z-index: 25;">ele</th>
+                                            <th style="position: sticky; top: 35px; min-width: 100px; background: #d4a574; color: white; border: 1px solid #cc9966; z-index: 25;">site-survey</th>
+                                            <th style="position: sticky; top: 35px; min-width: 100px; background: #d4a574; color: white; border: 1px solid #cc9966; z-index: 25;">ele</th>
+                                            <th style="position: sticky; top: 35px; min-width: 100px; background: #d4a574; color: white; border: 1px solid #cc9966; z-index: 25;">site-survey</th>
+                                            <th style="position: sticky; top: 35px; min-width: 100px; background: #d4a574; color: white; border: 1px solid #cc9966; z-index: 25;">ele</th>
+                                            <th style="position: sticky; top: 35px; min-width: 100px; background: #8fa8a3; color: white; border: 1px solid #7a9590; z-index: 25;">site-survey</th>
+                                            <th style="position: sticky; top: 35px; min-width: 100px; background: #8fa8a3; color: white; border: 1px solid #7a9590; z-index: 25;">ele</th>
+                                            <th style="position: sticky; top: 35px; min-width: 100px; background: #a8a88f; color: white; border: 1px solid #95947a; z-index: 25;">ele</th>
+                                            <th style="position: sticky; top: 35px; min-width: 100px; background: #c8a889; color: white; border: 1px solid #b8976b; z-index: 25;">site-survey</th>
+                                            <th style="position: sticky; top: 35px; min-width: 100px; background: #c8a889; color: white; border: 1px solid #b8976b; z-index: 25;">ele</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="comparisonTableBody">
+                                        <!-- Data will be populated here -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let siteFile = null;
+        let eleFile = null;
+        let currentResults = null;
+        let currentController = null; // For AbortController
+        
+        // File upload handlers
+        document.getElementById('siteFile').addEventListener('change', function(e) {
+            handleFileSelection(e.target.files[0], 'site');
+        });
+
+        document.getElementById('eleFile').addEventListener('change', function(e) {
+            handleFileSelection(e.target.files[0], 'ele');
+        });
+
+        // Drag and drop handlers
+        setupDragAndDrop('siteUploadArea', 'site');
+        setupDragAndDrop('eleUploadArea', 'ele');
+
+        function setupDragAndDrop(areaId, type) {
+            const area = document.getElementById(areaId);
+            
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                area.addEventListener(eventName, preventDefaults, false);
+            });
+
+            ['dragenter', 'dragover'].forEach(eventName => {
+                area.addEventListener(eventName, () => area.classList.add('dragover'), false);
+            });
+
+            ['dragleave', 'drop'].forEach(eventName => {
+                area.addEventListener(eventName, () => area.classList.remove('dragover'), false);
+            });
+
+            area.addEventListener('drop', function(e) {
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    handleFileSelection(files[0], type);
+                }
+            });
+        }
+
+        // Mobile menu toggle function
+        function toggleMobileMenu() {
+            const navLinks = document.getElementById('navLinks');
+            const toggleBtn = document.getElementById('mobileMenuToggle');
+            
+            navLinks.classList.toggle('show');
+            toggleBtn.classList.toggle('active');
+        }
+
+        // Event listener for mobile menu toggle
+        document.getElementById('mobileMenuToggle').addEventListener('click', toggleMobileMenu);
+
+        // Close menu when clicking nav links
+        document.querySelectorAll('.nav-links a').forEach(link => {
+            link.addEventListener('click', () => {
+                document.getElementById('navLinks').classList.remove('show');
+                document.getElementById('mobileMenuToggle').classList.remove('active');
+            });
+        });
+
+        // Close menu when clicking outside
+        document.addEventListener('click', (e) => {
+            const nav = document.querySelector('nav');
+            const navLinks = document.getElementById('navLinks');
+            const toggleBtn = document.getElementById('mobileMenuToggle');
+            
+            if (!nav.contains(e.target)) {
+                navLinks.classList.remove('show');
+                toggleBtn.classList.remove('active');
+            }
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        function handleFileSelection(file, type) {
+            if (!file || file.type !== 'application/pdf') {
+                showError('กรุณาเลือกไฟล์ PDF เท่านั้น');
+                return;
+            }
+
+            if (type === 'site') {
+                siteFile = file;
+                document.getElementById('siteFileName').textContent = file.name;
+                document.getElementById('siteFileInfo').style.display = 'block';
+            } else {
+                eleFile = file;
+                document.getElementById('eleFileName').textContent = file.name;
+                document.getElementById('eleFileInfo').style.display = 'block';
+            }
+
+            checkFilesReady();
+        }
+
+        function checkFilesReady() {
+            const processBtn = document.getElementById('processBtn');
+            if (siteFile && eleFile) {
+                processBtn.disabled = false;
+                processBtn.classList.add('btn-success');
+                processBtn.classList.remove('btn-secondary');
+            } else {
+                processBtn.disabled = true;
+                processBtn.classList.remove('btn-success');
+                processBtn.classList.add('btn-secondary');
+            }
+        }
+
+        function processFiles() {
+            if (!siteFile || !eleFile) {
+                showError('กรุณาเลือกไฟล์ทั้งสองไฟล์');
+                return;
+            }
+
+            console.log('Starting file processing...');
+            
+            // Create new AbortController for this request
+            currentController = new AbortController();
+
+            showProgress();
+            hideError();
+
+            const formData = new FormData();
+            formData.append('site_survey', siteFile);
+            formData.append('ele_file', eleFile);
+
+            updateProgress(20, 'กำลังอัปโหลดไฟล์...');
+
+            // Add a timeout as additional safety measure
+            const timeoutId = setTimeout(() => {
+                if (currentController) {
+                    console.log('Request timeout - cancelling');
+                    currentController.abort();
+                }
+            }, 1800000); //  30 minutes
+
+            const progressInterval = setInterval(() => {
+                const currentProgress = parseInt(document.getElementById('progressBar').style.width) || 20;
+                if (currentProgress < 90) {
+                    updateProgress(currentProgress + 5, 'กำลังประมวลผล... โปรดรอสักครู่');
+                }
+            }, 30000);
+
+            fetch('/upload', {
+                method: 'POST',
+                body: formData,
+                signal: currentController.signal
+            })
+            .then(response => {
+                clearTimeout(timeoutId); // Clear timeout on successful response
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                updateProgress(60, 'กำลังประมวลผลข้อมูล...');
+                return response.json();
+            })
+            .then(data => {
+                updateProgress(80, 'กำลังจัดเรียงผลลัพธ์...');
+                
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+
+                setTimeout(() => {
+                    updateProgress(100, 'เสร็จสิ้น!');
+                    displayResults(data);
+                    hideProgress();
+                    resetButtons();
+                }, 500);
+            })
+            .catch(error => {
+                clearTimeout(timeoutId); // Clear timeout on error
+                
+                hideProgress();
+                resetButtons();
+                
+                if (error.name === 'AbortError') {
+                    console.log('Request was cancelled by user');
+                    showError('การประมวลผลถูกยกเลิกโดยผู้ใช้');
+                } else if (error.name === 'TimeoutError') {
+                    console.log('Request timeout');
+                    showError('การประมวลผลใช้เวลานานเกินไป กรุณาลองใหม่อีกครั้ง');
+                } else {
+                    console.error('Processing error:', error);
+                    showError(error.message || 'เกิดข้อผิดพลาดในการประมวลผลไฟล์');
+                }
+            })
+            .finally(() => {
+                clearTimeout(timeoutId);
+                currentController = null;
+            });
+        }
+
+        function performCleanup() {
+            console.log('Performing cleanup...');
+            
+            // Reset UI immediately
+            hideProgress();
+            resetButtons();
+            
+            // Show cancellation message
+            showError('การประมวลผลถูกยกเลิกแล้ว');
+            
+            // Clear error after 3 seconds
+            setTimeout(() => {
+                hideError();
+            }, 3000);
+        }
+
+        function resetButtons() {
+            document.getElementById('processBtn').style.display = 'inline-block';
+            checkFilesReady(); // Restore proper button state
+        }
+
+        function showProgress() {
+            document.getElementById('progressContainer').style.display = 'block';
+            document.getElementById('processBtn').style.display = 'none';
+        }
+
+        function hideProgress() {
+            document.getElementById('progressContainer').style.display = 'none';
+        }
+
+        function updateProgress(percent, text) {
+            document.getElementById('progressBar').style.width = percent + '%';
+            document.getElementById('progressText').textContent = text;
+        }
+
+        function showError(message) {
+            document.getElementById('errorMessage').textContent = message;
+            document.getElementById('errorAlert').style.display = 'block';
+        }
+
+        function hideError() {
+            document.getElementById('errorAlert').style.display = 'none';
+        }
+
+        // Helper object for field matching logic
+        const DataComparator = {
+            _checkFieldMatch: function(siteValue, eleValue, statusField) {
+                // Convert values to strings and normalize
+                const siteStr = String(siteValue || '').trim();
+                const eleStr = String(eleValue || '').trim();
+                
+                // If both are empty/dash, consider as match
+                const emptyValues = ['-', '', 'undefined', 'null'];
+                const siteEmpty = emptyValues.includes(siteStr);
+                const eleEmpty = emptyValues.includes(eleStr);
+                
+                if (siteEmpty && eleEmpty) {
+                    return true; // Both empty = match
+                }
+                
+                // If one empty, one has data = mismatch
+                if ((siteEmpty && !eleEmpty) || (!siteEmpty && eleEmpty)) {
+                    return false; // One empty, one has data = mismatch
+                }
+                
+                // Check status field if available
+                if (statusField && statusField.includes('✅')) {
+                    return true;
+                }
+                
+                // For dimensions, check numerical equality within tolerance
+                if (!isNaN(siteValue) && !isNaN(eleValue) && siteValue !== '' && eleValue !== '') {
+                    return Math.abs(parseInt(siteValue) - parseInt(eleValue)) <= 15;
+                }
+                
+                // Special handling for color codes - extract code from brackets
+                if (this._isColorField(siteStr, eleStr)) {
+                    return this._compareColorCodes(siteStr, eleStr);
+                }
+                
+                // For text fields, check direct equality
+                if (!siteEmpty && !eleEmpty) {
+                    return siteStr === eleStr;
+                }
+                
+                // Default to false
+                return false;
+            },
+            
+            _isColorField: function(siteStr, eleStr) {
+                const siteHasBrackets = /\[([A-Z])\]/.test(siteStr);
+                const eleIsSingleLetter = /^[A-Z]$/.test(eleStr);
+                const siteLooksLikeColor = /^[A-Z]$/.test(siteStr);
+                
+                return siteHasBrackets || eleIsSingleLetter || siteLooksLikeColor;
+            },
+
+            _compareColorCodes: function(siteStr, eleStr) {
+                // Extract color code from site string
+                let siteColorCode = siteStr.toUpperCase();
+                const bracketMatch = siteStr.match(/\[([A-Z])\]/);
+                if (bracketMatch) {
+                    siteColorCode = bracketMatch[1];
+                }
+                
+                // Extract color code from ELE string 
+                let eleColorCode = eleStr.toUpperCase();
+                const eleBracketMatch = eleStr.match(/\[([A-Z])\]/);
+                if (eleBracketMatch) {
+                    eleColorCode = eleBracketMatch[1];
+                }
+                
+                // Compare the extracted codes
+                return siteColorCode === eleColorCode;
+            }
+        };
+
+        // Fixed displayResults function with proper token usage handling
+        function displayResults(data) {
+            // ตรวจสอบ elements ที่จำเป็นก่อนเริ่มทำงาน
+            const requiredElements = [
+                'comparisonTableBody',
+                'resultsContainer'
+            ];
+            
+            const missingElements = requiredElements.filter(id => !document.getElementById(id));
+            
+            if (missingElements.length > 0) {
+                console.error('ขาด DOM elements ที่จำเป็น:', missingElements);
+                showError(`ขาด HTML elements: ${missingElements.join(', ')}`);
+                return;
+            }
+            
+            currentResults = data;
+            window.currentResults = data;
+            
+            console.log('Received data:', data);
+            
+            // ฟังก์ชันช่วยสำหรับอัพเดต DOM อย่างปลอดภัย
+            const updateElementSafely = (id, value) => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.textContent = value;
+                    // Add animation class
+                    element.classList.add('animate');
+                    setTimeout(() => element.classList.remove('animate'), 600);
+                } else {
+                    console.warn(`ไม่พบ Element ที่มี id '${id}' - ข้ามการอัพเดต`);
+                }
+            };
+            
+            // ===========================================
+            // TOKEN USAGE HANDLING - COMPLETE DEBUG
+            // ===========================================
+            console.log('=== COMPLETE TOKEN USAGE DEBUG ===');
+            console.log('Full API Response:', data);
+            console.log('Response keys:', Object.keys(data));
+            console.log('data.token_usage exists:', 'token_usage' in data);
+            console.log('data.token_usage value:', data.token_usage);
+            console.log('data.token_usage type:', typeof data.token_usage);
+            
+            if (data.token_usage) {
+                console.log('token_usage keys:', Object.keys(data.token_usage));
+                console.log('total_tokens value:', data.token_usage.total_tokens);
+                console.log('total_tokens type:', typeof data.token_usage.total_tokens);
+                console.log('estimated_cost value:', data.token_usage.estimated_cost);
+                console.log('api_enabled value:', data.token_usage.api_enabled);
+            }
+            console.log('=== END TOKEN USAGE DEBUG ===');
+
+            // Extract token usage with comprehensive error handling
+            const tokenUsage = data.token_usage || {};
+            const tokenCount = tokenUsage.total_tokens || 0;
+            const estimatedCost = tokenUsage.estimated_cost || 0;
+            const apiEnabled = tokenUsage.api_enabled !== false; // Default to true unless explicitly false
+            
+            console.log('Final parsed token data:', {
+                tokenCount,
+                estimatedCost, 
+                apiEnabled,
+                originalTokenUsage: tokenUsage
+            });
+            
+            // แสดง token info
+            const tokenInfo = document.getElementById('tokenInfo');
+            
+            if (tokenInfo) {
+                tokenInfo.style.display = 'block';
+                
+                console.log('Token display check - Count:', tokenCount, 'Type:', typeof tokenCount, 'API Enabled:', apiEnabled);
+                
+                if (tokenCount > 0 && apiEnabled) {
+                    tokenInfo.innerHTML = `ใช้ Token: ${tokenCount.toLocaleString()} | ค่าใช้จ่ายประมาณ: $${estimatedCost.toFixed(4)}`;
+                    tokenInfo.style.color = '#28a745';
+                    console.log('✅ Displaying token usage with costs');
+                } else if (!apiEnabled) {
+                    tokenInfo.innerHTML = 'ไม่ได้ใช้ OpenAI API (ENABLE_OPENAI = False)';
+                    tokenInfo.style.color = '#6c757d';
+                    console.log('ℹ️ API disabled message shown');
+                } else {
+                    tokenInfo.innerHTML = 'ประมวลผลเสร็จสิ้น (ไม่ใช้ Token)';
+                    tokenInfo.style.color = '#6c757d';
+                    console.log('ℹ️ No token usage message shown');
+                }
+            } else {
+                console.error('❌ tokenInfo element not found');
+            }
+            
+            console.log('Token usage processing completed');
+            
+            // คำนวดสถิติใหม่จากข้อมูลที่ได้รับ
+            if (data.site_data && data.ele_data && data.results) {
+                const siteData = data.site_data || [];
+                const eleData = data.ele_data || [];
+                const results = data.results || [];
+                
+                // 1. รายการทั้งหมดใน Site Survey
+                const totalSiteItems = siteData.length;
+                
+                // 2. รายการทั้งหมดใน ELE
+                const totalEleItems = eleData.length;
+                
+                // 3. รายการที่ไม่ตรงกัน (opening rows ที่มี mismatch เท่านั้น)
+                const openingRows = results.filter(row => row.Row_Type === "Opening");
+                const mismatchItems = openingRows.filter(row => {
+                    const status = row.Overall_Status || '';
+                    return status.includes('❌');
+                }).length;
+                
+                // 4. รายการที่เพิ่มมา (มีใน ELE แต่ไม่มีใน Site Survey)
+                const addedItems = openingRows.filter(row => {
+                    const status = row.Overall_Status || '';
+                    return status.includes('Missing in Site');
+                }).length;
+                
+                // 5. รายการที่ถูกลบ (มีใน Site Survey แต่ไม่มีใน ELE)  
+                const deletedItems = openingRows.filter(row => {
+                    const status = row.Overall_Status || '';
+                    return status.includes('Missing in ELE');
+                }).length;
+                
+                // อัพเดต elements
+                updateElementSafely('totalSiteItems', totalSiteItems);
+                updateElementSafely('totalEleItems', totalEleItems);
+                updateElementSafely('mismatchItems', mismatchItems);
+                updateElementSafely('addedItems', addedItems);
+                updateElementSafely('deletedItems', deletedItems);
+
+                updateSummaryCardColors();
+                
+                console.log('Summary calculated:', {
+                    totalSiteItems,
+                    totalEleItems,
+                    mismatchItems,
+                    addedItems,
+                    deletedItems
+                });
+            }
+            
+            // เติมข้อมูลลงในตารางเปรียบเทียบหลักพร้อม sub-panels ที่รวมเข้าด้วยกัน
+            const tbody = document.getElementById('comparisonTableBody');
+            tbody.innerHTML = '';
+
+            if (data.results && Array.isArray(data.results) && data.results.length > 0) {
+                let previousRefFull = null;
+
+                data.results.forEach((item, index) => {
+                    try {
+                        const row = document.createElement('tr');
+                        
+                        // แยกข้อมูลอ้างอิงแบบเต็มสำหรับเปรียบเทียบ
+                        const currentRefFull = extractFullReference(item.Ref || '');
+                        
+                        // เพิ่มตัวแยกหากข้อมูลอ้างอิงแบบเต็มเปลี่ยน (เฉพาะแถว opening)
+                        const isOpeningRow = item.Row_Type === "Opening";
+                        const isSubPanelRow = item.Row_Type === "Sub_Panel";
+                        
+                        if (isOpeningRow && previousRefFull && previousRefFull !== currentRefFull) {
+                            row.classList.add('reference-group-separator');
+                        }
+                        
+                        // ใช้การจัดรูปแบบที่แตกต่างกันสำหรับแถว opening กับ sub-panel
+                        if (isOpeningRow) {
+                            row.classList.add('opening-row');
+                            previousRefFull = currentRefFull;
+                        } else if (isSubPanelRow) {
+                            row.classList.add('sub-panel-row');
+                        }
+                        
+                        // การแยกฟิลด์ข้อมูลที่ปลอดภัยพร้อม fallback
+                        const getField = (fieldName, fallback = '-') => {
+                            const value = item[fieldName];
+                            if (value !== undefined && value !== null && value !== '') {
+                                return value;
+                            }
+                            return fallback;
+                        };
+                        
+                        // ตรวจสอบ field mismatches แต่ละรายการสำหรับการจัดรูปแบบ
+                        let seriesMatch = true;
+                        let productMatch = true;
+                        let colorMatch = true;
+                        let widthMatch = true;
+                        let heightMatch = true;
+                        let screenMatch = true;
+                        let transomMatch = true;
+                        let directionMatch = true;
+                        
+                        // ตรวจสอบว่ามี DataComparator และฟังก์ชัน _checkFieldMatch หรือไม่
+                        if (typeof DataComparator !== 'undefined' && 
+                            typeof DataComparator._checkFieldMatch === 'function') {
+                            
+                            seriesMatch = DataComparator._checkFieldMatch(
+                                getField('Series'), 
+                                getField('Series_ELE'), 
+                                getField('Series_Match')
+                            );
+                            
+                            productMatch = DataComparator._checkFieldMatch(
+                                getField('Product Type'), 
+                                getField('Element_Type'), 
+                                getField('Type_Match')
+                            );
+                            
+                            colorMatch = DataComparator._checkFieldMatch(
+                                getField('Site_Color'), 
+                                getField('ELE_Color'), 
+                                getField('Color_Match')
+                            );
+                            
+                            widthMatch = DataComparator._checkFieldMatch(
+                                getField('Survey_Wo'), 
+                                getField('Ele_Wo'), 
+                                getField('Wo_Status')
+                            );
+                            
+                            heightMatch = DataComparator._checkFieldMatch(
+                                getField('Survey_Ho'), 
+                                getField('Ele_Ho'), 
+                                getField('Ho_Status')
+                            );
+                            
+                            screenMatch = DataComparator._checkFieldMatch(
+                                getField('Site_Screen'), 
+                                getField('ELE_Screen'), 
+                                getField('Screen_Match')
+                            );
+
+                            // เพิ่มการตรวจสอบการจับคู่ transom
+                            transomMatch = DataComparator._checkFieldMatch(
+                                getField('Series'),  // Site ใช้ Series เป็น transom
+                                getField('ELE_Transom'), 
+                                getField('Transom_Match')
+                            );
+
+                            directionMatch = DataComparator._checkFieldMatch(
+                                getField('Site_Direction'), 
+                                getField('ELE_Direction'), 
+                                getField('Direction_Match')
+                            );
+                        } else {
+                            console.warn('DataComparator ไม่พร้อมใช้งาน - ใช้การแสดงผลเริ่มต้น');
+                        }
+                        
+                        // กำหนดสถานะการจับคู่โดยรวมสำหรับการแสดง Yes/No อย่างง่าย
+                        const overallStatus = item.Overall_Status || '';
+                        const overallMatch = overallStatus.includes('✅');
+                        const matchText = overallMatch ? 'Yes' : 'No';
+                        
+                        // ฟังก์ชันช่วยสำหรับ getElementType_site และ getElementType_ele
+                        let siteElementType = getField('Product Type');
+                        let eleElementType = getField('Element_Type');
+                        
+                        // ตรวจสอบว่ามีฟังก์ชันช่วยหรือไม่
+                        if (typeof getElementType_site === 'function') {
+                            try {
+                                siteElementType = getElementType_site(item, getField);
+                            } catch (e) {
+                                console.warn('Error in getElementType_site:', e);
+                                siteElementType = getField('Product Type');
+                            }
+                        }
+                        
+                        if (typeof getElementType_ele === 'function') {
+                            try {
+                                eleElementType = getElementType_ele(item, getField);
+                            } catch (e) {
+                                console.warn('Error in getElementType_ele:', e);
+                                eleElementType = getField('Element_Type');
+                            }
+                        }
+                        
+                        // สร้าง HTML ของแถวพร้อมการตรวจสอบ null
+                        row.innerHTML = `
+                            <td style="position: sticky; left: 0; background: ${isOpeningRow ? '#e3f2fd' : '#f5f5f5'}; z-index: 5; border-right: 2px solid #6c757d;">
+                                <strong>${getField('Ref')}</strong>
+                                ${isSubPanelRow ? `<br><small class="text-muted">Panel ${getField('Panel_Index', '')}</small>` : ''}
+                            </td>
+                            <td class="result-series ${seriesMatch ? 'cell-match' : 'cell-mismatch'}">${getField('Series')}</td>
+                            <td class="result-series ${seriesMatch ? 'cell-match' : 'cell-mismatch'}">${getField('Series_ELE')}</td>
+                            <td class="result-product ${productMatch ? 'cell-match' : 'cell-mismatch'}">${siteElementType}</td>
+                            <td class="result-product ${productMatch ? 'cell-match' : 'cell-mismatch'}">${eleElementType}</td>
+                            <td class="result-color ${colorMatch ? 'cell-match' : 'cell-mismatch'}">${getField('Site_Color')}</td>
+                            <td class="result-color ${colorMatch ? 'cell-match' : 'cell-mismatch'}">${getField('ELE_Color')}</td>
+                            <td class="result-dimension ${widthMatch ? 'cell-match' : 'cell-mismatch'}">${getField('Survey_Wo')}</td>
+                            <td class="result-dimension ${widthMatch ? 'cell-match' : 'cell-mismatch'}">${getField('Ele_Wo')}</td>
+                            <td class="result-dimension ${heightMatch ? 'cell-match' : 'cell-mismatch'}">${getField('Survey_Ho')}</td>
+                            <td class="result-dimension ${heightMatch ? 'cell-match' : 'cell-mismatch'}">${getField('Ele_Ho')}</td>
+                            <td class="result-screen ${screenMatch ? 'cell-match' : 'cell-mismatch'}">${getField('Site_Screen')}</td>
+                            <td class="result-screen ${screenMatch ? 'cell-match' : 'cell-mismatch'}">${getField('ELE_Screen')}</td>
+                            <td class="result-transom ${transomMatch ? 'cell-match' : 'cell-mismatch'}">${getField('ELE_Transom')}</td>
+                            <td class="result-direction ${directionMatch ? 'cell-match' : 'cell-mismatch'}">${getField('Site_Direction')}</td>
+                            <td class="result-direction ${directionMatch ? 'cell-match' : 'cell-mismatch'}">${getField('ELE_Direction')}</td>
+                            <td class="match-cell ${overallMatch ? 'match-yes' : 'match-no'}">${matchText}</td>
+                            <td class="note-cell"><small>${getField('Notes')}</small></td>
+                        `;
+                        
+                        tbody.appendChild(row);
+                    } catch (rowError) {
+                        console.error(`Error processing row ${index}:`, rowError);
+                        // สร้างแถว error แทน
+                        const errorRow = document.createElement('tr');
+                        errorRow.innerHTML = `
+                            <td colspan="18" class="text-center text-danger py-2">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                Error processing row ${index + 1}: ${item.Ref || 'Unknown Ref'}
+                            </td>
+                        `;
+                        tbody.appendChild(errorRow);
+                    }
+                });
+            } else {
+                // แสดงข้อความหากไม่มีข้อมูลเปรียบเทียบ
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td colspan="18" class="text-center text-muted py-4">
+                        <i class="fas fa-info-circle me-2"></i>
+                        ไม่มีข้อมูลเปรียบเทียบ
+                    </td>
+                `;
+                tbody.appendChild(row);
+            }
+            
+            // แสดงคอนเทนเนอร์ผลลัพธ์
+            const resultsContainer = document.getElementById('resultsContainer');
+            if (resultsContainer) {
+                resultsContainer.style.display = 'block';
+                
+                // เลื่อนไปยังผลลัพธ์
+                try {
+                    resultsContainer.scrollIntoView({ 
+                        behavior: 'smooth', 
+                        block: 'start' 
+                    });
+                } catch (scrollError) {
+                    console.warn('Could not scroll to results:', scrollError);
+                    // Fallback scroll method
+                    resultsContainer.scrollIntoView();
+                }
+            } else {
+                console.error('ไม่พบ resultsContainer element');
+            }
+            
+            console.log('✅ displayResults completed successfully');
+        }
+
+        // Helper functions (ถ้ายังไม่มี)
+        function extractFullReference(ref) {
+            if (typeof ref !== 'string') {
+                return '';
+            }
+            return ref.trim();
+        }
+
+        // ฟังก์ชันช่วยสำหรับการจัดรูปแบบตัวเลข (หากยังไม่มี)
+        function formatNumber(num) {
+            if (typeof num !== 'number') {
+                return '0';
+            }
+            if (num >= 1000000) {
+                return (num / 1000000).toFixed(1) + 'M';
+            } else if (num >= 1000) {
+                return (num / 1000).toFixed(1) + 'K';
+            } else {
+                return num.toString();
+            }
+        }
+
+        // ฟังก์ชันช่วยสำหรับการแยกข้อมูลอ้างอิงแบบเต็ม (หากยังไม่มี)
+        function extractFullReference(ref) {
+            if (typeof ref !== 'string') {
+                return '';
+            }
+            return ref.trim();
+        }
+
+        function getStatusClass(status) {
+            if (typeof status !== 'string') return 'status-mismatch';
+
+            if (status === '✅ Perfect Match' || status === '✅ Complete Match' || status === '✅ Match' || status.includes('✅')) {
+                return 'status-match';
+            } else if (status.includes('Missing')) {
+                return 'status-missing';
+            } else if (status.includes('❌') || status.includes('Mismatch')) {
+                return 'status-mismatch';
+            } else {
+                return 'status-other';
+            }
+        }
+
+        // Enhanced helper functions for getting panel-specific data
+        const getPanelData = (item, dataSource, field) => {
+            if (item.Row_Type === "Sub_Panel" && window.currentResults) {
+                const data = window.currentResults[dataSource];
+                if (data) {
+                    const foundData = data.find(d => d.Ref === item.Ref);
+                    if (foundData && foundData.OpenAI_Panels && foundData.OpenAI_Panels.length > 0) {
+                        const panelIndex = (item.Panel_Index || 1) - 1;
+                        if (foundData.OpenAI_Panels[panelIndex] && foundData.OpenAI_Panels[panelIndex][field]) {
+                            return foundData.OpenAI_Panels[panelIndex][field];
+                        }
+                        // Fallback to first panel if index is out of range
+                        if (foundData.OpenAI_Panels[0] && foundData.OpenAI_Panels[0][field]) {
+                            return foundData.OpenAI_Panels[0][field];
+                        }
+                    }
+                }
+            }
+            return null;
+        };
+
+        const getElementType_ele = (item, getField) => {
+            // สำหรับ Sub-Panel rows - ใช้ OpenAI panels data
+            if (item.Row_Type === "Sub_Panel") {
+                const panelType = getPanelData(item, 'ele_data', 'type');
+                if (panelType) return panelType;
+                
+                // Fallback สำหรับ sub-panel
+                return getField('Element_Type', '-');
+            }
+            
+            // สำหรับ Opening rows - ใช้ Element_Type จาก ELE data
+            const elementType = getField('Element_Type', '-');
+            
+            // ถ้าไม่มี Element_Type ใน ELE ให้ดู OpenAI data
+            if (!elementType || elementType === '-') {
+                if (window.currentResults && window.currentResults.ele_data) {
+                    const eleData = window.currentResults.ele_data.find(ele => ele.Ref === item.Ref);
+                    if (eleData && eleData.element_type) {
+                        return eleData.element_type;
+                    }
+                }
+                return '-';
+            }
+            
+            return elementType;
+        };
+
+        const getElementType_site = (item, getField) => {
+            // สำหรับ Sub-Panel rows - ใช้ OpenAI panels data
+            if (item.Row_Type === "Sub_Panel") {
+                const panelType = getPanelData(item, 'site_data', 'type');
+                if (panelType) return panelType;
+                
+                // Fallback สำหรับ sub-panel
+                return getField('Product Type', '-');
+            }
+            
+            // สำหรับ Opening rows - ใช้ Product Type จาก site survey data
+            const productType = getField('Product Type', '-');
+            
+            // ถ้าไม่มี Product Type ใน site survey ให้ดู OpenAI data
+            if (!productType || productType === '-') {
+                if (window.currentResults && window.currentResults.site_data) {
+                    const siteData = window.currentResults.site_data.find(site => site.Ref === item.Ref);
+                    if (siteData && siteData.product_type) {
+                        return siteData.product_type;
+                    }
+                }
+                return '-';
+            }
+            
+            return productType;
+        };
+
+        // Enhanced dimension getters for sub-panels
+        const getPanelWidth = (item, getField, source) => {
+            if (item.Row_Type === "Sub_Panel") {
+                const panelWidth = getPanelData(item, source, 'width');
+                if (panelWidth) return panelWidth.toString();
+            }
+            
+            // For opening rows or fallback
+            const fieldName = source === 'site_data' ? 'Survey_Wo' : 'Ele_Wo';
+            return getField(fieldName);
+        };
+
+        const getPanelHeight = (item, getField, source) => {
+            if (item.Row_Type === "Sub_Panel") {
+                const panelHeight = getPanelData(item, source, 'height');
+                if (panelHeight) return panelHeight.toString();
+            }
+            
+            // For opening rows or fallback
+            const fieldName = source === 'site_data' ? 'Survey_Ho' : 'Ele_Ho';
+            return getField(fieldName);
+        };
+
+        function downloadExcel() {
+            if (!currentResults) {
+                showError('ไม่มีข้อมูลสำหรับดาวน์โหลด');
+                return;
+            }
+
+            const downloadBtn = document.getElementById('downloadBtn');
+            const originalText = downloadBtn.innerHTML;
+            downloadBtn.innerHTML = '<span class="loading-spinner me-2"></span>กำลังสร้างไฟล์...';
+            downloadBtn.disabled = true;
+
+            fetch('/download_excel', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(currentResults)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('ไม่สามารถสร้างไฟล์ Excel ได้');
+                }
+                return response.blob();
+            })
+            .then(blob => {
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = `Integrated_Analysis_${new Date().toISOString().slice(0,10)}.xlsx`;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+            })
+            .catch(error => {
+                showError(error.message);
+            })
+            .finally(() => {
+                downloadBtn.innerHTML = originalText;
+                downloadBtn.disabled = false;
+            });
+        }
+        
+        function extractFullReference(ref) {
+            return ref.trim(); // W1.1 → W1.1, W1.2 → W1.2
+        }
+        
+        // Initialize
+        checkFilesReady();
+
+        function updateSummaryCardColors() {
+            // map of numeric element IDs that are already in your HTML
+            const ids = ['mismatchItems', 'addedItems', 'deletedItems'];
+
+            ids.forEach(id => {
+                const numEl = document.getElementById(id);
+                if (!numEl) {
+                    // if element not found, skip silently
+                    return;
+                }
+
+                // parse integer from the element's text content (safe fallback to 0)
+                const count = parseInt(numEl.textContent.trim().replace(/,/g, ''), 10) || 0;
+
+                // find closest ancestor that has class 'summary-card'
+                // this assumes your structure is: <div class="summary-card ..."><span id="mismatchItems">...</span></div>
+                let card = numEl.closest('.summary-card');
+
+                // If the numeric element is nested inside another element (like <span> inside <div>),
+                // but closest('.summary-card') returns null, try searching its parent nodes explicitly.
+                if (!card) {
+                    let parent = numEl.parentElement;
+                    while (parent && parent !== document.body) {
+                        if (parent.classList && parent.classList.contains('summary-card')) {
+                            card = parent;
+                            break;
+                        }
+                        parent = parent.parentElement;
+                    }
+                }
+
+                if (!card) {
+                    // nothing to style if no wrapper found
+                    return;
+                }
+
+                // remove both classes then add the correct one
+                card.classList.remove('success', 'error');
+                if (count === 0) {
+                    card.classList.add('success');
+                } else {
+                    card.classList.add('error');
+                }
+            });
+        }
+
+        document.querySelectorAll('.nav-links a').forEach(link => {
+            link.addEventListener('click', () => {
+                document.getElementById('navLinks').classList.remove('show');
+                document.querySelector('.mobile-menu-toggle').classList.remove('active');
+            });
+        });
+
+        document.addEventListener('DOMContentLoaded', async function() {
+            // เรียกฟังก์ชันตรวจสอบ Admin
+            await checkAndShowAdminMenu();
+        });
+
+        // ✅ ฟังก์ชันตรวจสอบ Admin (เก็บไว้ที่บรรทัด 1027)
+        async function checkAndShowAdminMenu() {
+            try {
+                const username = sessionStorage.getItem('username');
+                
+                if (!username) {
+                    return;
+                }
+                
+                const response = await fetch('/api/users/check-admin', {
+                    headers: {
+                        'X-Username': username
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success && data.is_admin) {
+                    const userManagementLink = document.getElementById('userManagementLink');
+                    if (userManagementLink) {
+                        userManagementLink.style.display = 'block';
+                    }
+                }
+                
+            } catch (error) {
+                console.error('Error checking admin status:', error);
+            }
+        }
+
+    </script>
+</body>
+</html>

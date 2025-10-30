@@ -1,0 +1,34 @@
+{
+  "supawitchmoolluck@gmail.com": {
+    "password": "1234",
+    "created_at": "2025-10-17T15:25:01.945127",
+    "role": "admin"
+  },
+  "kunnapabtostem@hotmail.com": {
+    "password": "10003391",
+    "created_at": "2025-10-17T15:25:20.929078",
+    "role": "admin",
+    "updated_at": "2025-10-17T16:25:56.903243"
+  },
+  "warisa.s397@gmail.com": {
+    "password": "1234",
+    "created_at": "2025-10-17T15:27:41.148388",
+    "role": "admin",
+    "updated_at": "2025-10-17T16:26:18.175840"
+  },
+  "vinut@gmail.com": {
+    "password": "1234",
+    "created_at": "2025-10-20T14:46:19.741204",
+    "role": "user"
+  },
+  "bopohejo@hotmail.com": {
+    "password": "1234",
+    "created_at": "2025-10-21T13:42:27.927530",
+    "role": "admin"
+  },
+  "admin": {
+    "password": "1234",
+    "created_at": "2025-10-21T13:42:45.216085",
+    "role": "admin"
+  }
+}

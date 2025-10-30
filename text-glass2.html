@@ -1,0 +1,1427 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Format Tostem</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+       body{
+            font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height:1.6;
+            background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
+            min-height:100vh;
+            padding-top:80px;
+        }
+
+        /* Header */
+        header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            padding: 1rem 0;
+            transition: all 0.3s ease;
+        }
+        
+        .container1 {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: white;
+            text-decoration: none;
+        }
+        
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 1rem;
+            margin: 0;
+            padding: 0;
+            flex-wrap: wrap;
+        }
+        
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            transition: color 0.3s ease;
+            font-weight: 500;
+            padding: 0.5rem;      
+            border-radius: 5px;   
+            font-size: 1.1rem;
+        }
+        
+        .nav-links a:hover {
+            color: #fff;
+        }
+        .nav-links a.active {
+            color: #764ba2;
+        }
+        
+        .nav-links li {
+            position: relative;
+        }
+
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: rgba(255, 255, 255, 1);
+            backdrop-filter: blur(5px);
+            list-style: none;
+            padding: 10px 0;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+            min-width: 220px;
+            z-index: 999;
+        }
+
+        /* Show submenu on hover */
+        .dropdown:hover .dropdown-menu {
+            display: block;
+        }
+
+        /* Menu link styles inside dropdown */
+        .dropdown-menu li a {
+            display: block;
+            padding: 10px 18px;
+            color: #333;
+            font-size: 1rem;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .dropdown-menu li a:hover {
+            background: #e9e9e9;
+            color: #333;
+        }
+
+        /* Dropdown arrow */
+        .dropdown > a::after {
+            content: " ▾";
+            font-size: 0.7rem;
+        }
+
+        /* --- Mobile adjustments --- */
+        @media (max-width: 768px) {
+        .dropdown-menu {
+            position: static;
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: none;
+            padding: 0.5rem 1rem;
+            border-radius: 0;
+        }
+
+        .dropdown-menu li a {
+            color: white;
+        }
+
+        .dropdown-menu li a:hover {
+            background: rgba(255, 255, 255, 0.15);
+            color: #ffd700;
+        }
+        }
+
+        /* Mobile Menu Toggle */
+        .mobile-menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            cursor: pointer;
+            flex-direction: column;
+            justify-content: space-around;
+            width: 30px;
+            height: 25px;
+            padding: 0;
+        }
+
+        .hamburger-line {
+            width: 100%;
+            height: 3px;
+            background-color: white;
+            border-radius: 2px;
+            transition: all 0.3s ease;
+        }
+
+        .mobile-menu-toggle.active .hamburger-line:nth-child(1) {
+            transform: rotate(45deg) translate(6px, 6px);
+        }
+
+        .mobile-menu-toggle.active .hamburger-line:nth-child(2) {
+            opacity: 0;
+        }
+
+        .mobile-menu-toggle.active .hamburger-line:nth-child(3) {
+            transform: rotate(-45deg) translate(6px, -6px);
+        }
+        
+        .header{
+            text-align:center;
+            color:white;
+            margin-bottom:30px;
+            margin-top:20px;
+        }
+        .header h1{
+            font-size:2.5rem;
+            margin-bottom:10px;
+            text-shadow:2px 2px 4px rgba(0,0,0,.3);
+            font-weight:700;
+        }
+        .container{
+            max-width:1200px;
+            margin:0 auto 50px;
+            background:white;
+            padding:30px;
+            border-radius:15px;
+            box-shadow:0 10px 30px rgba(0,0,0,.2);
+        }
+        .container h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin: 15px 0 30px;
+            font-size: 1.1em;
+            font-weight: 400;
+            line-height: 1.6;
+        }
+
+        .upload-wrapper {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin: 30px 0;
+        }
+
+        .upload-area {
+            flex: 1;
+            min-width: 280px;
+            max-width: 450px;
+            background: #f9fafb;
+            border: 2px dashed #007bff;
+            border-radius: 12px;
+            padding: 4.5em 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+        }
+
+        .upload-area.secondary {
+            border-color: #28a745;
+        }
+
+        .upload-area:hover {
+            background: #e8f0fe;
+            transform: translateY(-2px);
+            border-color: #0056b3;
+        }
+
+        .upload-area.secondary:hover {
+            background: #e9fce9;
+            border-color: #1e7e34;
+        }
+
+        .upload-text strong {
+            display: block;
+            font-size: 1.1rem;
+            color: #333;
+            margin-bottom: 6px;
+        }
+
+        .upload-text small {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .upload-area:hover {
+            background: #e3f2fd;
+            border-color: #0056b3;
+            transform: translateY(-2px);
+        }
+
+        .upload-area.secondary:hover {
+            background: #e8f5e8;
+            border-color: #1e7e34;
+        }
+
+        .upload-area.dragover {
+            background: #e3f2fd;
+            border-color: #1976d2;
+            transform: scale(1.02);
+        }
+
+        .upload-area.secondary.dragover {
+            background: #e8f5e8;
+            border-color: #155724;
+        }
+
+        /* make each upload + status pair a vertical mini-column */
+        .upload-pair {
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            flex: 1;
+            min-width: 280px;
+            max-width: 450px;
+        }
+
+        /* remove flex behavior from upload-wrapper for spacing */
+        .upload-wrapper {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        /* make upload areas fill their column width */
+        .upload-pair .upload-area {
+            flex: 1;
+        }
+
+        /* file-status directly under its own upload box */
+        .upload-pair .file-status {
+            margin-top: 10px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .form-group {
+            max-width: 940px;   /* roughly matches two upload boxes + gap */
+            margin: 0 auto;     /* centers it horizontally */
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .number-input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            background: white;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            display: block;
+        }
+
+        .number-input:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 3px rgba(0,123,255,0.1);
+        }
+
+        .btn, .process-btn {
+            width: auto;
+            display: block;
+            margin: 30px auto 0;
+            padding: 15px 30px;
+            background: linear-gradient(45deg, #007bff, #0056b3);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .btn:hover:not(:disabled), .process-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,123,255,0.3);
+        }
+
+        .btn:disabled, .process-btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #007bff;
+            display: none;
+        }
+
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #007bff;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .message {
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            display: none;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .success2-message {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
+        .results-section {
+            padding: 20px 0;
+            display: none;
+        }
+
+        .section-title {
+            font-size: 1.8rem;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #007bff;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 0;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .data-table th {
+            background: #83a4ff;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .data-table td {
+            padding: 15px;
+            border-bottom: 1px solid #e9ecef;
+            color: #495057;
+            text-align: center;
+        }
+
+        .data-table tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+
+        .data-table tr:hover {
+            background: #e3f2fd;
+            transition: background-color 0.3s ease;
+        }
+
+        .data-table .page-cell {
+            font-weight: 400;
+        }
+
+        .data-table .glass-cell {
+            font-weight: 400;
+        }
+
+        .text-output-section {
+            padding: 20px 0;
+            display: none;
+        }
+
+        .text-output-container {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0 0;
+            position: relative;
+        }
+
+        .text-output {
+            font-family: 'Noto Sans Thai', 'TH Sarabun New', 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            color: #333;
+            white-space: pre-wrap;
+            word-break: break-word;
+            max-height: 400px;
+            overflow-y: auto;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            box-shadow: 0 3px 10px rgba(40, 167, 69, 0.3);
+        }
+
+        .copy-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(40,167,69,0.3);
+        }
+
+        .copy-btn.copied {
+            background: linear-gradient(45deg, #17a2b8, #138496);
+        }
+
+        .summary-section {
+            color: #333;
+            padding: 0;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .summary-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .summary-stats {
+            display: flex;
+            justify-content: center;
+            align-items: stretch;
+            gap: 25px;
+            margin-top: 20px;
+            flex-wrap: wrap; /* still responsive on small screens */
+        }
+
+        .stat-item {
+            width: 250px;
+            color: #2c3e50;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            background: #f8f9fa;           /* light grey background */
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 20px 40px;
+        }
+
+        .stat-number {
+            font-size: 2.45em;
+            font-weight: 700;
+            color: #007bff;
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 1em;
+            color: #2c3e50;
+            font-weight: 600;
+        }
+
+        .summary-text {
+            margin-top: 20px;
+            font-size: 1rem;
+            color: #333;
+            font-weight: 400;
+        }
+
+        .stat-item.highlight {
+            background: linear-gradient(45deg, #007bff, #0056b3);
+            color: white;
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(0,123,255,0.4);
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+
+        .stat-item.highlight .stat-number {
+            color: white;
+            font-size: 2.2rem;
+        }
+
+        .stat-item.highlight .stat-label {
+            color: white;
+            opacity: 1;
+            font-weight: 600;
+        }
+
+        .file-status {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .file-status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .file-status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        /* Media Queries */
+        @media(max-width: 768px){
+            body {
+                padding-top: 140px;
+            }
+            
+            nav {
+                flex-direction: column;
+                align-items: flex-start;
+                position: relative;
+            }
+            
+            .mobile-menu-toggle {
+                display: flex;
+                position: absolute;
+                top: 50%;
+                right: 0;
+                transform: translateY(-50%);
+            }
+            
+            .nav-links {
+                width: 100%;
+                flex-direction: column;
+                gap: 0.5rem;
+                margin-top: 1rem;
+                background: rgba(255, 255, 255, 0.1);
+                padding: 1rem;
+                border-radius: 10px;
+                display: none;
+            }
+            
+            .nav-links.show {
+                display: flex;
+            }
+            
+            .nav-links a {
+                padding: 0.75rem;
+                text-align: center;
+                width: 100%;
+                border-radius: 8px;
+                font-size: 1rem;
+            }
+            
+            .container {
+                margin: 10px;
+                border-radius: 10px;
+                padding: 20px;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .data-table {
+                font-size: 0.9rem;
+            }
+
+            .data-table th, .data-table td {
+                padding: 10px 5px;
+            }
+
+            .copy-btn {
+                position: static;
+                margin-top: 10px;
+                width: 100%;
+            }
+        }
+
+        @media(max-width: 480px){
+            body {
+                padding-top: 160px;
+            }
+            
+            .logo {
+                font-size: 1.2rem;
+            }
+            
+            .header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .container {
+                margin: 5px;
+                padding: 15px;
+            }
+            
+            .nav-links a {
+                font-size: 0.9rem;
+                padding: 0.6rem;
+            }
+        }
+
+        .results-divider {
+            width: 100%;
+            margin-bottom: 30px;
+            height: 2px;
+            background: #8a8a8a;
+            border: none;
+        }
+
+
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <nav class="container1">
+            <a href="#" class="logo">Format Tostem</a>
+            <button class="mobile-menu-toggle" onclick="toggleMobileMenu()">
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
+            </button>
+
+            <ul class="nav-links" id="navLinks">
+            <!-- Work Process -->
+            <li class="dropdown">
+                <a href="#" class="corner-btn">Work Process</a>
+                <ul class="dropdown-menu">
+                <li><a href="/Quotation">Quotation comparison</a></li>
+                <li><a href="/text-glass2" class="active">Glass extract</a></li>
+                <li><a href="/glass-check">Glass check</a></li>
+                <li><a href="/Generate">Generate site survey</a></li>
+                <li><a href="/sitewithele">ELE check</a></li>
+                </ul>
+            </li>
+
+            <!-- Price Update -->
+            <li class="dropdown">
+                <a href="#" class="corner-btn">Price Update</a>
+                <ul class="dropdown-menu">
+                <li><a href="/matrix">Matrix price (Panel)</a></li>
+                <li><a href="/joint">Matrix price (Joint)</a></li>
+                </ul>
+            </li>
+
+            <li id="userManagementLink" style="display: none;">
+                <a href="/user-management" class="corner-btn">User</a>
+            </li>
+
+            </ul>
+        </nav>
+    </header>
+    
+    <div class="header"><h1>Glass extract</h1></div>
+
+    <div class="container">
+        <p class="subtitle">
+            ดึงข้อมูล Reference Code และ GLASS จาก ELE และดึงข้อมูลประเภทกระจกจาก Site Survey
+        </p>
+
+        <form id="uploadForm" enctype="multipart/form-data">
+
+            <div class="upload-wrapper">
+                <!-- ELE upload + status -->
+                <div class="upload-pair">
+                    <div class="upload-area ele" onclick="document.getElementById('pdfFile').click()">
+                    <div class="upload-text">
+                        <strong style="font-size: 1.7em;"> ELE</strong>
+                        <small>คลิกหรือลากไฟล์มาวาง (.pdf ไม่เกิน 25MB)</small>
+                    </div>
+                    </div>
+                    <input type="file" id="pdfFile" name="file" class="file-input" accept=".pdf" required>
+                    <div id="pdfFileStatus" class="file-status" style="display:none;"></div>
+                </div>
+
+                <!-- Site Survey upload + status -->
+                <div class="upload-pair">
+                    <div class="upload-area secondary" onclick="document.getElementById('siteSurveyFile').click()">
+                    <div class="upload-text">
+                        <strong style="font-size: 1.7em;"> Site Survey</strong>
+                        <small>คลิกหรือลากไฟล์มาวาง (.pdf)</small>
+                    </div>
+                    </div>
+                    <input type="file" id="siteSurveyFile" name="site_survey" class="file-input" accept=".pdf">
+                    <div id="siteSurveyStatus" class="file-status" style="display:none;"></div>
+                </div>
+            </div>
+
+
+
+            <div class="form-group">
+                <label for="startPage">เริ่มอ่านจากหน้าที่:</label>
+                <input type="number" id="startPage" name="start_page" class="number-input" value="1" min="1" required>
+            </div>
+
+            <button type="submit" id="processBtn" class="process-btn" disabled>ประมวลผล PDF</button>
+        </form>
+
+        <div id="loading" class="loading">
+            <div class="loading-spinner"></div>
+            <p>กำลังประมวลผล PDF...</p>
+        </div>
+
+        <div id="errorMessage" class="message error-message"></div>
+
+        <div id="resultsSection" class="results-section">
+            <div id="summarySection" class="summary-section" style="display: none;">
+                <hr class="results-divider">
+                <div class="summary-title">สรุปผลลัพธ์</div>
+
+                <div class="summary-stats">
+                    <div class="stat-item">
+                        <span class="stat-label">ทั้งหมด</span>
+                        <span class="stat-number" id="totalRecords">0</span>
+                        <span class="stat-label">Ref. code</span>
+                    </div>
+
+                    <div class="stat-item">
+                        <span class="stat-label">จำนวนกระจกทั้งหมด</span>
+                        <span class="stat-number" id="totalGlass">0</span>
+                        <span class="stat-label">ชิ้น</span>
+                    </div>
+                </div>
+
+                <div class="summary-text">
+                    จำนวนการประมวลผลทั้งหมด (รวมมุ้งและ Transom): <span id="totalReferences">0</span>
+                </div>
+            </div>
+        </div>
+                    
+            <div id="referenceSection">
+                <div id="referenceData"></div>
+
+                        <div id="textOutputSection" class="text-output-section">
+            <div class="text-output-container">
+                <button id="copyBtn" class="copy-btn" onclick="copyToClipboard()">คัดลอก</button>
+                <div id="textOutput" class="text-output"></div>
+            </div>
+        </div>
+
+            </div>
+        </div>
+
+        <div id="productInfo" class="message success2-message" style="display: none; margin-top: 10px;"></div>
+    </div>
+
+    <script>
+        let siteSurveyData = null;
+
+        function cleanText(text) {
+            if (!text) return text;
+            // Fix specific Thai issues first
+            text = text.replace(/เทมเปอร์+/g, 'เทมเปอร์');  // Remove duplicate การันต์
+            text = text.replace(/เทมเปอร(?!์)/g, 'เทมเปอร์'); // Add การันต์ if missing
+            text = text.replace(/\uf71e/g, '\u0e4c');    // Fix Thai encoding
+            text = text.replace(/[^\u0E00-\u0E7Fa-zA-Z0-9\s\*\=\(\)\.\-]/g, ''); // Remove unwanted chars
+            return text;
+        }
+
+        function toggleMobileMenu() {
+            const navLinks = document.getElementById('navLinks');
+            const toggleBtn = document.querySelector('.mobile-menu-toggle');
+            
+            navLinks.classList.toggle('show');
+            toggleBtn.classList.toggle('active');
+        }
+
+        // ปิดเมนูเมื่อคลิกลิงก์
+        document.querySelectorAll('.nav-links a').forEach(link => {
+            link.addEventListener('click', () => {
+                document.getElementById('navLinks').classList.remove('show');
+                document.querySelector('.mobile-menu-toggle').classList.remove('active');
+            });
+        });
+
+        // ปิดเมนูเมื่อคลิกนอกพื้นที่
+        document.addEventListener('click', (e) => {
+            const nav = document.querySelector('nav');
+            const navLinks = document.getElementById('navLinks');
+            const toggleBtn = document.querySelector('.mobile-menu-toggle');
+            
+            if (!nav.contains(e.target)) {
+                navLinks.classList.remove('show');
+                toggleBtn.classList.remove('active');
+            }
+        });
+
+        // Handle drag and drop for main PDF
+        const uploadArea = document.querySelector('.upload-area');
+        const fileInput = document.getElementById('pdfFile');
+        const processBtn = document.getElementById('processBtn');
+
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, highlight, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, unhighlight, false);
+        });
+
+        function highlight(e) {
+            e.currentTarget.classList.add('dragover');
+        }
+
+        function unhighlight(e) {
+            e.currentTarget.classList.remove('dragover');
+        }
+
+        uploadArea.addEventListener('drop', handleDrop, false);
+
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            
+            if (files.length > 0) {
+                fileInput.files = files;
+                updateFileStatus();
+            }
+        }
+
+        // Handle drag and drop for site survey
+        const siteSurveyArea = document.querySelector('.upload-area.secondary');
+        const siteSurveyInput = document.getElementById('siteSurveyFile');
+
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            siteSurveyArea.addEventListener(eventName, preventDefaults, false);
+        });
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            siteSurveyArea.addEventListener(eventName, highlight, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            siteSurveyArea.addEventListener(eventName, unhighlight, false);
+        });
+
+        siteSurveyArea.addEventListener('drop', handleSiteSurveyDrop, false);
+
+        function handleSiteSurveyDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            
+            if (files.length > 0) {
+                siteSurveyInput.files = files;
+                updateSiteSurveyStatus();
+            }
+        }
+
+        fileInput.addEventListener('change', updateFileStatus);
+        siteSurveyInput.addEventListener('change', updateSiteSurveyStatus);
+
+        function updateFileStatus() {
+            const file = fileInput.files[0];
+            const statusDiv = document.getElementById('pdfFileStatus');
+            
+            if (file) {
+                const fileName = file.name;
+                uploadArea.innerHTML = `
+                    <div>
+                        <strong style="color: #28a745;">✅ ELE: ${fileName}</strong><br><br>
+                        <small style="color: #666;">คลิกเพื่อเลือกไฟล์อื่น</small>
+                    </div>
+                `;
+                statusDiv.textContent = `ELE: ${fileName}`;
+                statusDiv.className = 'file-status success';
+                statusDiv.style.display = 'block';
+                
+                checkFormReady();
+            }
+        }
+
+        function updateSiteSurveyStatus() {
+            const file = siteSurveyInput.files[0];
+            const statusDiv = document.getElementById('siteSurveyStatus');
+            
+            if (file) {
+                const fileName = file.name;
+                siteSurveyArea.innerHTML = `
+                    <div>
+                        <strong style="color: #28a745;">✅ Site Survey: ${fileName}</strong><br><br>
+                        <small style="color: #666;">คลิกเพื่อเลือกไฟล์อื่น</small>
+                    </div>
+                `;
+                statusDiv.textContent = `Site Survey: ${fileName}`;
+                statusDiv.className = 'file-status success';
+                statusDiv.style.display = 'block';
+            } else {
+                siteSurveyArea.innerHTML = `
+                    <div>
+                        <strong style="font-size: 1.2em;">📋 คลิกหรือลากไฟล์ Site Survey มาวางที่นี่ (ไม่บังคับ)</strong><br><br>
+                        <small style="color: #666;">รองรับไฟล์ .pdf เท่านั้น - ใช้สำหรับดึงข้อมูลประเภทกระจก</small>
+                    </div>
+                `;
+                statusDiv.style.display = 'none';
+            }
+        }
+
+        function checkFormReady() {
+            processBtn.disabled = !fileInput.files.length;
+        }
+
+        function getGlassTypeFromSiteSurvey(refCode) {
+            if (!refCode || !siteSurveyData) {
+                return null;
+            }
+            
+            // Normalize to uppercase and trim
+            refCode = refCode.toString().trim().toUpperCase();
+            
+            // Only exact match - no fallback matching
+            if (siteSurveyData[refCode]) {
+                return siteSurveyData[refCode];
+            }
+            
+            return null;
+        }
+
+        function copyToClipboard() {
+            const textOutput = document.getElementById('textOutput');
+            const copyBtn = document.getElementById('copyBtn');
+            
+            // Create a temporary textarea to copy text
+            const tempTextArea = document.createElement('textarea');
+            tempTextArea.value = textOutput.textContent;
+            document.body.appendChild(tempTextArea);
+            tempTextArea.select();
+            
+            try {
+                document.execCommand('copy');
+                copyBtn.textContent = '✅ คัดลอกแล้ว';
+                copyBtn.classList.add('copied');
+                
+                setTimeout(() => {
+                    copyBtn.textContent = 'คัดลอก';
+                    copyBtn.classList.remove('copied');
+                }, 2000);
+            } catch (err) {
+                console.error('Failed to copy text: ', err);
+            }
+            
+            document.body.removeChild(tempTextArea);
+        }
+
+        function getOrderQtyForPage(productInfo, pageNum) {
+            for (const info of productInfo) {
+                if (info.page === pageNum) {
+                    const orderQty = info.order_qty_sets;
+                    try {
+                        return orderQty && /^\d+$/.test(orderQty) ? parseInt(orderQty) : 1;
+                    } catch {
+                        return 1;
+                    }
+                }
+            }
+            return 1;
+        }
+
+        function generateTextOutput(glassData, productInfo = []) {
+            if (!glassData || glassData.length === 0) {
+                return "ไม่พบข้อมูล GLASS ที่สมบูรณ์";
+            }
+
+            function removeLeadingZeros(value) {
+                if (!value || !String(value).trim()) {
+                    return value;
+                }
+                const valStr = String(value).trim();
+                if (/^\d+$/.test(valStr)) {
+                    return String(parseInt(valStr));
+                }
+                return valStr;
+            }
+
+            // จัดกลุ่มตามชนิดกระจก
+            const glassGroups = {};
+            let totalQty = 0;
+            
+            for (const glassItem of glassData) {
+                const refCode = (glassItem.ref_code || '').trim();
+                const gw = (glassItem.GW || '').trim();
+                const gh = (glassItem.GH || '').trim();
+                const qty = (glassItem.Qty || '').trim();
+                const pageNum = glassItem.page || 0;
+                
+                if (refCode && gw && gh && qty) {
+                    const gwClean = removeLeadingZeros(gw);
+                    const ghClean = removeLeadingZeros(gh);
+                    
+                    // Get Order Qty
+                    const orderQty = getOrderQtyForPage(productInfo, pageNum);
+                    
+                    // Get glass type
+                    let glassType = getGlassTypeFromSiteSurvey(refCode);
+                    if (glassType) {
+                        glassType = cleanText(glassType);
+                    } else {
+                        glassType = "ไม่ระบุประเภทกระจก";
+                    }
+                    
+                    // สร้าง entry
+                    try {
+                        const qtyNum = parseInt(qty);
+                        const totalQtyItem = qtyNum * orderQty;
+                        totalQty += totalQtyItem;
+                        
+                        let entry;
+                        if (orderQty > 1) {
+                            entry = `${refCode} ${gwClean} * ${ghClean} = ${qty} * ${orderQty} = ${totalQtyItem}`;
+                        } else {
+                            entry = `${refCode} ${gwClean} * ${ghClean} = ${qty}`;
+                        }
+                        
+                        // เพิ่มเข้ากลุ่ม
+                        if (!glassGroups[glassType]) {
+                            glassGroups[glassType] = [];
+                        }
+                        glassGroups[glassType].push(entry);
+                        
+                    } catch {
+                        const entry = `${refCode} ${gwClean} * ${ghClean} = ${qty}`;
+                        if (!glassGroups[glassType]) {
+                            glassGroups[glassType] = [];
+                        }
+                        glassGroups[glassType].push(entry);
+                    }
+                }
+            }
+            
+            // สร้างผลลัพธ์ (ตรงส่วนท้าย)
+            if (Object.keys(glassGroups).length === 0) {
+                return "ไม่พบข้อมูล GLASS ที่สมบูรณ์";
+            }
+
+            let content = "";
+
+            // เรียงลำดับกลุ่ม
+            const sortedGroups = Object.entries(glassGroups).sort((a, b) => {
+                if (a[0] === "ไม่ระบุประเภทกระจก") return 1;
+                if (b[0] === "ไม่ระบุประเภทกระจก") return -1;
+                return a[0].localeCompare(b[0]);
+            });
+
+            for (let i = 0; i < sortedGroups.length; i++) {
+                const [glassType, entries] = sortedGroups[i];
+                content += `${glassType}\n`;
+                for (const entry of entries) {
+                    content += `${entry}\n`;
+                }
+                
+                // เว้นบรรทัดหลังจบแต่ละกลุ่ม (ยกเว้นกลุ่มสุดท้าย)
+                if (i < sortedGroups.length - 1) {
+                    content += "\n";
+                }
+            }
+
+            content += `\nTotal Qty = ${totalQty}`;
+
+            return content;
+
+        }
+
+        // ในส่วนของ form submission
+
+        document.getElementById('uploadForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const loading = document.getElementById('loading');
+            const errorMessage = document.getElementById('errorMessage');
+            const resultsSection = document.getElementById('resultsSection');
+            const textOutputSection = document.getElementById('textOutputSection');
+            const processBtn = document.getElementById('processBtn');
+
+            // Reset UI
+            loading.style.display = 'block';
+            errorMessage.style.display = 'none';
+            resultsSection.style.display = 'none';
+            textOutputSection.style.display = 'none';
+            processBtn.disabled = true;
+
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    // Store site survey data from backend response
+                    if (result.data.site_survey_data) {
+                        siteSurveyData = result.data.site_survey_data;
+                    }
+                    
+                    // Generate text output first
+                    const textContent = generateTextOutput(result.data.glass_data, result.data.product_info);
+                    document.getElementById('textOutput').textContent = textContent;
+                    
+                    // Extract total from text content
+                    const totalMatch = textContent.match(/Total Qty = (\d+)/);
+                    const correctTotal = totalMatch ? parseInt(totalMatch[1]) : 0;
+                    
+                    // Display results with correct total
+                    displayResultsWithCorrectTotal(result.data, correctTotal);
+                    
+                    textOutputSection.style.display = 'block';
+                    
+                    // Show product info messages (only if Order Qty > 1)
+                    const productInfoDiv = document.getElementById('productInfo');
+                    if (result.data.product_info && result.data.product_info.length > 0) {
+                        const filteredProducts = result.data.product_info.filter(product => {
+                            const orderQty = parseInt(product.order_qty_sets) || 0;
+                            return orderQty > 1;
+                        });
+                        
+                        if (filteredProducts.length > 0) {
+                            const filteredMessages = filteredProducts.map(product => 
+                                `Product name ${product.product_name} มี Order Qty (sets) ${product.order_qty_sets}`
+                            );
+                            
+                            productInfoDiv.innerHTML = filteredMessages
+                                .map(msg => `<p>${msg}</p>`)
+                                .join('');
+                            productInfoDiv.style.display = 'block';
+                        } else {
+                            productInfoDiv.style.display = 'none';
+                        }
+                    } else {
+                        productInfoDiv.style.display = 'none';
+                    }
+
+                    // Show results section
+                    resultsSection.style.display = 'block';
+                } else {
+                    // Show error message
+                    errorMessage.textContent = result.error || 'เกิดข้อผิดพลาดที่ไม่ทราบสาเหตุ';
+                    errorMessage.style.display = 'block';
+                }
+
+            } catch (error) {
+                console.error('Error:', error);
+                errorMessage.textContent = 'เกิดข้อผิดพลาดในการติดต่อกับเซิร์ฟเวอร์';
+                errorMessage.style.display = 'block';
+            } finally {
+                loading.style.display = 'none';
+                processBtn.disabled = fileInput.files.length === 0;
+            }
+        });
+
+        // สร้างฟังก์ชันใหม่ที่รับ correctTotal มา
+        function displayResultsWithCorrectTotal(data, correctTotal) {
+            const referenceData = document.getElementById('referenceData');
+            const summarySection = document.getElementById('summarySection');
+            const totalGlassElement = document.getElementById('totalGlass');
+            const totalRecordsElement = document.getElementById('totalRecords');
+            const totalReferencesElement = document.getElementById('totalReferences');
+
+            if (data.reference_code && data.reference_code.length > 0) {
+                // Group glass data by reference for easy lookup
+                const glassByRef = {};
+                if (data.glass_data) {
+                    data.glass_data.forEach(glass => {
+                        const refKey = `${glass.ref_no}-${glass.ref_code}`;
+                        if (!glassByRef[refKey]) {
+                            glassByRef[refKey] = [];
+                        }
+                        if (glass.GW || glass.GH || glass.Qty) {
+                            glassByRef[refKey].push(glass);
+                        }
+                    });
+                }
+
+                // Filter reference codes to only include those with GLASS data
+                const referencesWithGlass = data.reference_code.filter(ref => {
+                    const refKey = `${ref.No}-${ref.Reference_Code}`;
+                    return glassByRef[refKey] && glassByRef[refKey].length > 0;
+                });
+
+                if (referencesWithGlass.length > 0) {
+                    let totalRecords = 0;
+
+                    // Create table
+                    let tableHTML = `
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>หน้า</th>
+                                    <th>ลำดับ</th>
+                                    <th>Ref. Code</th>
+                                    <th style="width:12%">GW</th>
+                                    <th style="width:12%">GH</th>
+                                    <th style="width:12%">Qty</th>
+                                    <th style="width:12%">Total Qty<br>(Qty x Set)</th>
+                                    <th>กระจก</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                    `;
+
+                    let rowIndex = 1;
+                    referencesWithGlass.forEach((ref) => {
+                        const refKey = `${ref.No}-${ref.Reference_Code}`;
+                        
+                        if (glassByRef[refKey]) {
+                            glassByRef[refKey].forEach(glass => {
+                                const refCode = (glass.ref_code || '').trim();
+                                const gw = (glass.GW || '').trim();
+                                const gh = (glass.GH || '').trim();
+                                const qty = (glass.Qty || '').trim();
+                                
+                                // แสดงเฉพาะข้อมูลที่สมบูรณ์
+                                if (refCode && gw && gh && qty) {
+                                    const qtyNum = parseInt(glass.Qty) || 0;
+                                    const orderQty = getOrderQtyForPage(data.product_info || [], ref.page);
+                                    const totalQtyItem = qtyNum * orderQty;
+                                    
+                                    totalRecords++;
+
+                                    const totalQtyDisplay = orderQty > 1 ? `${qtyNum} × ${orderQty} = ${totalQtyItem}` : qtyNum;
+                                    const glassType = getGlassTypeFromSiteSurvey(ref.Reference_Code);
+                                    const displayGlassType = glassType || '-';
+
+                                    tableHTML += `
+                                        <tr>
+                                            <td class="page-cell">${ref.page}</td>
+                                            <td>${ref.No}</td>
+                                            <td style="font-weight: bold;">${ref.Reference_Code}</td>
+                                            <td class="glass-cell">${glass.GW || '-'}</td>
+                                            <td class="glass-cell">${glass.GH || '-'}</td>
+                                            <td class="glass-cell">${glass.Qty || '-'}</td>
+                                            <td class="glass-cell" style="font-weight: bold;">${totalQtyDisplay}</td>
+                                            <td class="glass-cell">${displayGlassType}</td>
+                                        </tr>
+                                    `;
+                                    rowIndex++;
+                                }
+                            });
+                        }
+                    });
+
+                    tableHTML += `</tbody></table>`;
+
+                    // ใช้ correctTotal ที่ได้จาก Text Format
+                    totalGlassElement.textContent = correctTotal;
+                    totalRecordsElement.textContent = totalRecords;
+                    totalReferencesElement.textContent = data.total_references;
+                    summarySection.style.display = 'block';
+
+                    referenceData.innerHTML = tableHTML;
+                } else {
+                    summarySection.style.display = 'none';
+                    referenceData.innerHTML = '<p style="text-align: center; color: #666; padding: 40px;">ไม่พบข้อมูล GLASS ที่สมบูรณ์</p>';
+                }
+            } else {
+                summarySection.style.display = 'none';
+                referenceData.innerHTML = '<p style="text-align: center; color: #666; padding: 40px;">ไม่พบข้อมูล</p>';
+            }
+        }
+
+        document.querySelectorAll('.nav-links a').forEach(link => {
+            link.addEventListener('click', () => {
+                document.getElementById('navLinks').classList.remove('show');
+                document.querySelector('.mobile-menu-toggle').classList.remove('active');
+            });
+        });
+
+        document.addEventListener('DOMContentLoaded', async function() {
+            // เรียกฟังก์ชันตรวจสอบ Admin
+            await checkAndShowAdminMenu();
+        });
+
+        // ✅ ฟังก์ชันตรวจสอบ Admin (เก็บไว้ที่บรรทัด 1027)
+        async function checkAndShowAdminMenu() {
+            try {
+                const username = sessionStorage.getItem('username');
+                
+                if (!username) {
+                    return;
+                }
+                
+                const response = await fetch('/api/users/check-admin', {
+                    headers: {
+                        'X-Username': username
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success && data.is_admin) {
+                    const userManagementLink = document.getElementById('userManagementLink');
+                    if (userManagementLink) {
+                        userManagementLink.style.display = 'block';
+                    }
+                }
+                
+            } catch (error) {
+                console.error('Error checking admin status:', error);
+            }
+        }
+        
+    </script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# Output folders
+outputs/
+uploads/
+
+# IDE
+.vscode/
+.vercel
