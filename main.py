@@ -531,6 +531,7 @@ def main():
             original_filename=args.original_filename
         )
         
+        
         # Output result as JSON for server.py to parse
         print(json.dumps(result))
         
