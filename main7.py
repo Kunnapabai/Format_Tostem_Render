@@ -198,14 +198,6 @@ class PDFExtractorWeb:
                 for i in range(start_idx, len(pdf.pages)):
                     page = pdf.pages[i]
 
-                    # 🟡 ดึงข้อความจากหน้า PDF
-                    text = page.extract_text() or ""
-
-                    # ✅ ข้ามหน้าที่มีคำว่า "Insect screen" หรือ "Screen"
-                    if re.search(r'\b(insect\s*screen|screen)\b', text, re.IGNORECASE):
-                        print(f"⏩ Skipped page {i+1} (contains Insect screen or Screen)", file=sys.stderr)
-                        continue
-
                     tables = page.extract_tables()
                     
                     if tables:
