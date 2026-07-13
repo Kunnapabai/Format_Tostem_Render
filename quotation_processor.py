@@ -132,6 +132,10 @@ class EnhancedTOSTEMQuotationProcessor:
         รองรับรหัสแบบ 3/16, 2/14 (ชั้น/จำนวนหน้าต่าง) แต่ไม่จับ 1104/314 (ที่อยู่)
         ✅ เพิ่มรองรับ GRANT Series (W6, ADD1, ADD2, etc.)
         """
+        line = line.strip()
+        # ✅ รองรับ layout ใหม่ที่มีคอลัมน์ "ชั้น" คั่นระหว่าง Code กับ Series
+        #    เช่น "W1 ชั้น1 ATIS ..." -> normalize เป็น "W1 ATIS ..." ก่อนตรวจ pattern
+        line = re.sub(r'^([DW][A-Z]?\d+(?:\.\d+)?[FT]?\d*)\s+ชั้น\S*\s+', r'\1 ', line)
         patterns = [
             # ============================================================
             # ✅ GRANT Series - เพิ่มส่วนนี้ก่อนทุก pattern อื่น
@@ -412,6 +416,15 @@ class EnhancedTOSTEMQuotationProcessor:
         patterns = [
             # ต้องเรียงจากเฉพาะเจาะจง → กว้าง
             r'^(ADD\d+)\b',                      # ADD1, ADD2
+            # ✅ ทศนิยม + F/T (ต้องมาก่อน W\d+\.\d+ ไม่งั้นจะตัด F/T ทิ้ง)
+            r'^(W\d+\.\d+F\d+)\b',               # W1.1F1, W11.2F2
+            r'^(D\d+\.\d+F\d+)\b',               # D1.5F1
+            r'^(W\d+\.\d+T\d+)\b',               # W1.1T1
+            r'^(D\d+\.\d+T\d+)\b',               # D1.5T1
+            r'^(W\d+\.\d+F)\b',                  # W1.1F
+            r'^(D\d+\.\d+F)\b',                  # D1.5F
+            r'^(W\d+\.\d+T)\b',                  # W1.1T
+            r'^(D\d+\.\d+T)\b',                  # D1.5T
             r'^(W\d+\.\d+)\b',                   # W11.1 ← ย้ายมาก่อน!
             r'^(D\d+\.\d+)\b',                   # D1.5
             r'^(W\d+F\d+)\b',                    # W6F1 ← มาก่อน W\d+F
@@ -459,13 +472,13 @@ class EnhancedTOSTEMQuotationProcessor:
         """
         try:
             product = {
-                'ref': '', 'series': '', 'product_type': '',
+                'ref': '', 'floor': '', 'series': '', 'product_type': '',
                 'width': 0, 'height': 0, 'qty': 1,
                 'color': '', 'glass': '', 'insect_screen': 'No',
                 'remarks': '', 'opening_size': {'width': 0, 'height': 0},
                 'price_unit': 0, 'price_total': 0
             }
-            
+
             # หา Ref
             ref = self._extract_ref_from_line(main_line)
             if ref:
@@ -474,6 +487,14 @@ class EnhancedTOSTEMQuotationProcessor:
             else:
                 print(f"  ❌ No ref found in line: {main_line[:80]}")
                 return None
+
+            # ✅ หา "ชั้น" (floor) ที่อยู่หลัง Code ก่อน Series เพื่อเก็บไว้แสดงใน Code
+            #    เช่น "W1 ชั้น1 ATIS ..." -> floor = "ชั้น1"
+            floor_match = re.match(
+                r'^[DW][A-Z]?\d+(?:\.\d+)?[FT]?\d*\s+(ชั้น\S*)', main_line.strip())
+            if floor_match:
+                product['floor'] = floor_match.group(1)
+                print(f"  🏢 Found floor: {product['floor']}")
             
             # ============================================================
             # ✅ หา Series - เพิ่ม GRANT ด้วย

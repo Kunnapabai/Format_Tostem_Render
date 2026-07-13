@@ -1285,6 +1285,98 @@ class EnhancedSiteSurveyGenerator:
         
         return text
 
+    def _finalize_table_layout(self, table):
+        """
+        ✅ ปรับตารางหลังเติมข้อมูล:
+           - เปลี่ยนหัวคอลัมน์ 'Opening size' -> 'Opening Size (mm)'
+           - เอาหน่วย 'mm.' ออก (ย้ายไปอยู่ในหัวคอลัมน์แล้ว)
+           - ลบแถวว่าง (Type2/Type3/Type4/spacer) ที่ไม่มีข้อมูล เหลือเฉพาะแถวข้อมูล
+             (ถ้าแถวไหนมีข้อมูล Fixed sub-panel จะเก็บไว้)
+           - ขยายคอลัมน์ Opening Size ไปทางซ้าย โดยลดความกว้าง Product type
+        """
+        try:
+            from docx.oxml.ns import qn
+            from docx.oxml import OxmlElement
+
+            # เซ็ตข้อความโดยคงรูปแบบเดิม (ตัวหนา) ของ run แรก
+            def _set_keep_format(cell, text):
+                p = cell.paragraphs[0]
+                if p.runs:
+                    p.runs[0].text = text
+                    for r in p.runs[1:]:
+                        r.text = ""
+                else:
+                    p.add_run(text)
+
+            # 1) เปลี่ยนหัวคอลัมน์ + หาแถว Wo/Ho และ More Detial
+            sub_idx = None   # แถว Wo/Ho
+            md_idx = None    # แถว More Detial
+            for ri, row in enumerate(table.rows):
+                texts = [c.text.strip() for c in row.cells]
+                for c in row.cells:
+                    if c.text.strip() == 'Opening size':
+                        _set_keep_format(c, 'Opening Size (mm)')
+                        break
+                if any(t == 'Wo' for t in texts):
+                    sub_idx = ri
+                if md_idx is None and any(t.startswith('More Det') for t in texts):
+                    md_idx = ri
+
+            # 2) เคลียร์หน่วย 'mm.'
+            for row in table.rows:
+                for cell in row.cells:
+                    if cell.text.strip() == 'mm.':
+                        cell.text = ""
+
+            # 3) ลบแถวว่างระหว่างแถวข้อมูลกับ More Detial (เก็บแถวที่มีข้อมูล Type2/3/4)
+            if sub_idx is not None and md_idx is not None:
+                data_idx = sub_idx + 1
+                rows = table.rows
+                to_delete = []
+                for ri in range(data_idx + 1, md_idx):
+                    if all(not c.text.strip() for c in rows[ri].cells):
+                        to_delete.append(rows[ri]._tr)
+                for tr in to_delete:
+                    tr.getparent().remove(tr)
+
+            # 4) ปรับความกว้าง: ย้าย 540 twips จาก Product type ไป Opening size (ขยายไปซ้าย)
+            grid_w = [581, 974, 2675, 378, 967, 936, 788, 689, 1651, 562, 792]
+            tbl = table._tbl
+            tblPr = tbl.tblPr
+            for el in tblPr.findall(qn('w:tblLayout')):
+                tblPr.remove(el)
+            layout = OxmlElement('w:tblLayout')
+            layout.set(qn('w:type'), 'fixed')
+            tblPr.append(layout)
+            grid = tbl.tblGrid
+            for c, w in zip(grid.findall(qn('w:gridCol')), grid_w):
+                c.set(qn('w:w'), str(w))
+            # sync ความกว้างของทุกเซลล์ให้ตรงกับ grid (รองรับ gridSpan)
+            for tr in tbl.findall(qn('w:tr')):
+                pos = 0
+                for tc in tr.findall(qn('w:tc')):
+                    tcPr = tc.find(qn('w:tcPr'))
+                    span = 1
+                    if tcPr is not None:
+                        gs = tcPr.find(qn('w:gridSpan'))
+                        if gs is not None:
+                            span = int(gs.get(qn('w:val')))
+                    width = sum(grid_w[pos:pos + span])
+                    if tcPr is None:
+                        tcPr = OxmlElement('w:tcPr')
+                        tc.insert(0, tcPr)
+                    tcW = tcPr.find(qn('w:tcW'))
+                    if tcW is None:
+                        tcW = OxmlElement('w:tcW')
+                        tcPr.append(tcW)
+                    tcW.set(qn('w:w'), str(width))
+                    tcW.set(qn('w:type'), 'dxa')
+                    pos += span
+        except Exception as e:
+            print(f"⚠️ _finalize_table_layout error: {e}")
+            import traceback
+            traceback.print_exc()
+
     def _fill_template_with_data(self, doc, product: Dict, project_info: Dict):
         """เติมข้อมูลลง template - รองรับ type2, type3, type4 แยกแถว และบวก H สำหรับ Awning + Fixed"""
         try:
@@ -1370,10 +1462,14 @@ class EnhancedSiteSurveyGenerator:
             product['calculated_height'] = height_value
 
             # Mapping ข้อมูล (ใช้ height_value ที่คำนวณแล้ว)
+            # ✅ Code = ref + floor (ถ้ามี) เช่น "W1 ชั้น1"
+            _code = product.get('ref', '')
+            if product.get('floor'):
+                _code = f"{_code} {product.get('floor')}"
             replacements = {
-                'ref1': product.get('ref', ''),           
-                'Series1': product.get('series', ''),     
-                'Color1': product_color,  
+                'ref1': _code,
+                'Series1': product.get('series', ''),
+                'Color1': product_color,
                 'Glass1': clean_product.get('glass', ''),
                 'Screen1': product.get('insect_screen', 'No'),
                 'W1': str(calculated_width),        
@@ -1415,6 +1511,9 @@ class EnhancedSiteSurveyGenerator:
             
             # เติมข้อมูลส่วน More Detail และ Note
             self._fill_additional_sections(table, product, project_info)
+
+            # ✅ ปรับ layout ตาราง: หัว 'Opening Size (mm)', ลบแถวว่าง, ปรับความกว้าง
+            self._finalize_table_layout(table)
 
             # เพิ่มรูปภาพ
             self._add_images_to_template(doc, product)
@@ -1957,8 +2056,12 @@ class EnhancedSiteSurveyGenerator:
             table = doc.tables[0]
             current_date = datetime.now().strftime('%Y-%m-%d')
             
+            # ✅ Code = ref + floor (ถ้ามี) เช่น "W1 ชั้น1"
+            _code = product.get('ref', '')
+            if product.get('floor'):
+                _code = f"{_code} {product.get('floor')}"
             replacements = {
-                'ref1': product.get('ref', ''),
+                'ref1': _code,
                 'Series1': product.get('series', ''),
                 'Color1': product.get('color', ''),
                 'Glass1': product.get('glass', ''),
