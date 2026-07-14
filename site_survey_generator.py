@@ -1339,8 +1339,11 @@ class EnhancedSiteSurveyGenerator:
                 for tr in to_delete:
                     tr.getparent().remove(tr)
 
-            # 4) ปรับความกว้าง: ย้าย 540 twips จาก Product type ไป Opening size (ขยายไปซ้าย)
-            grid_w = [581, 974, 2675, 378, 967, 936, 788, 689, 1651, 562, 792]
+            # 4) ปรับความกว้างคอลัมน์ (twips) — รวมคงที่ = 10993:
+            #    - ขยาย Ref ให้พอสำหรับ Code + floor ยาวสุด เช่น "W13 ชั้น14" (581 -> 1650)
+            #    - ขยาย Opening Size ไปทางซ้าย (Product type แคบลง)
+            #    - ดึงพื้นที่จาก Product type / Glass / Color (ที่มักสั้น)
+            grid_w = [1750, 974, 2183, 378, 967, 936, 530, 470, 1451, 562, 792]
             tbl = table._tbl
             tblPr = tbl.tblPr
             for el in tblPr.findall(qn('w:tblLayout')):
@@ -1372,8 +1375,83 @@ class EnhancedSiteSurveyGenerator:
                     tcW.set(qn('w:w'), str(width))
                     tcW.set(qn('w:type'), 'dxa')
                     pos += span
+
+            # 5) จัดแถวลายเซ็นให้ label อยู่กึ่งกลางใต้เส้นประ
+            self._fix_signature_alignment(table, sum(grid_w))
         except Exception as e:
             print(f"⚠️ _finalize_table_layout error: {e}")
+            import traceback
+            traceback.print_exc()
+
+    def _fix_signature_alignment(self, table, table_width_twips):
+        """
+        ✅ จัดแถวลายเซ็น (ยืนยันการตรวจสอบ) ให้ชื่อผู้เซ็นอยู่กึ่งกลางใต้เส้นประ
+           เดิมใช้ช่องว่างจัดเอง ทำให้ label ยาว/สั้นต่างกันเลื่อนไม่ตรงกลาง
+           แก้เป็น center tab stop 3 จุด (1/6, 1/2, 5/6) ใช้ทั้งบรรทัดเส้นประและบรรทัดชื่อ
+           -> ทุก label อยู่กึ่งกลางตรงกับเส้นประเป๊ะ
+        """
+        try:
+            import re
+            from docx.shared import Twips
+            from docx.enum.text import WD_TAB_ALIGNMENT, WD_ALIGN_PARAGRAPH
+            from docx.oxml.ns import qn
+            from docx.oxml import OxmlElement
+
+            stops = [round(table_width_twips * 1 / 6),
+                     round(table_width_twips * 1 / 2),
+                     round(table_width_twips * 5 / 6)]
+
+            # หา cell ที่มีหัวข้อ 'ยืนยันการตรวจสอบ'
+            sig_cell = None
+            for row in table.rows:
+                for c in row.cells:
+                    if 'ยืนยันการตรวจสอบ' in c.text:
+                        sig_cell = c
+                        break
+                if sig_cell:
+                    break
+            if sig_cell is None:
+                return
+
+            for p in sig_cell.paragraphs:
+                txt = p.text
+                is_line = ('....' in txt) or ('.....)' in txt)
+                is_label = ('ผู้สรุป' in txt) or ('ควบคุม' in txt) or ('ลูกค้า' in txt)
+                if not (is_line or is_label):
+                    continue
+                parts = [s.strip() for s in re.split(r'\s{2,}', txt.strip()) if s.strip()]
+                if len(parts) != 3:
+                    continue
+
+                # เก็บ font เดิม
+                fname = p.runs[0].font.name if p.runs else None
+                fsize = p.runs[0].font.size if p.runs else None
+
+                # ล้าง runs เดิม
+                for r in list(p.runs):
+                    r._r.getparent().remove(r._r)
+
+                # ตั้ง center tab stops
+                p.alignment = WD_ALIGN_PARAGRAPH.LEFT
+                pf = p.paragraph_format
+                pf.tab_stops.clear_all()
+                for pos in stops:
+                    pf.tab_stops.add_tab_stop(Twips(pos), WD_TAB_ALIGNMENT.CENTER)
+
+                # สร้าง run: <tab><item> ต่อกัน 3 ชุด (item จะ center บน tab stop)
+                for it in parts:
+                    r = p.add_run()
+                    r._r.append(OxmlElement('w:tab'))
+                    t = OxmlElement('w:t')
+                    t.set(qn('xml:space'), 'preserve')
+                    t.text = it
+                    r._r.append(t)
+                    if fname:
+                        r.font.name = fname
+                    if fsize:
+                        r.font.size = fsize
+        except Exception as e:
+            print(f"⚠️ _fix_signature_alignment error: {e}")
             import traceback
             traceback.print_exc()
 
