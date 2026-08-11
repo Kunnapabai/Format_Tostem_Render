@@ -262,7 +262,8 @@
             border-radius: 2px;
         }
         
-        .quotation-upload-area {
+        .quotation-upload-area,
+        .photo-upload-area {
             max-width: 600px;
             background: #f9fafb;
             border: 2px dashed #007bff;
@@ -274,11 +275,26 @@
             margin: 0 auto 10px;
             box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
         }
-        
-        .quotation-upload-area:hover {
+
+        /* ✅ กล่องรูปภาพเตี้ยกว่าเล็กน้อย เพื่อให้ปุ่ม "อัปโหลดทั้งหมด" ยังอยู่ในจอ */
+        .photo-upload-area {
+            padding: 3.5em 20px;
+        }
+
+        .quotation-upload-area:hover,
+        .photo-upload-area:hover {
             background: #e3f2fd;
             border-color: #0056b3;
             transform: translateY(-2px);
+        }
+
+        /* ✅ เดิม class นี้ถูก toggle ใน JS แต่ไม่มี style - ลากไฟล์แล้วไม่มี feedback */
+        .quotation-upload-area.dragover,
+        .photo-upload-area.dragover {
+            background: #d0e9ff;
+            border-color: #0056b3;
+            border-style: solid;
+            transform: scale(1.01);
         }
 
         .upload-icon {
@@ -917,12 +933,13 @@
                 <div class="photo-upload-section">
                     
                     <div style="background: white; margin-bottom: 15px;">
-                        
+
                         <input type="file" id="surveyPhotoInput" multiple accept="image/*" style="display: none;">
-                        
-                        <button class="btn btn-primary" onclick="document.getElementById('surveyPhotoInput').click()" style="width: 250px; display: block; margin: 0 auto; font-weight: 600;">
-                            เลือกรูปภาพ
-                        </button>
+
+                        <div class="photo-upload-area" id="photoUploadArea">
+                            <div class="upload-text">รูปภาพ</div>
+                            <div class="file-info">คลิกหรือลากไฟล์มาวาง (.jpg, .png, .gif, .webp)</div>
+                        </div>
                     </div>
                     
                     <div id="selectedPhotosEditor" style="display: none; background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
@@ -1094,6 +1111,15 @@
                     }
                 });
             }
+
+            // ✅ กล่องอัปโหลดรูปภาพ - คลิกหรือลากไฟล์มาวาง (เหมือนกล่อง Quotation)
+            const photoUploadArea = document.getElementById('photoUploadArea');
+            if (photoUploadArea && surveyPhotoInput) {
+                photoUploadArea.addEventListener('click', () => surveyPhotoInput.click());
+                photoUploadArea.addEventListener('dragover', handlePhotoDragOver);
+                photoUploadArea.addEventListener('dragleave', handlePhotoDragLeave);
+                photoUploadArea.addEventListener('drop', handlePhotoDrop);
+            }
             
             const generateSurveyBtn = document.getElementById('generateSurveyBtn');
             if (generateSurveyBtn) {
@@ -1136,6 +1162,32 @@
             }
         }
         
+        function handlePhotoDragOver(event) {
+            event.preventDefault();
+            event.currentTarget.classList.add('dragover');
+        }
+
+        function handlePhotoDragLeave(event) {
+            event.currentTarget.classList.remove('dragover');
+        }
+
+        function handlePhotoDrop(event) {
+            event.preventDefault();
+            event.currentTarget.classList.remove('dragover');
+
+            const files = Array.from(event.dataTransfer.files);
+            const imageFiles = files.filter(file => {
+                const ext = file.name.split('.').pop().toLowerCase();
+                return ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'].includes(ext);
+            });
+
+            if (imageFiles.length > 0) {
+                handlePhotoSelection(imageFiles);
+            } else {
+                showToast('ข้อผิดพลาด', 'กรุณาเลือกไฟล์รูปภาพ (.jpg, .png, .gif, .webp)', 'error');
+            }
+        }
+
         function handleQuotationDragOver(event) {
             event.preventDefault();
             event.currentTarget.classList.add('dragover');
@@ -1254,11 +1306,15 @@
             const upperFilename = filename.toUpperCase();
             
             // ✅ IMPROVED: Use same patterns as server-side
+            // รองรับ prefix อื่นนอกจาก D/W (AD1, ADD1, SD1)
+            // เดิม [DW][A-Z]? ทำให้ AD1.jpg ถูกอ่านเป็น "D1" แล้วไม่ตรงกับ Ref
+            // ใช้ (?:^|[^A-Z0-9]) แทน lookbehind เพื่อรองรับ Safari รุ่นเก่า
+            const REF = '[A-Z]{1,3}\\d+(?:\\.\\d+)?(?:[FT]\\d*)?';
             const refPatterns = [
-                /^([DW][A-Z]?\d+(?:\.\d+)?)\b/i,           // Start of filename
-                /([DW][A-Z]?\d+(?:\.\d+)?)$/i,              // End of filename  
-                /[_\-\s]([DW][A-Z]?\d+(?:\.\d+)?)[_\-\s]/i, // Between separators
-                /([DW][A-Z]?\d+(?:\.\d+)?)/i                // Anywhere (last resort)
+                new RegExp(`^(${REF})(?![A-Z0-9])`, 'i'),              // Start of filename
+                new RegExp(`(?:^|[^A-Z0-9])(${REF})$`, 'i'),           // End of filename
+                new RegExp(`[_\\-\\s](${REF})[_\\-\\s]`, 'i'),         // Between separators
+                new RegExp(`(?:^|[^A-Z0-9])(${REF})(?![A-Z0-9])`, 'i') // Anywhere (last resort)
             ];
             
             // First pass: Try exact pattern matching

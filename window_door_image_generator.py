@@ -538,7 +538,9 @@ class WindowDoorImageGenerator:
                 text_total = f"W = {width}"
                 bbox = draw.textbbox((0, 0), text_total, font=font_bold)
                 text_width = bbox[2] - bbox[0]
-                text_x = (canvas_width - text_width) // 2
+                # ✅ จัดกึ่งกลางกับ "ลูกศร" ไม่ใช่กับ canvas
+                #    (margin ซ้าย 80 / ขวา 20 ไม่เท่ากัน จึงเยื้องไปทางซ้าย 30px)
+                text_x = start_x + (end_x - start_x - text_width) // 2
                 text_y = total_arrow_y - 20
                 draw.text((text_x, text_y), text_total, fill='black', font=font_bold)
                 
@@ -590,7 +592,8 @@ class WindowDoorImageGenerator:
                 text_w = f"W = {width}"
                 bbox = draw.textbbox((0, 0), text_w, font=font_bold)
                 text_width = bbox[2] - bbox[0]
-                text_x = (canvas_width - text_width) // 2
+                # ✅ จัดกึ่งกลางกับ "ลูกศร" ไม่ใช่กับ canvas
+                text_x = start_x + (end_x - start_x - text_width) // 2
                 text_y = arrow_y - 20
                 draw.text((text_x, text_y), text_w, fill='black', font=font_bold)
             
@@ -612,9 +615,15 @@ class WindowDoorImageGenerator:
             temp_img = Image.new('RGBA', (200, 50), (255, 255, 255, 0))
             temp_draw = ImageDraw.Draw(temp_img)
             temp_draw.text((10, 10), text_h, fill='black', font=font_bold)
+            # ✅ ตัดขอบว่างออกก่อนหมุน มิฉะนั้นตัวอักษรจะไปกองอยู่ปลายแถบ
+            #    ทำให้จัดกึ่งกลางแล้วยังเยื้องลงล่าง
+            text_bbox = temp_img.getbbox()
+            if text_bbox:
+                temp_img = temp_img.crop(text_bbox)
             rotated = temp_img.rotate(90, expand=True)
-            text_x_pos = arrow_x - 35
-            text_y_pos = (canvas_height - rotated.height) // 2
+            # ✅ จัดกึ่งกลางกับ "ลูกศร" ไม่ใช่กับ canvas (margin บน 80 / ล่าง 40)
+            text_x_pos = arrow_x - 8 - rotated.width
+            text_y_pos = start_y + (end_y - start_y - rotated.height) // 2
             canvas.paste(rotated, (text_x_pos, text_y_pos), rotated)
             
             # บันทึกรูป

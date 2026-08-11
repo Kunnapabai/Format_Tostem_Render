@@ -54,7 +54,27 @@ except ImportError:
 
 from quotation_processor import EnhancedQuotationProcessor , EnhancedTOSTEMQuotationProcessor , smart_mosquito_detection_and_merge
 from window_door_image_generator import generate_images_for_site_survey
-        
+
+
+def collapse_doubled_thai(text: str) -> str:
+    """ยุบตัวอักษรไทยที่ซ้ำติดกัน - เฉพาะกรณีที่เป็น artifact จากการ extract PDF
+
+    ✅ ยุบ: 'รราาคคาารรววมม' (ทุกตัวซ้ำ = artifact จาก PDF overlay text)
+    ❌ ไม่ยุบ: 'รวมมุ้งแล้ว', 'ธรรมดา', 'บรรจุ' (คำไทยที่มีตัวซ้ำจริง)
+
+    เดิมใช้ re.sub(r'([ก-๙])\\1+', r'\\1', text) ตรงๆ ซึ่งทำลายคำไทยที่ถูกต้อง
+    จึงตรวจก่อนว่ามีตัวซ้ำหลายจุด (>=3) อันเป็นลักษณะของ artifact จริงๆ
+    """
+    if not text:
+        return text
+
+    doubled_pairs = len(re.findall(r'([ก-๙])\1', text))
+    if doubled_pairs < 3:
+        return text
+
+    return re.sub(r'([ก-๙])\1+', r'\1', text)
+
+
 def convert_docx_to_pdf_direct(docx_path: str, pdf_path: str) -> Dict[str, Any]:
     """แปลง DOCX เป็น PDF โดยตรง - รองรับ Cloud/Render Environment"""
     import subprocess
@@ -1261,8 +1281,8 @@ class EnhancedSiteSurveyGenerator:
         
         text = glass_text
         
-        # ลบข้อความซ้ำซ้อน (รราาคคาา...)
-        text = re.sub(r'([ก-๙])\1+', r'\1', text)
+        # ลบข้อความซ้ำซ้อน (รราาคคาา...) - เฉพาะที่เป็น artifact ไม่แตะคำไทยปกติ
+        text = collapse_doubled_thai(text)
         
         # ลบข้อความเกี่ยวกับราคา
         text = re.sub(r'ราคา[^\n]*', '', text, flags=re.IGNORECASE)
@@ -1311,8 +1331,8 @@ class EnhancedSiteSurveyGenerator:
                     # ลบ (Knock-down)
                     text = re.sub(r'\(\s*Knock-?\s*down\s*\)', '', text, flags=re.IGNORECASE).strip()
                     
-                    # ลบตัวอักษรไทยซ้ำ
-                    text = re.sub(r'([ก-๙])\1+', r'\1', text)
+                    # ลบตัวอักษรไทยซ้ำ - เฉพาะที่เป็น artifact ไม่แตะคำไทยปกติ
+                    text = collapse_doubled_thai(text)
                     
                     # ลบราคาที่อาจติดมา
                     text = re.sub(r'ราคา[^\s]*\s*[\d,\.]+', '', text, flags=re.IGNORECASE).strip()
@@ -1554,9 +1574,14 @@ class EnhancedSiteSurveyGenerator:
                     print(f"   ℹ️  No panel images, Image2 cell is empty")
             
             # 2. ใส่รูป site survey ในเซลล์ image (ถ้ามี)
-            if site_image_cell and site_images:
+            # ✅ ลบ placeholder "image" เสมอ แม้ยังไม่มีรูปอัปโหลด (เหมือนเซลล์ Image2)
+            #    เดิมลบเฉพาะตอนมีรูป ทำให้เอกสารโชว์คำว่า "image" ค้างไว้
+            if site_image_cell:
                 self._clear_cell_content_safely(site_image_cell)
-                
+                if not site_images:
+                    print(f"   ℹ️  No site images, 'image' cell is empty")
+
+            if site_image_cell and site_images:
                 for i, img_info in enumerate(site_images):
                     img_path = img_info.get('path')
                     

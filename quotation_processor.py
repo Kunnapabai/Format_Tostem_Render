@@ -61,7 +61,9 @@ class EnhancedTOSTEMQuotationProcessor:
                     product['color'] = default_color
                     print(f"   ✓ Applied color to {product.get('ref', 'Unknown')}: '{default_color}'")
 
-            return {
+            # ✅ ถ้าอ่านไฟล์ได้แต่ไม่เจอ product เลย = แปลว่ารหัส Code ในใบเสนอราคา
+            #    ไม่ตรงกับ pattern ที่รองรับ ต้องแจ้งเตือน ไม่ใช่เงียบแล้วสร้างเอกสารเปล่า
+            result = {
                 'success': True,
                 'data': {
                     'project_info': project_info,
@@ -70,7 +72,17 @@ class EnhancedTOSTEMQuotationProcessor:
                 },
                 'message': f'ประมวลผล PDF สำเร็จ ({len(products)} รายการ) - Enhanced multi-line support'
             }
-            
+
+            if not products:
+                warning = ('ไม่พบรายการสินค้าในใบเสนอราคา - '
+                           'รหัส Code อาจไม่อยู่ในรูปแบบที่รองรับ (เช่น W1, D1, AD1, ADD1) '
+                           'กรุณาตรวจสอบคอลัมน์ Code')
+                result['warning'] = warning
+                result['message'] = f'⚠️ {warning}'
+                print(f"\n⚠️ {warning}")
+
+            return result
+
         except Exception as e:
             return {
                 'success': False,
@@ -151,7 +163,22 @@ class EnhancedTOSTEMQuotationProcessor:
             
             r'^ADD\d+\s+GRANT\b',            # ADD1 GRANT, ADD2 GRANT
             r'^ADD\d+F\s+GRANT\b',           # ADD1F GRANT (ถ้ามี)
-            
+
+            # ============================================================
+            # ✅ AD Series (Airflow Door) - AD1, AD2, AD1F, AD1T
+            # ============================================================
+            r'^AD\d+\.\d+\s+',               # AD1.5
+            r'^AD\d+[FT]\d+\s+',             # AD1F1, AD1T2
+            r'^AD\d+[FT]\s+',                # AD1F, AD1T
+            r'^AD\d+\s+',                    # AD1 WE-70, AD2 ATIS
+
+            # ============================================================
+            # ✅ Generic ref + known series (catch-all สำหรับรหัสใหม่ๆ)
+            #    เช่น SD1 WE-70, FD2 ATIS - anchored ด้วยชื่อ series
+            #    จึงไม่ไปจับที่อยู่หรือบรรทัดหมายเหตุ
+            # ============================================================
+            r'^[A-Z]{1,3}\d+(?:\.\d+)?(?:[FT]\d*)?\s+(?:WE-|WD-|ATIS|Giesta|FW-G|GRANT)',
+
             # ============================================================
             # รหัสแบบ ชั้น/จำนวนหน้าต่าง (1-2 หลัก / 1-3 หลัก)
             # ============================================================
@@ -411,7 +438,17 @@ class EnhancedTOSTEMQuotationProcessor:
         """
         patterns = [
             # ต้องเรียงจากเฉพาะเจาะจง → กว้าง
-            r'^(ADD\d+)\b',                      # ADD1, ADD2
+            r'^(ADD\d+)\b',                      # ADD1, ADD2 ← ต้องมาก่อน AD\d+
+            r'^(AD\d+\.\d+)\b',                  # AD1.5
+            r'^(AD\d+F\d+)\b',                   # AD1F1
+            r'^(AD\d+T\d+)\b',                   # AD1T1
+            r'^(AD\d+F)\b',                      # AD1F
+            r'^(AD\d+T)\b',                      # AD1T
+            r'^(AD\d+)\b',                       # AD1, AD2 (Airflow Door)
+            r'^(W\d+\.\d+[FT]\d+)\b',            # W02.1F1, W02.1T2 ← ต้องมาก่อน W\d+\.\d+
+            r'^(D\d+\.\d+[FT]\d+)\b',            # D1.5F1, D1.5T2
+            r'^(W\d+\.\d+[FT])\b',               # W02.1F, W02.1T
+            r'^(D\d+\.\d+[FT])\b',               # D1.5F, D1.5T
             r'^(W\d+\.\d+)\b',                   # W11.1 ← ย้ายมาก่อน!
             r'^(D\d+\.\d+)\b',                   # D1.5
             r'^(W\d+F\d+)\b',                    # W6F1 ← มาก่อน W\d+F
@@ -424,7 +461,10 @@ class EnhancedTOSTEMQuotationProcessor:
             r'^(D\d+T)\b',                       # D1T
             r'^(W\d+)\b',                        # W6, W11 ← มาหลังสุด!
             r'^(D\d+)\b',                        # D1, D3
-            
+
+            # Generic ref + known series (catch-all สำหรับรหัสใหม่ๆ เช่น SD1, FD2)
+            r'^([A-Z]{1,3}\d+(?:\.\d+)?(?:[FT]\d*)?)\s+(?:WE-|WD-|ATIS|Giesta|FW-G|GRANT)',
+
             # รหัสแบบ ชั้น/จำนวนหน้าต่าง
             r'^(\d{1,2}/\d{1,3}[FT]?\d*)\b',
             r'\b(\d{1,2}/\d{1,3}[FT]?\d*)(?=\s)',
