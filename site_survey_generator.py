@@ -1305,6 +1305,176 @@ class EnhancedSiteSurveyGenerator:
         
         return text
 
+    def _finalize_table_layout(self, table):
+        """
+        ✅ ปรับตารางหลังเติมข้อมูล:
+           - เปลี่ยนหัวคอลัมน์ 'Opening size' -> 'Opening Size (mm)'
+           - เอาหน่วย 'mm.' ออก (ย้ายไปอยู่ในหัวคอลัมน์แล้ว)
+           - ลบแถวว่าง (Type2/Type3/Type4/spacer) ที่ไม่มีข้อมูล เหลือเฉพาะแถวข้อมูล
+             (ถ้าแถวไหนมีข้อมูล Fixed sub-panel จะเก็บไว้)
+           - ขยายคอลัมน์ Opening Size ไปทางซ้าย โดยลดความกว้าง Product type
+        """
+        try:
+            from docx.oxml.ns import qn
+            from docx.oxml import OxmlElement
+
+            # เซ็ตข้อความโดยคงรูปแบบเดิม (ตัวหนา) ของ run แรก
+            def _set_keep_format(cell, text):
+                p = cell.paragraphs[0]
+                if p.runs:
+                    p.runs[0].text = text
+                    for r in p.runs[1:]:
+                        r.text = ""
+                else:
+                    p.add_run(text)
+
+            # 1) เปลี่ยนหัวคอลัมน์ + หาแถว Wo/Ho และ More Detial
+            sub_idx = None   # แถว Wo/Ho
+            md_idx = None    # แถว More Detial
+            for ri, row in enumerate(table.rows):
+                texts = [c.text.strip() for c in row.cells]
+                for c in row.cells:
+                    if c.text.strip() == 'Opening size':
+                        _set_keep_format(c, 'Opening Size (mm)')
+                        break
+                if any(t == 'Wo' for t in texts):
+                    sub_idx = ri
+                if md_idx is None and any(t.startswith('More Det') for t in texts):
+                    md_idx = ri
+
+            # 2) เคลียร์หน่วย 'mm.'
+            for row in table.rows:
+                for cell in row.cells:
+                    if cell.text.strip() == 'mm.':
+                        cell.text = ""
+
+            # 3) ลบแถวว่างระหว่างแถวข้อมูลกับ More Detial (เก็บแถวที่มีข้อมูล Type2/3/4)
+            if sub_idx is not None and md_idx is not None:
+                data_idx = sub_idx + 1
+                rows = table.rows
+                to_delete = []
+                for ri in range(data_idx + 1, md_idx):
+                    if all(not c.text.strip() for c in rows[ri].cells):
+                        to_delete.append(rows[ri]._tr)
+                for tr in to_delete:
+                    tr.getparent().remove(tr)
+
+            # 4) ปรับความกว้างคอลัมน์ (twips) — รวมคงที่ = 10993:
+            #    - ขยาย Ref ให้พอสำหรับ Code + floor ยาวสุด เช่น "W13 ชั้น14" (581 -> 1650)
+            #    - ขยาย Opening Size ไปทางซ้าย (Product type แคบลง)
+            #    - ดึงพื้นที่จาก Product type / Glass / Color (ที่มักสั้น)
+            grid_w = [1750, 974, 2183, 378, 967, 936, 530, 470, 1451, 562, 792]
+            tbl = table._tbl
+            tblPr = tbl.tblPr
+            for el in tblPr.findall(qn('w:tblLayout')):
+                tblPr.remove(el)
+            layout = OxmlElement('w:tblLayout')
+            layout.set(qn('w:type'), 'fixed')
+            tblPr.append(layout)
+            grid = tbl.tblGrid
+            for c, w in zip(grid.findall(qn('w:gridCol')), grid_w):
+                c.set(qn('w:w'), str(w))
+            # sync ความกว้างของทุกเซลล์ให้ตรงกับ grid (รองรับ gridSpan)
+            for tr in tbl.findall(qn('w:tr')):
+                pos = 0
+                for tc in tr.findall(qn('w:tc')):
+                    tcPr = tc.find(qn('w:tcPr'))
+                    span = 1
+                    if tcPr is not None:
+                        gs = tcPr.find(qn('w:gridSpan'))
+                        if gs is not None:
+                            span = int(gs.get(qn('w:val')))
+                    width = sum(grid_w[pos:pos + span])
+                    if tcPr is None:
+                        tcPr = OxmlElement('w:tcPr')
+                        tc.insert(0, tcPr)
+                    tcW = tcPr.find(qn('w:tcW'))
+                    if tcW is None:
+                        tcW = OxmlElement('w:tcW')
+                        tcPr.append(tcW)
+                    tcW.set(qn('w:w'), str(width))
+                    tcW.set(qn('w:type'), 'dxa')
+                    pos += span
+
+            # 5) จัดแถวลายเซ็นให้ label อยู่กึ่งกลางใต้เส้นประ
+            self._fix_signature_alignment(table, sum(grid_w))
+        except Exception as e:
+            print(f"⚠️ _finalize_table_layout error: {e}")
+            import traceback
+            traceback.print_exc()
+
+    def _fix_signature_alignment(self, table, table_width_twips):
+        """
+        ✅ จัดแถวลายเซ็น (ยืนยันการตรวจสอบ) ให้ชื่อผู้เซ็นอยู่กึ่งกลางใต้เส้นประ
+           เดิมใช้ช่องว่างจัดเอง ทำให้ label ยาว/สั้นต่างกันเลื่อนไม่ตรงกลาง
+           แก้เป็น center tab stop 3 จุด (1/6, 1/2, 5/6) ใช้ทั้งบรรทัดเส้นประและบรรทัดชื่อ
+           -> ทุก label อยู่กึ่งกลางตรงกับเส้นประเป๊ะ
+        """
+        try:
+            import re
+            from docx.shared import Twips
+            from docx.enum.text import WD_TAB_ALIGNMENT, WD_ALIGN_PARAGRAPH
+            from docx.oxml.ns import qn
+            from docx.oxml import OxmlElement
+
+            stops = [round(table_width_twips * 1 / 6),
+                     round(table_width_twips * 1 / 2),
+                     round(table_width_twips * 5 / 6)]
+
+            # หา cell ที่มีหัวข้อ 'ยืนยันการตรวจสอบ'
+            sig_cell = None
+            for row in table.rows:
+                for c in row.cells:
+                    if 'ยืนยันการตรวจสอบ' in c.text:
+                        sig_cell = c
+                        break
+                if sig_cell:
+                    break
+            if sig_cell is None:
+                return
+
+            for p in sig_cell.paragraphs:
+                txt = p.text
+                is_line = ('....' in txt) or ('.....)' in txt)
+                is_label = ('ผู้สรุป' in txt) or ('ควบคุม' in txt) or ('ลูกค้า' in txt)
+                if not (is_line or is_label):
+                    continue
+                parts = [s.strip() for s in re.split(r'\s{2,}', txt.strip()) if s.strip()]
+                if len(parts) != 3:
+                    continue
+
+                # เก็บ font เดิม
+                fname = p.runs[0].font.name if p.runs else None
+                fsize = p.runs[0].font.size if p.runs else None
+
+                # ล้าง runs เดิม
+                for r in list(p.runs):
+                    r._r.getparent().remove(r._r)
+
+                # ตั้ง center tab stops
+                p.alignment = WD_ALIGN_PARAGRAPH.LEFT
+                pf = p.paragraph_format
+                pf.tab_stops.clear_all()
+                for pos in stops:
+                    pf.tab_stops.add_tab_stop(Twips(pos), WD_TAB_ALIGNMENT.CENTER)
+
+                # สร้าง run: <tab><item> ต่อกัน 3 ชุด (item จะ center บน tab stop)
+                for it in parts:
+                    r = p.add_run()
+                    r._r.append(OxmlElement('w:tab'))
+                    t = OxmlElement('w:t')
+                    t.set(qn('xml:space'), 'preserve')
+                    t.text = it
+                    r._r.append(t)
+                    if fname:
+                        r.font.name = fname
+                    if fsize:
+                        r.font.size = fsize
+        except Exception as e:
+            print(f"⚠️ _fix_signature_alignment error: {e}")
+            import traceback
+            traceback.print_exc()
+
     def _fill_template_with_data(self, doc, product: Dict, project_info: Dict):
         """เติมข้อมูลลง template - รองรับ type2, type3, type4 แยกแถว และบวก H สำหรับ Awning + Fixed"""
         try:
@@ -1390,10 +1560,14 @@ class EnhancedSiteSurveyGenerator:
             product['calculated_height'] = height_value
 
             # Mapping ข้อมูล (ใช้ height_value ที่คำนวณแล้ว)
+            # ✅ Code = ref + floor (ถ้ามี) เช่น "W1 ชั้น1"
+            _code = product.get('ref', '')
+            if product.get('floor'):
+                _code = f"{_code} {product.get('floor')}"
             replacements = {
-                'ref1': product.get('ref', ''),           
-                'Series1': product.get('series', ''),     
-                'Color1': product_color,  
+                'ref1': _code,
+                'Series1': product.get('series', ''),
+                'Color1': product_color,
                 'Glass1': clean_product.get('glass', ''),
                 'Screen1': product.get('insect_screen', 'No'),
                 'W1': str(calculated_width),        
@@ -1435,6 +1609,9 @@ class EnhancedSiteSurveyGenerator:
             
             # เติมข้อมูลส่วน More Detail และ Note
             self._fill_additional_sections(table, product, project_info)
+
+            # ✅ ปรับ layout ตาราง: หัว 'Opening Size (mm)', ลบแถวว่าง, ปรับความกว้าง
+            self._finalize_table_layout(table)
 
             # เพิ่มรูปภาพ
             self._add_images_to_template(doc, product)
@@ -1982,8 +2159,12 @@ class EnhancedSiteSurveyGenerator:
             table = doc.tables[0]
             current_date = datetime.now().strftime('%Y-%m-%d')
             
+            # ✅ Code = ref + floor (ถ้ามี) เช่น "W1 ชั้น1"
+            _code = product.get('ref', '')
+            if product.get('floor'):
+                _code = f"{_code} {product.get('floor')}"
             replacements = {
-                'ref1': product.get('ref', ''),
+                'ref1': _code,
                 'Series1': product.get('series', ''),
                 'Color1': product.get('color', ''),
                 'Glass1': product.get('glass', ''),

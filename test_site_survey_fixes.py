@@ -106,6 +106,18 @@ class TestRefCodeParsing(unittest.TestCase):
         self.assertEqual(
             self.p._extract_ref_from_line('D1.5F1 ATIS Fixed 500 600 1 1.00'), 'D1.5F1')
 
+    def test_floor_column_layout(self):
+        """layout ที่มีคอลัมน์ "ชั้น" คั่น - ต้องรองรับทั้งรหัสเดิมและรหัสใหม่"""
+        for line, want in [
+            ('W1 ชั้น1 ATIS Casement window 1000 1200 1 1.00', 'W1'),
+            ('D1 ชั้น2 WE-70 Sliding door 2000 2200 1 1.00', 'D1'),
+            ('AD1 ชั้น1 WE-70 Airflow door 885 2190 1 1.00', 'AD1'),
+            ('SD1 ชั้น3 ATIS Sliding door 2000 2200 1 1.00', 'SD1'),
+        ]:
+            with self.subTest(line=line):
+                self.assertTrue(self.p._is_main_product_line(line))
+                self.assertEqual(self.p._extract_ref_from_line(line), want)
+
     def test_non_product_lines_rejected(self):
         """ที่อยู่/หมายเหตุ/หัวตาราง ต้องไม่ถูกมองเป็นสินค้า"""
         for line in [

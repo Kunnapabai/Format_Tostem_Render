@@ -212,8 +212,10 @@ class WindowDoorImageGenerator:
                 num_panels = 2
                 print(f"  ℹ️  Sliding without panel count, defaulting to 2 panels")
             elif is_casement and not is_left and not is_right:
-                num_panels = 2
-                print(f"  ℹ️  Casement without panel count, defaulting to 2 panels (double)")
+                # ✅ Casement เดี่ยว (ไม่ระบุ (2)/double/2 panels) = single 1 บาน
+                #    ถ้าเป็น double จริงจะมี "(2)" / "double" / "2 panels" ซึ่งถูกจับไปก่อนแล้ว
+                num_panels = 1
+                print(f"  ℹ️  Casement without panel count, defaulting to 1 panel (single)")
             else:
                 num_panels = 1
                 print(f"  ℹ️  No panel count specified, defaulting to 1 panel")
@@ -538,9 +540,8 @@ class WindowDoorImageGenerator:
                 text_total = f"W = {width}"
                 bbox = draw.textbbox((0, 0), text_total, font=font_bold)
                 text_width = bbox[2] - bbox[0]
-                # ✅ จัดกึ่งกลางกับ "ลูกศร" ไม่ใช่กับ canvas
-                #    (margin ซ้าย 80 / ขวา 20 ไม่เท่ากัน จึงเยื้องไปทางซ้าย 30px)
-                text_x = start_x + (end_x - start_x - text_width) // 2
+                # ✅ จัดกึ่งกลางตามลูกศร (ช่วง start_x..end_x) ไม่ใช่กึ่งกลาง canvas
+                text_x = start_x + (target_width - text_width) // 2
                 text_y = total_arrow_y - 20
                 draw.text((text_x, text_y), text_total, fill='black', font=font_bold)
                 
@@ -592,8 +593,8 @@ class WindowDoorImageGenerator:
                 text_w = f"W = {width}"
                 bbox = draw.textbbox((0, 0), text_w, font=font_bold)
                 text_width = bbox[2] - bbox[0]
-                # ✅ จัดกึ่งกลางกับ "ลูกศร" ไม่ใช่กับ canvas
-                text_x = start_x + (end_x - start_x - text_width) // 2
+                # ✅ จัดกึ่งกลางตามลูกศร (ช่วง start_x..end_x) ไม่ใช่กึ่งกลาง canvas
+                text_x = start_x + (target_width - text_width) // 2
                 text_y = arrow_y - 20
                 draw.text((text_x, text_y), text_w, fill='black', font=font_bold)
             
@@ -612,18 +613,17 @@ class WindowDoorImageGenerator:
             
             # ข้อความ H (หมุนตามแนวตั้ง)
             text_h = f"H = {height}"
-            temp_img = Image.new('RGBA', (200, 50), (255, 255, 255, 0))
+            # ✅ ทำ temp image ให้พอดีกับข้อความ เพื่อให้จัดกึ่งกลางได้แม่นยำหลังหมุน
+            hb = draw.textbbox((0, 0), text_h, font=font_bold)
+            th_w = hb[2] - hb[0]
+            th_h = hb[3] - hb[1]
+            temp_img = Image.new('RGBA', (th_w + 4, th_h + 4), (255, 255, 255, 0))
             temp_draw = ImageDraw.Draw(temp_img)
-            temp_draw.text((10, 10), text_h, fill='black', font=font_bold)
-            # ✅ ตัดขอบว่างออกก่อนหมุน มิฉะนั้นตัวอักษรจะไปกองอยู่ปลายแถบ
-            #    ทำให้จัดกึ่งกลางแล้วยังเยื้องลงล่าง
-            text_bbox = temp_img.getbbox()
-            if text_bbox:
-                temp_img = temp_img.crop(text_bbox)
+            temp_draw.text((2 - hb[0], 2 - hb[1]), text_h, fill='black', font=font_bold)
             rotated = temp_img.rotate(90, expand=True)
-            # ✅ จัดกึ่งกลางกับ "ลูกศร" ไม่ใช่กับ canvas (margin บน 80 / ล่าง 40)
+            # ✅ จัดกึ่งกลางตามลูกศรแนวตั้ง (ช่วง start_y..end_y) ไม่ใช่กึ่งกลาง canvas
             text_x_pos = arrow_x - 8 - rotated.width
-            text_y_pos = start_y + (end_y - start_y - rotated.height) // 2
+            text_y_pos = start_y + (target_height - rotated.height) // 2
             canvas.paste(rotated, (text_x_pos, text_y_pos), rotated)
             
             # บันทึกรูป
