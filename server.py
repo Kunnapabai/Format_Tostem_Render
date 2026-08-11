@@ -1,3 +1,4 @@
+from __future__ import annotations
 from flask import Flask, request, jsonify, send_file, render_template_string
 from flask_cors import CORS
 import os
@@ -2647,18 +2648,28 @@ if MAIN8_AVAILABLE:
             def extract_ref_from_filename(filename):
                 name_without_ext = os.path.splitext(filename)[0]
                 
+                # ✅ ชื่อไฟล์กล้อง ไม่ใช่ ref - ปล่อยให้เป็น UNMATCHED
+                if re.match(r'^(DSC|DCIM|PXL|PANO|VID|MOV|SCR|IMG)[\d_\-]',
+                            name_without_ext, re.IGNORECASE):
+                    return None
+
                 # Try multiple patterns with increasing flexibility
+                # ✅ รองรับ prefix อื่นนอกจาก D/W (AD1, ADD1, SD1)
+                #    เดิม [DW][A-Z]? ทำให้ AD1.jpg ถูกอ่านเป็น "D1" (ผิด ref เงียบๆ)
+                #    ใช้ lookaround แทน \b เพราะ "_" นับเป็น word char
+                #    ทำให้ \b ไม่ทำงานกับ AD1_front.jpg
+                REF = r'[A-Z]{1,3}\d+(?:\.\d+)?(?:[FT]\d*)?'
+                EDGE_L = r'(?<![A-Za-z0-9])'
+                EDGE_R = r'(?![A-Za-z0-9])'
                 patterns = [
                     # Exact match at start
-                    r'^([DW][A-Z]?\d+(?:\.\d+)?)',
+                    rf'^({REF}){EDGE_R}',
                     # Exact match at end
-                    r'([DW][A-Z]?\d+(?:\.\d+)?)$',
+                    rf'{EDGE_L}({REF})$',
                     # With separators
-                    r'[_\-\s]([DW][A-Z]?\d+(?:\.\d+)?)[_\-\s]',
-                    # Anywhere in filename
-                    r'([DW][A-Z]?\d+(?:\.\d+)?)',
-                    # ✅ NEW: Allow lowercase
-                    r'([dw][a-z]?\d+(?:\.\d+)?)',
+                    rf'[_\-\s]({REF})[_\-\s]',
+                    # Anywhere in filename (ต้องขึ้นต้นคำ)
+                    rf'{EDGE_L}({REF}){EDGE_R}',
                 ]
                 
                 for pattern in patterns:

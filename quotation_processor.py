@@ -61,7 +61,9 @@ class EnhancedTOSTEMQuotationProcessor:
                     product['color'] = default_color
                     print(f"   ✓ Applied color to {product.get('ref', 'Unknown')}: '{default_color}'")
 
-            return {
+            # ✅ ถ้าอ่านไฟล์ได้แต่ไม่เจอ product เลย = แปลว่ารหัส Code ในใบเสนอราคา
+            #    ไม่ตรงกับ pattern ที่รองรับ ต้องแจ้งเตือน ไม่ใช่เงียบแล้วสร้างเอกสารเปล่า
+            result = {
                 'success': True,
                 'data': {
                     'project_info': project_info,
@@ -70,7 +72,17 @@ class EnhancedTOSTEMQuotationProcessor:
                 },
                 'message': f'ประมวลผล PDF สำเร็จ ({len(products)} รายการ) - Enhanced multi-line support'
             }
-            
+
+            if not products:
+                warning = ('ไม่พบรายการสินค้าในใบเสนอราคา - '
+                           'รหัส Code อาจไม่อยู่ในรูปแบบที่รองรับ (เช่น W1, D1, AD1, ADD1) '
+                           'กรุณาตรวจสอบคอลัมน์ Code')
+                result['warning'] = warning
+                result['message'] = f'⚠️ {warning}'
+                print(f"\n⚠️ {warning}")
+
+            return result
+
         except Exception as e:
             return {
                 'success': False,
@@ -135,7 +147,8 @@ class EnhancedTOSTEMQuotationProcessor:
         line = line.strip()
         # ✅ รองรับ layout ใหม่ที่มีคอลัมน์ "ชั้น" คั่นระหว่าง Code กับ Series
         #    เช่น "W1 ชั้น1 ATIS ..." -> normalize เป็น "W1 ATIS ..." ก่อนตรวจ pattern
-        line = re.sub(r'^([DW][A-Z]?\d+(?:\.\d+)?[FT]?\d*)\s+ชั้น\S*\s+', r'\1 ', line)
+        #    ✅ [A-Z]{1,3} เพื่อรองรับรหัสที่ไม่ได้ขึ้นต้นด้วย D/W ด้วย (AD1, ADD1, SD1)
+        line = re.sub(r'^([A-Z]{1,3}\d+(?:\.\d+)?[FT]?\d*)\s+ชั้น\S*\s+', r'\1 ', line)
         patterns = [
             # ============================================================
             # ✅ GRANT Series - เพิ่มส่วนนี้ก่อนทุก pattern อื่น
@@ -155,7 +168,22 @@ class EnhancedTOSTEMQuotationProcessor:
             
             r'^ADD\d+\s+GRANT\b',            # ADD1 GRANT, ADD2 GRANT
             r'^ADD\d+F\s+GRANT\b',           # ADD1F GRANT (ถ้ามี)
-            
+
+            # ============================================================
+            # ✅ AD Series (Airflow Door) - AD1, AD2, AD1F, AD1T
+            # ============================================================
+            r'^AD\d+\.\d+\s+',               # AD1.5
+            r'^AD\d+[FT]\d+\s+',             # AD1F1, AD1T2
+            r'^AD\d+[FT]\s+',                # AD1F, AD1T
+            r'^AD\d+\s+',                    # AD1 WE-70, AD2 ATIS
+
+            # ============================================================
+            # ✅ Generic ref + known series (catch-all สำหรับรหัสใหม่ๆ)
+            #    เช่น SD1 WE-70, FD2 ATIS - anchored ด้วยชื่อ series
+            #    จึงไม่ไปจับที่อยู่หรือบรรทัดหมายเหตุ
+            # ============================================================
+            r'^[A-Z]{1,3}\d+(?:\.\d+)?(?:[FT]\d*)?\s+(?:WE-|WD-|ATIS|Giesta|FW-G|GRANT)',
+
             # ============================================================
             # รหัสแบบ ชั้น/จำนวนหน้าต่าง (1-2 หลัก / 1-3 หลัก)
             # ============================================================
@@ -413,9 +441,20 @@ class EnhancedTOSTEMQuotationProcessor:
         แยกหา ref จากบรรทัด - รองรับหลาย pattern แต่ไม่จับที่อยู่
         ✅ เพิ่มรองรับ ADD1, ADD2, W6, W11, etc.
         """
+        # ✅ ตัดคอลัมน์ "ชั้น" ออกก่อน (เหมือน _is_main_product_line)
+        #    ไม่งั้น pattern ที่อิง series ต่อท้าย เช่น "SD1 ATIS" จะไม่ match
+        line = re.sub(r'^([A-Z]{1,3}\d+(?:\.\d+)?[FT]?\d*)\s+ชั้น\S*\s+', r'\1 ',
+                      line.strip())
         patterns = [
             # ต้องเรียงจากเฉพาะเจาะจง → กว้าง
-            r'^(ADD\d+)\b',                      # ADD1, ADD2
+            r'^(ADD\d+)\b',                      # ADD1, ADD2 ← ต้องมาก่อน AD\d+
+            # ✅ AD Series (Airflow Door)
+            r'^(AD\d+\.\d+)\b',                  # AD1.5
+            r'^(AD\d+F\d+)\b',                   # AD1F1
+            r'^(AD\d+T\d+)\b',                   # AD1T1
+            r'^(AD\d+F)\b',                      # AD1F
+            r'^(AD\d+T)\b',                      # AD1T
+            r'^(AD\d+)\b',                       # AD1, AD2 (Airflow Door)
             # ✅ ทศนิยม + F/T (ต้องมาก่อน W\d+\.\d+ ไม่งั้นจะตัด F/T ทิ้ง)
             r'^(W\d+\.\d+F\d+)\b',               # W1.1F1, W11.2F2
             r'^(D\d+\.\d+F\d+)\b',               # D1.5F1
@@ -437,7 +476,10 @@ class EnhancedTOSTEMQuotationProcessor:
             r'^(D\d+T)\b',                       # D1T
             r'^(W\d+)\b',                        # W6, W11 ← มาหลังสุด!
             r'^(D\d+)\b',                        # D1, D3
-            
+
+            # Generic ref + known series (catch-all สำหรับรหัสใหม่ๆ เช่น SD1, FD2)
+            r'^([A-Z]{1,3}\d+(?:\.\d+)?(?:[FT]\d*)?)\s+(?:WE-|WD-|ATIS|Giesta|FW-G|GRANT)',
+
             # รหัสแบบ ชั้น/จำนวนหน้าต่าง
             r'^(\d{1,2}/\d{1,3}[FT]?\d*)\b',
             r'\b(\d{1,2}/\d{1,3}[FT]?\d*)(?=\s)',
@@ -491,7 +533,7 @@ class EnhancedTOSTEMQuotationProcessor:
             # ✅ หา "ชั้น" (floor) ที่อยู่หลัง Code ก่อน Series เพื่อเก็บไว้แสดงใน Code
             #    เช่น "W1 ชั้น1 ATIS ..." -> floor = "ชั้น1"
             floor_match = re.match(
-                r'^[DW][A-Z]?\d+(?:\.\d+)?[FT]?\d*\s+(ชั้น\S*)', main_line.strip())
+                r'^[A-Z]{1,3}\d+(?:\.\d+)?[FT]?\d*\s+(ชั้น\S*)', main_line.strip())
             if floor_match:
                 product['floor'] = floor_match.group(1)
                 print(f"  🏢 Found floor: {product['floor']}")
