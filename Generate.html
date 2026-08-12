@@ -856,6 +856,274 @@
         .site-survey-center .btn {
             width: 180px;
         }
+
+        /* ===================== STEP UI ===================== */
+
+        /* --- แถบความคืบหน้า 4 ขั้นตอน ด้านบนสุด --- */
+        .step-rail {
+            list-style: none;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            gap: 0;
+            margin: 0 auto 35px;
+            padding: 18px 10px;
+            max-width: 900px;
+            background: #f8fafc;
+            border: 1px solid #e6ebf1;
+            border-radius: 14px;
+        }
+
+        .step-rail li {
+            flex: 1 1 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            position: relative;
+            padding: 0 6px;
+        }
+
+        /* เส้นเชื่อมระหว่างขั้นตอน */
+        .step-rail li::before {
+            content: '';
+            position: absolute;
+            top: 15px;
+            right: 50%;
+            width: 100%;
+            height: 3px;
+            background: #dfe6ec;
+            border-radius: 2px;
+            z-index: 0;
+        }
+
+        .step-rail li:first-child::before { display: none; }
+
+        .step-rail li.is-done::before,
+        .step-rail li.is-active::before { background: #2196F3; }
+
+        .step-rail-num {
+            position: relative;
+            z-index: 1;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #fff;
+            border: 2px solid #dfe6ec;
+            color: #98a5b3;
+            font-weight: 700;
+            font-size: 0.95em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 8px;
+            transition: all .25s ease;
+        }
+
+        .step-rail-label {
+            font-size: 0.82em;
+            color: #8a97a6;
+            font-weight: 600;
+            line-height: 1.3;
+        }
+
+        .step-rail li.is-active .step-rail-num {
+            background: linear-gradient(135deg, #2196F3, #21CBF3);
+            border-color: #2196F3;
+            color: #fff;
+            box-shadow: 0 0 0 5px rgba(33, 150, 243, .18);
+        }
+
+        .step-rail li.is-active .step-rail-label { color: #1976D2; }
+
+        .step-rail li.is-done .step-rail-num {
+            background: #28a745;
+            border-color: #28a745;
+            color: #fff;
+        }
+
+        .step-rail li.is-done .step-rail-num::after { content: '✓'; }
+        .step-rail li.is-done .step-rail-num span { display: none; }
+        .step-rail li.is-done .step-rail-label { color: #28a745; }
+
+        /* --- หัวข้อของแต่ละขั้นตอน --- */
+        .step-head {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            max-width: 600px;
+            margin: 0 auto 6px;
+        }
+
+        .step-head .step-num {
+            flex: 0 0 auto;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #e9eef3;
+            color: #8a97a6;
+            font-weight: 700;
+            font-size: 1.1em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all .25s ease;
+        }
+
+        .step-head.is-active .step-num {
+            background: linear-gradient(135deg, #2196F3, #21CBF3);
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(33, 150, 243, .35);
+        }
+
+        .step-head.is-done .step-num {
+            background: #28a745;
+            color: #fff;
+        }
+
+        .step-head .step-eyebrow {
+            font-size: 0.78em;
+            font-weight: 700;
+            letter-spacing: .12em;
+            color: #98a5b3;
+            text-transform: uppercase;
+        }
+
+        .step-head.is-active .step-eyebrow { color: #1976D2; }
+        .step-head.is-done .step-eyebrow { color: #28a745; }
+
+        .step-head .step-title {
+            font-size: 1.35em;
+            font-weight: 700;
+            color: #2c3e50;
+            margin: 2px 0 0;
+            line-height: 1.3;
+        }
+
+        .step-hint {
+            max-width: 600px;
+            margin: 0 auto 16px;
+            padding-left: 54px;
+            color: #7b8794;
+            font-size: 0.92em;
+            line-height: 1.5;
+        }
+
+        .step-block { margin-top: 45px; }
+        .step-block:first-of-type { margin-top: 0; }
+
+        /* --- STEP 3: กล่องยืนยันการอัปโหลด --- */
+        .step3-panel {
+            max-width: 900px;
+            margin: 0 auto 15px;
+            background: linear-gradient(180deg, #e8f4fe, #f6fbff);
+            border: 2px solid #2196F3;
+            border-radius: 14px;
+            padding: 20px;
+            box-shadow: 0 8px 24px rgba(33, 150, 243, .15);
+        }
+
+        .step3-head {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 12px;
+        }
+
+        .step3-head > div:nth-child(2) {
+            flex: 1 1 0;
+            min-width: 0;
+        }
+
+        .step3-head .step-num {
+            flex: 0 0 auto;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #2196F3, #21CBF3);
+            color: #fff;
+            font-weight: 700;
+            font-size: 1.1em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 0 0 rgba(33, 150, 243, .55);
+            animation: stepPulse 2s infinite;
+        }
+
+        @keyframes stepPulse {
+            0%   { box-shadow: 0 0 0 0 rgba(33, 150, 243, .55); }
+            70%  { box-shadow: 0 0 0 12px rgba(33, 150, 243, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(33, 150, 243, 0); }
+        }
+
+        .step3-count {
+            margin-left: auto;
+            background: #e3f2fd;
+            color: #1976D2;
+            font-weight: 700;
+            font-size: 0.85em;
+            padding: 6px 14px;
+            border-radius: 20px;
+            white-space: nowrap;
+        }
+
+        .step3-warning {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            background: #fff8e1;
+            border-left: 4px solid #ffc107;
+            color: #7a5d00;
+            font-size: 0.92em;
+            font-weight: 600;
+            line-height: 1.5;
+            padding: 10px 14px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .step3-arrow {
+            text-align: center;
+            color: #1976D2;
+            font-weight: 700;
+            font-size: 0.95em;
+            margin-top: 15px;
+            animation: stepBounce 1.4s ease-in-out infinite;
+        }
+
+        @keyframes stepBounce {
+            0%, 100% { transform: translateY(0); }
+            50%      { transform: translateY(6px); }
+        }
+
+        /* ปุ่มสีน้ำเงินที่ต้องกด - เรืองแสงเรียกความสนใจ */
+        .btn-attention {
+            animation: btnGlow 2s ease-in-out infinite;
+        }
+
+        @keyframes btnGlow {
+            0%, 100% { box-shadow: 0 4px 15px rgba(33, 150, 243, .35); }
+            50%      { box-shadow: 0 6px 28px rgba(33, 150, 243, .75); }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .step3-head .step-num,
+            .step3-arrow,
+            .btn-attention { animation: none; }
+        }
+
+        @media (max-width: 768px) {
+            .step-rail { gap: 0; padding: 14px 4px; }
+            .step-rail-label { font-size: 0.7em; }
+            .step-head { gap: 10px; }
+            .step-head .step-title { font-size: 1.15em; }
+            .step-hint { padding-left: 0; text-align: center; }
+            .step3-panel { padding: 15px; }
+            .step3-head { flex-wrap: wrap; gap: 10px; }
+            .step3-head .step-title { font-size: 1.15em; }
+            .step3-count { flex: 0 0 100%; margin-left: 0; padding-left: 50px; background: transparent; color: #1976D2; padding-top: 0; padding-bottom: 0; }
+        }
     </style>
 </head>
 <body>
@@ -916,51 +1184,111 @@
         
         <div class="main-content">
             <p class="subtitle">สร้าง Site survey โดยใช้ข้อมูลจาก Quotation</p>
+
+            <!-- แถบความคืบหน้า 4 ขั้นตอน -->
+            <ol class="step-rail" id="stepRail">
+                <li data-step="1"><span class="step-rail-num"><span>1</span></span><span class="step-rail-label">อัพโหลด<br>Quotation</span></li>
+                <li data-step="2"><span class="step-rail-num"><span>2</span></span><span class="step-rail-label">เลือก<br>รูปภาพ</span></li>
+                <li data-step="3"><span class="step-rail-num"><span>3</span></span><span class="step-rail-label">อัพโหลด<br>รูปภาพทั้งหมด</span></li>
+                <li data-step="4"><span class="step-rail-num"><span>4</span></span><span class="step-rail-label">สร้าง<br>Site Survey</span></li>
+            </ol>
+
             <div class="section">
-                <h2 class="section-title">อัพโหลด Quotation</h2>
-                
-                <div class="quotation-upload-area" id="quotationUploadArea">
-                    <div class="upload-text">Quotation</div>
-                    <div class="file-info">คลิกหรือลากไฟล์มาวาง (.xlsx, .xls, .csv, .pdf)</div>
-                </div>
-                
-                <input type="file" id="quotationInput" class="file-input" accept=".xlsx,.xls,.csv,.pdf">
-
-                <div id="quotationJobStatusContainer"></div>
-
-                <h2 class="section-title" style="margin-top: 40px;">อัปโหลดรูปภาพ</h2>
-                <p style="text-align: center; color: #666; margin-bottom: 20px;">แก้ไขชื่อไฟล์ให้ตรงกับ Ref Code (เช่น D1, W2)</p>
-                <div class="photo-upload-section">
-                    
-                    <div style="background: white; margin-bottom: 15px;">
-
-                        <input type="file" id="surveyPhotoInput" multiple accept="image/*" style="display: none;">
-
-                        <div class="photo-upload-area" id="photoUploadArea">
-                            <div class="upload-text">รูปภาพ</div>
-                            <div class="file-info">คลิกหรือลากไฟล์มาวาง (.jpg, .png, .gif, .webp)</div>
+                <!-- ========== STEP 1 ========== -->
+                <div class="step-block">
+                    <div class="step-head" id="stepHead1">
+                        <div class="step-num">1</div>
+                        <div>
+                            <div class="step-eyebrow">STEP 1</div>
+                            <h2 class="step-title">อัพโหลด Quotation</h2>
                         </div>
                     </div>
-                    
-                    <div id="selectedPhotosEditor" style="display: none; background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
-                        <div id="photoEditList" style="max-height: 400px; overflow-y: auto;"></div>
-                        <div style="display: flex; justify-content: center; align-items: center; gap: 15px; margin-top: 15px;">
-                            <button class="btn btn-primary" style="width: 250px;" onclick="uploadEditedPhotos()" style="width:300px;">
-                                อัปโหลดทั้งหมด
-                            </button>
-                            <button class="btn btn-danger" style="background: rgb(248, 249, 250);" onclick="cancelPhotoSelection()">
-                                ยกเลิก
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <div id="uploadedPhotosContainer"></div>        
+                    <p class="step-hint">เลือกไฟล์ Quotation เพื่อดึงรายการ Ref Code (.xlsx, .xls, .csv, .pdf)</p>
 
+                    <div class="quotation-upload-area" id="quotationUploadArea">
+                        <div class="upload-text">Quotation</div>
+                        <div class="file-info">คลิกหรือลากไฟล์มาวาง (.xlsx, .xls, .csv, .pdf)</div>
+                    </div>
+
+                    <input type="file" id="quotationInput" class="file-input" accept=".xlsx,.xls,.csv,.pdf">
+
+                    <div id="quotationJobStatusContainer"></div>
                 </div>
 
-                <button class="btn btn-warning" id="generateSurveyBtn" disabled style="display: block; width: 350px; margin: 30px auto 0;">สร้าง Site Survey</button>
-                
-                <div id="siteSurveyJobStatusContainer">
+                <!-- ========== STEP 2 ========== -->
+                <div class="step-block">
+                    <div class="step-head" id="stepHead2">
+                        <div class="step-num">2</div>
+                        <div>
+                            <div class="step-eyebrow">STEP 2</div>
+                            <h2 class="step-title">เลือกรูปภาพ</h2>
+                        </div>
+                    </div>
+                    <p class="step-hint">เลือกรูปหน้างานได้หลายรูปพร้อมกัน แล้วแก้ไขชื่อไฟล์ให้ตรงกับ Ref Code (เช่น D1, W2)</p>
+
+                    <div class="photo-upload-section">
+
+                        <div style="background: white; margin-bottom: 15px;">
+
+                            <input type="file" id="surveyPhotoInput" multiple accept="image/*" style="display: none;">
+
+                            <div class="photo-upload-area" id="photoUploadArea">
+                                <div class="upload-text">รูปภาพ</div>
+                                <div class="file-info">คลิกหรือลากไฟล์มาวาง (.jpg, .png, .gif, .webp)</div>
+                            </div>
+                        </div>
+
+                        <!-- ========== STEP 3 (แสดงเมื่อเลือกรูปแล้ว) ========== -->
+                        <div id="selectedPhotosEditor" class="step3-panel" style="display: none;">
+                            <div class="step3-head">
+                                <div class="step-num">3</div>
+                                <div>
+                                    <div class="step-eyebrow" style="color:#1976D2;">STEP 3</div>
+                                    <h2 class="step-title">คลิกเพื่ออัพโหลดรูปภาพทั้งหมด</h2>
+                                </div>
+                                <span class="step3-count" id="step3Count">เลือกไว้ 0 รูป</span>
+                            </div>
+
+                            <div class="step3-warning">
+                                <span>⚠️</span>
+                                <span>รูปภาพเหล่านี้ <u>ยังไม่ถูกอัปโหลด</u> — ตรวจชื่อไฟล์ให้ตรงกับ Ref Code แล้วกดปุ่มสีน้ำเงินด้านล่างเพื่ออัปโหลดทั้งหมด</span>
+                            </div>
+
+                            <div id="photoEditList" style="max-height: 400px; overflow-y: auto;"></div>
+
+                            <div class="step3-arrow">👇 กดปุ่มนี้เพื่ออัปโหลดรูปทั้งหมด</div>
+
+                            <div style="display: flex; justify-content: center; align-items: center; gap: 15px; margin-top: 10px;">
+                                <button class="btn btn-primary btn-attention" id="uploadAllPhotosBtn" style="width: 280px;" onclick="uploadEditedPhotos()">
+                                    ⬆ อัปโหลดทั้งหมด
+                                </button>
+                                <button class="btn btn-danger" style="background: transparent;" onclick="cancelPhotoSelection()">
+                                    ยกเลิก
+                                </button>
+                            </div>
+                        </div>
+
+                        <div id="uploadedPhotosHeading" style="display: none; text-align: center; color: #28a745; font-weight: 700; margin: 25px 0 10px;">✅ รูปที่อัพโหลดแล้ว</div>
+                        <div id="uploadedPhotosContainer" style="display: none;"></div>
+
+                    </div>
+                </div>
+
+                <!-- ========== STEP 4 ========== -->
+                <div class="step-block">
+                    <div class="step-head" id="stepHead4">
+                        <div class="step-num">4</div>
+                        <div>
+                            <div class="step-eyebrow">STEP 4</div>
+                            <h2 class="step-title">สร้าง Site Survey</h2>
+                        </div>
+                    </div>
+                    <p class="step-hint">เมื่อข้อมูลครบแล้ว กดปุ่มด้านล่างเพื่อสร้างเอกสาร Site Survey</p>
+
+                    <button class="btn btn-warning" id="generateSurveyBtn" disabled style="display: block; width: 350px; margin: 20px auto 0;">สร้าง Site Survey</button>
+
+                    <div id="siteSurveyJobStatusContainer">
+                    </div>
                 </div>
 
             </div><!-- end section -->
@@ -1036,6 +1364,7 @@
             setInterval(updateLastUpdate, 30000);
             setInterval(refreshJobStatus, 5000);
             await loadAllUploadedImages();
+            updateStepStates();
         }
 
         async function clearAllDataOnLoad() {
@@ -1367,8 +1696,9 @@
                 
                 photoEditList.appendChild(item);
             });
-            
+
             editor.style.display = 'block';
+            updateStepStates();
         }
 
         function updatePhotoName(index, newName) {
@@ -1404,6 +1734,7 @@
             selectedPhotosForUpload = [];
             document.getElementById('selectedPhotosEditor').style.display = 'none';
             document.getElementById('surveyPhotoInput').value = '';
+            updateStepStates();
         }
 
         async function uploadEditedPhotos() {
@@ -1543,10 +1874,14 @@
 
         function renderUploadedPhotos() {
             const container = document.getElementById('uploadedPhotosContainer');
-            
+            const heading = document.getElementById('uploadedPhotosHeading');
+
             if (Object.keys(uploadedPhotosByRef).length === 0) {
                 container.innerHTML = '';
                 container.style.background = 'rgb(255, 255, 255)'; // ⬅ white when empty
+                container.style.display = 'none';                  // ⬅ ซ่อนกล่องเปล่า ไม่ให้เป็นแถบสีเทาว่างๆ
+                if (heading) heading.style.display = 'none';
+                updateStepStates();
                 return;
             }
             
@@ -1585,6 +1920,9 @@
             
             container.innerHTML = html;
             container.style.background = 'rgb(248, 249, 250)'; // ⬅ gray when content exists
+            container.style.display = 'grid';
+            if (heading) heading.style.display = 'block';
+            updateStepStates();
         }
 
         function removeUploadedPhoto(ref, photoIndex) {
@@ -1659,6 +1997,24 @@
             }
         }
         
+        // ✅ อ่านชื่อไฟล์จาก header Content-Disposition (รองรับภาษาไทยผ่าน filename*=UTF-8'')
+        function getFilenameFromResponse(response) {
+            const disposition = response.headers.get('content-disposition');
+            if (!disposition) return null;
+
+            const utf8Match = disposition.match(/filename\*=UTF-8''([^;]+)/i);
+            if (utf8Match) {
+                try {
+                    return decodeURIComponent(utf8Match[1].trim().replace(/^"|"$/g, ''));
+                } catch (e) {
+                    console.warn('Cannot decode filename*:', e);
+                }
+            }
+
+            const plainMatch = disposition.match(/filename="?([^";]+)"?/i);
+            return plainMatch ? plainMatch[1].trim() : null;
+        }
+
         async function downloadSiteSurvey(surveyJobId, fileType) {
             try {
                 const response = await fetch(`${backendUrl}/api/site-survey/download/${surveyJobId}/${fileType}`);
@@ -1686,7 +2042,8 @@
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = `site_survey_${surveyJobId}.${fileType}`;
+                // ✅ ใช้ชื่อไฟล์จาก server (เช่น site_survey_คุณภาธร-Quo2026070804.pdf)
+                a.download = getFilenameFromResponse(response) || `site_survey_${surveyJobId}.${fileType}`;
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
@@ -1745,7 +2102,9 @@
             
             if (latestQuotationJob) {
                 const [jobId, job] = latestQuotationJob;
-                quotationHtml += createJobCard(jobId, 'Quotation', job.status, 'ไฟล์ข้อมูล', job.original_filename || '');
+                // ✅ ใช้ display_filename (ชื่อเดิม มีภาษาไทย) ถ้ามี
+                const quotationFilename = job.display_filename || job.original_filename || '';
+                quotationHtml += createJobCard(jobId, 'Quotation', job.status, 'ไฟล์ข้อมูล', quotationFilename);
             }
 
             if (latestSurveyJob) {
@@ -1770,6 +2129,12 @@
             `;
         }
         
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
         function createJobCard(jobId, type, status, description, filename, surveyJobId = null) {
             const statusClass =
                 status === 'completed' ? 'completed' :
@@ -1803,7 +2168,7 @@
                                 <div class="job-header" style="display: none;">
                                     <div class="job-title">${type}: ${description}</div>
                                 </div>
-                                ${filename ? `<div class="job-info">ไฟล์: ${filename}</div>` : ''}
+                                ${filename ? `<div class="job-info">ไฟล์: ${escapeHtml(filename)}</div>` : ''}
                             `
                     }
                 </div>
@@ -1853,6 +2218,50 @@
             const generateSurveyBtn = document.getElementById('generateSurveyBtn');
             if (generateSurveyBtn) {
                 generateSurveyBtn.disabled = !currentQuotationJobId;
+            }
+            updateStepStates();
+        }
+
+        // ✅ อัปเดตสถานะของทั้ง 4 ขั้นตอน (รอ / กำลังทำ / เสร็จแล้ว)
+        function updateStepStates() {
+            const hasQuotation = !!currentQuotationJobId;
+            const hasSelection = selectedPhotosForUpload.length > 0;
+            const hasUploaded = Object.keys(uploadedPhotosByRef).length > 0;
+
+            const states = {
+                1: hasQuotation ? 'done' : 'active',
+                2: (hasSelection || hasUploaded) ? 'done' : (hasQuotation ? 'active' : 'pending'),
+                3: hasSelection ? 'active' : (hasUploaded ? 'done' : 'pending'),
+                4: (hasQuotation && !hasSelection) ? 'active' : 'pending'
+            };
+
+            for (const step of [1, 2, 3, 4]) {
+                const state = states[step];
+
+                const head = document.getElementById(`stepHead${step}`);
+                if (head) {
+                    head.classList.toggle('is-active', state === 'active');
+                    head.classList.toggle('is-done', state === 'done');
+                }
+
+                const railItem = document.querySelector(`#stepRail li[data-step="${step}"]`);
+                if (railItem) {
+                    railItem.classList.toggle('is-active', state === 'active');
+                    railItem.classList.toggle('is-done', state === 'done');
+                }
+            }
+
+            // จำนวนรูปที่เลือกไว้ใน STEP 3
+            const countChip = document.getElementById('step3Count');
+            if (countChip) {
+                countChip.textContent = `เลือกไว้ ${selectedPhotosForUpload.length} รูป`;
+            }
+
+            const uploadAllBtn = document.getElementById('uploadAllPhotosBtn');
+            if (uploadAllBtn) {
+                uploadAllBtn.textContent = selectedPhotosForUpload.length > 0
+                    ? `⬆ อัปโหลดทั้งหมด (${selectedPhotosForUpload.length} รูป)`
+                    : '⬆ อัปโหลดทั้งหมด';
             }
         }
         
