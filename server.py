@@ -2476,7 +2476,65 @@ def download_excel():
     except Exception as e:
         logger.error(f"Error creating Excel file: {e}")
         return jsonify({'error': f'เกิดข้อผิดพลาดในการสร้างไฟล์ Excel: {str(e)}'}), 500
-    
+
+
+# ===== ตั้งชื่อไฟล์ Site Survey ตามชื่อไฟล์ Quotation =====
+# เช่น Quotation "คุณภาธร-Quo2026070804.pdf"
+#      -> site_survey_คุณภาธร-Quo2026070804.docx / .pdf
+
+# อักขระที่ใช้ในชื่อไฟล์ไม่ได้ (Windows/macOS/Linux) - ตัวอักษรไทยใช้ได้ปกติ
+_INVALID_FILENAME_CHARS = r'\/:*?"<>|'
+
+
+def sanitize_filename_keep_unicode(name: str, max_length: int = 120) -> str:
+    """ทำความสะอาดชื่อไฟล์แต่ยังเก็บภาษาไทยไว้ (ต่างจาก secure_filename ที่ตัดทิ้ง)"""
+    name = os.path.basename(name or '')
+
+    cleaned = ''.join(
+        ('_' if (ch in _INVALID_FILENAME_CHARS or ord(ch) < 32) else ch)
+        for ch in name
+    )
+
+    # ยุบช่องว่างซ้ำ และตัดจุด/ช่องว่างหัวท้าย
+    cleaned = ' '.join(cleaned.split()).strip(' .')
+
+    return cleaned[:max_length]
+
+
+def build_site_survey_basename(quotation_job: dict) -> str:
+    """สร้างชื่อไฟล์ (ไม่รวมนามสกุล) จากชื่อไฟล์ Quotation ต้นฉบับ"""
+    quotation_job = quotation_job or {}
+
+    source_name = (
+        quotation_job.get('display_filename')
+        or quotation_job.get('original_filename')
+        or ''
+    )
+
+    stem = sanitize_filename_keep_unicode(os.path.splitext(source_name)[0])
+
+    if not stem:
+        # ไม่มีชื่อให้ใช้ - fallback เป็น timestamp
+        stem = datetime.now().strftime('%Y%m%d_%H%M%S')
+
+    return f'site_survey_{stem}'
+
+
+def unique_output_basename(output_dir: str, base_name: str) -> str:
+    """กันไฟล์เดิมถูกเขียนทับ - ถ้ามีชื่อซ้ำจะเติม _2, _3, ..."""
+    candidate = base_name
+    counter = 2
+
+    while any(
+        os.path.exists(os.path.join(output_dir, f'{candidate}{ext}'))
+        for ext in ('.docx', '.pdf')
+    ):
+        candidate = f'{base_name}_{counter}'
+        counter += 1
+
+    return candidate
+
+
 if MAIN8_AVAILABLE:
     
     @app.route('/api/health', methods=['GET'])
@@ -2570,6 +2628,8 @@ if MAIN8_AVAILABLE:
             quotation_jobs[job_id] = {
                 'status': 'completed' if result['success'] else 'error',
                 'original_filename': filename,
+                # ✅ ชื่อไฟล์ต้นฉบับ (ยังมีภาษาไทย) - ใช้ตั้งชื่อไฟล์ Site Survey
+                'display_filename': os.path.basename(file.filename or ''),
                 'file_path': file_path,
                 'processed_data': result.get('data', {}),
                 'message': result['message'],
@@ -2813,9 +2873,19 @@ if MAIN8_AVAILABLE:
             }
             
             quo_data = {}
-            if quotation_job_id and quotation_job_id in quotation_jobs:
-                quo_data = quotation_jobs[quotation_job_id].get('processed_data', {})
-            
+            quotation_job = quotation_jobs.get(quotation_job_id, {})
+            if quotation_job:
+                quo_data = quotation_job.get('processed_data', {})
+
+            # ✅ ตั้งชื่อไฟล์ผลลัพธ์ตามชื่อไฟล์ Quotation
+            #    เช่น site_survey_คุณภาธร-Quo2026070804.docx / .pdf
+            os.makedirs(SITE_SURVEY_FOLDER, exist_ok=True)
+            output_basename = unique_output_basename(
+                SITE_SURVEY_FOLDER,
+                build_site_survey_basename(quotation_job)
+            )
+            logger.info(f"📝 Site survey output basename: {output_basename}")
+
             template_path = 'site survey.docx'
             if not os.path.exists(template_path):
                 template_path = None
@@ -2854,9 +2924,10 @@ if MAIN8_AVAILABLE:
                 quo_data=quo_data,
                 output_dir=SITE_SURVEY_FOLDER,
                 template_path=template_path,
-                images_by_ref=images_by_ref
+                images_by_ref=images_by_ref,
+                output_basename=output_basename
             )
-            
+
             files_info = {}
             if result.get('success') and result.get('files'):
                 for file_type, file_result in result['files'].items():
@@ -2870,6 +2941,7 @@ if MAIN8_AVAILABLE:
             
             site_survey_jobs[survey_job_id].update({
                 'status': 'completed' if result['success'] else 'error',
+                'output_basename': output_basename,
                 'files': result.get('files', {}),
                 'file_paths': {
                     'docx': result.get('files', {}).get('docx', {}).get('file_path'),
@@ -2917,12 +2989,20 @@ if MAIN8_AVAILABLE:
             
             if job.get('status') != 'completed':
                 return jsonify({'error': f'งานยังไม่เสร็จสิ้น - สถานะ: {job.get("status")}'}), 400
-            
+
+            # ✅ ชื่อไฟล์ตอนดาวน์โหลด เช่น site_survey_คุณภาธร-Quo2026070804.pdf
+            def download_name_for(path, fallback_type):
+                ext = os.path.splitext(path)[1].lstrip('.') or fallback_type
+                base_name = job.get('output_basename')
+                if base_name:
+                    return f'{base_name}.{ext}'
+                return os.path.basename(path)
+
             # ✅ ลำดับการหาไฟล์: PDF → DOCX
             file_types_to_try = [file_type]
             if file_type == 'pdf':
                 file_types_to_try.append('docx')  # ✅ fallback เป็น DOCX
-            
+
             for try_type in file_types_to_try:
                 # หาจาก job info
                 job_files = job.get('files', {})
@@ -2935,17 +3015,18 @@ if MAIN8_AVAILABLE:
                         
                         if file_size > 1000:  # ไฟล์ปกติ
                             logger.info(f"✅ Sending {try_type.upper()}: {file_path} ({file_size} bytes)")
-                            
+
                             return send_file(
                                 file_path,
                                 as_attachment=True,
-                                download_name=f'site_survey_{survey_job_id}.{try_type}',
+                                download_name=download_name_for(file_path, try_type),
                                 mimetype='application/vnd.openxmlformats-officedocument.wordprocessingml.document' if try_type == 'docx' else 'application/pdf'
                             )
-                
+
                 # หาในโฟลเดอร์
                 import glob
                 search_patterns = [
+                    glob.escape(f'{job.get("output_basename") or survey_job_id}') + f'.{try_type}',
                     f'*{survey_job_id}*.{try_type}',
                     f'enhanced_site_survey_*.{try_type}',
                     f'site_survey_*.{try_type}'
@@ -2965,10 +3046,10 @@ if MAIN8_AVAILABLE:
                             return send_file(
                                 file_path,
                                 as_attachment=True,
-                                download_name=f'site_survey_{survey_job_id}.{try_type}',
+                                download_name=download_name_for(file_path, try_type),
                                 mimetype='application/vnd.openxmlformats-officedocument.wordprocessingml.document' if try_type == 'docx' else 'application/pdf'
                             )
-            
+
             # ❌ ไม่เจอเลย
             return jsonify({
                 'error': f'ไม่พบไฟล์ {file_type.upper()} หรือ DOCX',
@@ -2984,7 +3065,15 @@ if MAIN8_AVAILABLE:
     def list_jobs():
         """List all jobs"""
         return jsonify({
-            'quotation_jobs': {k: {'status': v['status'], 'original_filename': v.get('original_filename', '')} for k, v in quotation_jobs.items()},
+            'quotation_jobs': {
+                k: {
+                    'status': v['status'],
+                    'original_filename': v.get('original_filename', ''),
+                    # ✅ ชื่อไฟล์ต้นฉบับ (ภาษาไทยไม่หาย) สำหรับแสดงบนหน้าเว็บ
+                    'display_filename': v.get('display_filename') or v.get('original_filename', '')
+                }
+                for k, v in quotation_jobs.items()
+            },
             'site_survey_jobs': {k: {'status': v['status'], 'message': v['message']} for k, v in site_survey_jobs.items()}
         })
     

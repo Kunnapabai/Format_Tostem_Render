@@ -2516,10 +2516,16 @@ def pre_calculate_heights(products: List[Dict]) -> List[Dict]:
         traceback.print_exc()
         return products
     
-def enhanced_generate_site_survey_report(quo_data: Dict,  
+def enhanced_generate_site_survey_report(quo_data: Dict,
                                        output_dir: str, template_path: str = None,
-                                       images_by_ref: Dict = None) -> Dict[str, Any]:
-    """สร้างรายงาน Site Survey แบบปรับปรุงแล้ว พร้อมรูปบาน"""
+                                       images_by_ref: Dict = None,
+                                       output_basename: str = None) -> Dict[str, Any]:
+    """สร้างรายงาน Site Survey แบบปรับปรุงแล้ว พร้อมรูปบาน
+
+    output_basename: ชื่อไฟล์ (ไม่รวมนามสกุล) ที่ต้องการ เช่น
+        'site_survey_คุณภาธร-Quo2026070804'
+        ถ้าไม่ระบุ จะใช้ 'enhanced_site_survey_{timestamp}' แบบเดิม
+    """
     try:
         print("="*80)
         print("🚀 STARTING ENHANCED SITE SURVEY GENERATION")
@@ -2603,15 +2609,18 @@ def enhanced_generate_site_survey_report(quo_data: Dict,
             print(f"⚠️ Warning: Could not generate panel images: {e}")
             panel_images = {}
         
-        # สร้างไฟล์
+        # สร้างไฟล์ - ใช้ชื่อที่ส่งเข้ามา (เช่น site_survey_คุณภาธร-Quo2026070804)
+        # ถ้าไม่ได้ส่งมา ใช้ชื่อเดิมที่มี timestamp
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-        
+        base_name = output_basename or f'enhanced_site_survey_{timestamp}'
+        print(f"📝 Output basename: {base_name}")
+
         # สร้าง DOCX
-        docx_path = os.path.join(output_dir, f'enhanced_site_survey_{timestamp}.docx')
+        docx_path = os.path.join(output_dir, f'{base_name}.docx')
         docx_result = generator.generate_site_survey_multipage(docx_path)
-        
+
         # สร้าง PDF
-        pdf_path = os.path.join(output_dir, f'enhanced_site_survey_{timestamp}.pdf')
+        pdf_path = os.path.join(output_dir, f'{base_name}.pdf')
         pdf_result = generator.generate_pdf_report(pdf_path)
         
         print("="*80)
