@@ -1544,6 +1544,12 @@ class EnhancedSiteSurveyGenerator:
 
             height_value = product.get('height', 0)
 
+            # ✅ ขนาดที่แสดงในแถวหลักของตาราง = ขนาดของบานหลักเอง
+            #    (แถว Type2/3/4 ก็แสดงขนาดของบานตัวเอง) ส่วนขนาดรวมของทั้งชุด
+            #    จะไปแสดงเป็น W = / H = ในรูปเท่านั้น
+            main_row_width = calculated_width
+            main_row_height = height_value
+
             # ✅ บานที่ประกอบจากหลาย product: ใช้ขนาดรวมที่คำนวณไว้แล้ว
             #    (pre_calculate_heights) เพื่อให้ตัวเลขในตารางตรงกับรูปที่วาด
             #    ครอบคลุมทุกชนิด ไม่ใช่แค่ Awning + Fixed
@@ -1560,8 +1566,18 @@ class EnhancedSiteSurveyGenerator:
                     if combo_width > 0:
                         calculated_width = combo_width
 
+                # บานหลัก = segment แรก (เรียงตามลำดับแถวใน quotation)
+                segments = get_panel_segments(product)
+                if segments:
+                    main_seg = segments[0]
+                    if main_seg.get('width'):
+                        main_row_width = int(main_seg['width'])
+                    if main_seg.get('height'):
+                        main_row_height = int(main_seg['height'])
+
                 print(f"🧩 Combo size from segments ({layout_direction}): "
-                      f"{calculated_width} x {height_value}")
+                      f"{calculated_width} x {height_value} "
+                      f"(main panel {main_row_width} x {main_row_height})")
             else:
                 # 🔥 เดิม: ตรวจสอบและบวก H ถ้าเป็น Awning window + (และมี Type2)
                 is_awning_plus = bool(re.search(r'awning\s*window\s*\+', product_type_clean, re.IGNORECASE))
@@ -1592,8 +1608,8 @@ class EnhancedSiteSurveyGenerator:
                 'Color1': product_color,
                 'Glass1': clean_product.get('glass', ''),
                 'Screen1': product.get('insect_screen', 'No'),
-                'W1': str(calculated_width),        
-                'H1': str(height_value),  # 🔥 ใช้ค่าที่บวกแล้ว (ถ้ามีการบวก)
+                'W1': str(main_row_width),
+                'H1': str(main_row_height),  # 🔥 ขนาดของบานหลักเอง ไม่ใช่ขนาดรวมทั้งชุด
                 'date': current_date,
                 'product_type_main': product_type_clean,
                 'Type2': type2_clean,
