@@ -1022,7 +1022,13 @@ def smart_mosquito_detection_and_merge(products: List[Dict]) -> List[Dict]:
     # จัดกลุ่ม products ตาม base ref (ไม่รวม F และ T)
     ref_groups = {}
     skipped_transom = []
-    
+
+    # 🔥 บันทึกลำดับแถวเดิมจาก quotation ไว้ก่อน
+    #    ใช้เรียงลำดับ panel เวลาวาดรูปประกอบ (บนลงล่าง / ซ้ายไปขวา)
+    for row_index, product in enumerate(products):
+        if '_row_index' not in product:
+            product['_row_index'] = row_index
+
     for product in products:
         ref = product.get('ref', '').strip().upper()
         if not ref:
@@ -1107,6 +1113,7 @@ def smart_mosquito_detection_and_merge(products: List[Dict]) -> List[Dict]:
                 'series': product.get('series', ''),
                 'glass': product.get('glass', ''),
                 'color': product.get('color', ''),
+                '_row_index': product.get('_row_index', 0),  # 🔥 ลำดับแถวใน quotation
             }
             
             ref_groups[base_ref]['fixed_products'][fixed_number].append(fixed_product_data)
@@ -1178,7 +1185,10 @@ def smart_mosquito_detection_and_merge(products: List[Dict]) -> List[Dict]:
         
         main_product['product_type'] = main_type
         main_product['qty'] = main_qty  # เก็บ qty เดิม ไม่รวม
-        
+
+        # 🔥 เก็บ type ที่สะอาด (ก่อนต่อ " + ") ไว้ใช้หารูปต้นแบบของ panel ตัวหลัก
+        clean_main_type = main_type
+
         # ✅ แยก Fixed types ออกเป็น Type2, Type3, Type4
         if fixed_products_dict:
             # เรียงลำดับ Fixed number (1, 2, 3, 4...)
@@ -1261,7 +1271,100 @@ def smart_mosquito_detection_and_merge(products: List[Dict]) -> List[Dict]:
                     all_fixed_details.append(fixed_prod)
             
             main_product['group_details'] = main_products + all_fixed_details + mosquito_products
-            
+
+            # 🔥 panel_segments = ลำดับบานสำหรับวาดรูปประกอบ
+            #    เรียงตามลำดับแถวใน quotation (บานเปิดอาจอยู่บน กลาง หรือล่างก็ได้)
+            #    ไม่รวมมุ้งและไม่รวม Transom (ถูกข้ามไปตั้งแต่ต้นแล้ว)
+            panel_segments = [{
+                'ref': main_product.get('ref', base_ref),
+                'product_type': clean_main_type,
+                'width': main_product.get('width', 0),
+                'height': main_product.get('height', 0),
+                '_row_index': main_product.get('_row_index', 0),
+            }]
+
+            for fixed_prod in all_fixed_details:
+                seg_type = fixed_prod.get('product_type', '')
+                seg_type = re.sub(r'\(\s*Knock-?\s*down\s*\)', '', seg_type, flags=re.IGNORECASE).strip()
+                seg_type = seg_type.lstrip('+').strip()
+
+                panel_segments.append({
+                    'ref': fixed_prod.get('ref', ''),
+                    'product_type': seg_type,
+                    'width': fixed_prod.get('width', 0),
+                    'height': fixed_prod.get('height', 0),
+                    'qty': fixed_prod.get('qty', 1),
+                    '_row_index': fixed_prod.get('_row_index', 0),
+                })
+
+            # 🔥 บานที่ qty > 1 = วางเรียงกันในแนวนอน (เช่น D17F qty=2 กว้าง 852
+            #    สองช่องใต้บานเลื่อนกว้าง 1705) ให้ขยายเป็นความกว้างรวม
+            #    ทำเฉพาะเมื่อ width x qty ตรงกับความกว้างของบานอื่นในชุดเดียวกัน
+            #    เพื่อไม่ให้ qty ที่แปลว่า "จำนวนชุด" ถูกคูณผิด
+            reference_widths = [
+                s['width'] for s in panel_segments
+                if (s.get('qty') or 1) <= 1 and s.get('width', 0) > 0
+            ]
+
+            def _width_close(a, b):
+                return abs(a - b) <= max(20, 0.02 * max(a, b))
+
+            for seg in panel_segments:
+                seg_qty = seg.get('qty') or 1
+                seg_width = seg.get('width') or 0
+
+                if seg_qty > 1 and seg_width > 0:
+                    expanded = seg_width * seg_qty
+
+                    if any(_width_close(expanded, rw) for rw in reference_widths):
+                        seg['panel_width'] = seg_width
+                        seg['width'] = expanded
+                        # ใส่ (N) เพื่อให้เลือกรูปต้นแบบแบบหลายช่องได้ถูก เช่น 2-fix-window.png
+                        base_type = re.sub(r'\s*\(\d+\)\s*$', '', seg['product_type']).strip()
+                        seg['product_type'] = f"{base_type} ({seg_qty})"
+                        print(f"   ↔️  {seg['ref']}: qty={seg_qty} side-by-side "
+                              f"-> {seg_width} x {seg_qty} = {expanded} mm")
+
+            panel_segments.sort(key=lambda s: s.get('_row_index', 0))
+            main_product['panel_segments'] = panel_segments
+
+            seg_desc = ' | '.join(
+                f"{s['ref']}:{s['width']}x{s['height']}" for s in panel_segments
+            )
+            print(f"   🧩 Panel segments (quotation order): {seg_desc}")
+
+            # 🔥 ขนาดของบาน Fixed แต่ละตัว สำหรับแสดงในแถว Type2/Type3/Type4
+            #    เรียงลำดับเดียวกับ all_fixed_types เพื่อให้ตรงแถวกัน
+            seg_by_ref = {s.get('ref'): s for s in panel_segments}
+            all_fixed_sizes = []
+
+            for fixed_num in sorted_fixed_numbers:
+                for fixed_prod in fixed_products_dict[fixed_num]:
+                    check_type = re.sub(r'\(\s*Knock-?\s*down\s*\)', '',
+                                        fixed_prod.get('product_type', ''),
+                                        flags=re.IGNORECASE).strip()
+                    check_type = check_type.lstrip('+').strip()
+
+                    if not check_type:
+                        continue
+
+                    seg = seg_by_ref.get(fixed_prod.get('ref'))
+
+                    if seg and seg.get('width') and seg.get('height'):
+                        all_fixed_sizes.append((seg['width'], seg['height']))
+                    else:
+                        all_fixed_sizes.append(None)
+
+            for slot in range(3):
+                size = all_fixed_sizes[slot] if slot < len(all_fixed_sizes) else None
+                key = f"Type{slot + 2}"
+                main_product[f"{key}_W"] = str(size[0]) if size else ''
+                main_product[f"{key}_H"] = str(size[1]) if size else ''
+
+            print(f"   📐 Fixed sizes: Type2={main_product.get('Type2_W')}x{main_product.get('Type2_H')} "
+                  f"Type3={main_product.get('Type3_W')}x{main_product.get('Type3_H')} "
+                  f"Type4={main_product.get('Type4_W')}x{main_product.get('Type4_H')}")
+
             print(f"   ✅ Main product_type: '{main_product['product_type'][:80]}'")
         else:
             main_product['Type2'] = ''
@@ -1269,6 +1372,11 @@ def smart_mosquito_detection_and_merge(products: List[Dict]) -> List[Dict]:
             main_product['Type4'] = ''
             main_product['has_fixed_window'] = False
             main_product['group_details'] = main_products + mosquito_products
+            main_product['panel_segments'] = []
+
+            for slot in range(3):
+                main_product[f"Type{slot + 2}_W"] = ''
+                main_product[f"Type{slot + 2}_H"] = ''
 
         # ตรวจสอบและรวม mosquito
         if mosquito_products:
