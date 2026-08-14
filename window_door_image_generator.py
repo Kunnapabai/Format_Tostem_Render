@@ -19,6 +19,124 @@ from PIL import Image, ImageDraw, ImageFont
 import base64
 from io import BytesIO
 
+# ============================================================
+# Composed (multi-panel) drawings
+# ------------------------------------------------------------
+# บาน 1 ชุดอาจประกอบจากหลาย product ใน quotation เช่น
+#     D4.0   Awning window   650 x 1400
+#     D4.0F  Fixed window    650 x 700
+# ต่อกันเป็นบานเดียว 650 x 2100 (Awning อยู่บน, Fixed อยู่ล่าง)
+#
+# กติกา:
+#   - ความกว้างเท่ากัน  -> ต่อกันแนวตั้ง  เรียงตาม quotation "บนลงล่าง"
+#   - ความสูงเท่ากัน    -> ต่อกันแนวนอน  เรียงตาม quotation "ซ้ายไปขวา"
+#   - สัดส่วนของแต่ละบานวาดตามขนาดจริง (1400:700 = 2:1)
+#   - รอยต่อเป็นเส้นคู่ (แต่ละรูปมีเฟรมของตัวเอง) ตรงตามสินค้าจริง
+# ============================================================
+
+# ระยะคลาดเคลื่อนที่ยังถือว่า "ขนาดเท่ากัน"
+DIM_TOLERANCE_MM = 20
+DIM_TOLERANCE_PCT = 0.02
+
+# ความละเอียดของรูปประกอบ (ด้านยาว)
+# docx ย่อรูปให้พอดีกรอบ 3.5 นิ้วอยู่แล้ว ค่านี้จึงมีผลกับความคมชัดเท่านั้น
+COMPOSED_LONG_SIDE_PX = 900
+COMPOSED_MIN_SIDE_PX = 60
+
+# ฟอนต์ที่ใช้กับรูปประกอบ (arial.ttf ไม่มีบน macOS/Linux)
+# ⚠️ ต้องรองรับ Linux ด้วย เพราะ production (Render) เป็น Linux
+_FONT_CANDIDATES = {
+    'regular': [
+        "/System/Library/Fonts/Supplemental/Arial.ttf",
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+        "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
+        "/usr/share/fonts/truetype/freefont/FreeSans.ttf",
+        "/usr/share/fonts/truetype/noto/NotoSans-Regular.ttf",
+        "C:\\Windows\\Fonts\\arial.ttf",
+        "arial.ttf",
+    ],
+    'bold': [
+        "/System/Library/Fonts/Supplemental/Arial Bold.ttf",
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+        "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf",
+        "/usr/share/fonts/truetype/freefont/FreeSansBold.ttf",
+        "/usr/share/fonts/truetype/noto/NotoSans-Bold.ttf",
+        "C:\\Windows\\Fonts\\arialbd.ttf",
+        "arialbd.ttf",
+    ],
+}
+
+
+def _load_font(size: int, bold: bool = False):
+    """
+    โหลดฟอนต์แบบ scale ได้
+
+    ถ้าไม่เจอไฟล์ฟอนต์เลย (เช่นบนเซิร์ฟเวอร์ที่ไม่ได้ติดตั้งฟอนต์)
+    ต้องใช้ load_default(size=...) ซึ่ง scale ได้ ไม่ใช่ load_default()
+    ที่เป็น bitmap 8px ตายตัว มิฉะนั้นตัวเลข dimension จะเล็กจนอ่านไม่ออก
+    """
+    for path in _FONT_CANDIDATES['bold' if bold else 'regular']:
+        try:
+            return ImageFont.truetype(path, size)
+        except Exception:
+            continue
+
+    try:
+        return ImageFont.load_default(size=size)  # Pillow >= 10.1
+    except TypeError:
+        return ImageFont.load_default()
+
+
+def _dims_match(a: float, b: float) -> bool:
+    """ขนาด 2 ค่าถือว่าเท่ากันหรือไม่ (เผื่อ tolerance)"""
+    if a <= 0 or b <= 0:
+        return False
+    return abs(a - b) <= max(DIM_TOLERANCE_MM, DIM_TOLERANCE_PCT * max(a, b))
+
+
+def get_panel_segments(product: Dict) -> List[Dict]:
+    """ดึงรายการบานย่อยของ product เรียงตามลำดับแถวใน quotation"""
+    segments = product.get('panel_segments') or []
+    valid = [
+        s for s in segments
+        if (s.get('width') or 0) > 0 and (s.get('height') or 0) > 0
+    ]
+    return sorted(valid, key=lambda s: s.get('_row_index', 0))
+
+
+def determine_layout(segments: List[Dict], ref: str = "") -> Tuple[str, int, int]:
+    """
+    ตัดสินใจว่าบานย่อยต่อกันแนวไหน และคืนขนาดรวม
+
+    Returns:
+        (direction, total_width, total_height)
+        direction = 'vertical' (ต่อบนลงล่าง) หรือ 'horizontal' (ต่อซ้ายไปขวา)
+    """
+    widths = [int(s.get('width') or 0) for s in segments]
+    heights = [int(s.get('height') or 0) for s in segments]
+
+    same_width = all(_dims_match(widths[0], w) for w in widths[1:])
+    same_height = all(_dims_match(heights[0], h) for h in heights[1:])
+
+    if same_width and not same_height:
+        direction = 'vertical'
+    elif same_height and not same_width:
+        direction = 'horizontal'
+    elif same_width and same_height:
+        # บานขนาดเท่ากันทุกด้าน - เดาไม่ได้ ใช้ต่อแนวตั้งเป็นค่าเริ่มต้น
+        direction = 'vertical'
+        print(f"  ℹ️  {ref}: segments identical in both dimensions, defaulting to vertical stack")
+    else:
+        # ขนาดไม่ตรงกันทั้งกว้างและสูง = ต่อกันแบบตาราง (ยังไม่รองรับ)
+        direction = 'vertical'
+        print(f"  ⚠️  {ref}: mixed grid layout not supported yet "
+              f"(W={widths}, H={heights}) - falling back to vertical stack")
+
+    if direction == 'vertical':
+        return direction, max(widths), sum(heights)
+    return direction, sum(widths), max(heights)
+
+
 class WindowDoorImageGenerator:
     """ระบบสร้างรูปภาพบานประตู/หน้าต่างอัจฉริยะ"""
     
@@ -648,7 +766,277 @@ class WindowDoorImageGenerator:
             traceback.print_exc()
             return None
 
-    def _draw_arrow_head(self, draw: ImageDraw, x: int, y: int, 
+    # ==================================================
+    # รูปประกอบหลายบาน (composed / stacked drawings)
+    # ==================================================
+
+    def _resolve_segment_images(self, segments: List[Dict], ref: str,
+                                lr_side: str = None) -> Optional[List[Path]]:
+        """
+        หารูปต้นแบบของแต่ละบานย่อย (ใช้ตัวหาแบบ single type เดิม)
+
+        lr_side: ถ้าระบุ 'L' จะแทน "L/R" ใน type ด้วย 'L'
+        """
+        paths = []
+
+        for seg in segments:
+            seg_type = (seg.get('product_type') or '').strip()
+            seg_type = seg_type.rstrip('+').strip()
+
+            if lr_side:
+                seg_type = re.sub(r'\bL\s*/\s*R\b', lr_side, seg_type, flags=re.IGNORECASE)
+
+            if not seg_type:
+                print(f"  ❌ Segment {seg.get('ref')} has no product type")
+                return None
+
+            path = self.match_product_type_to_image(seg_type, seg.get('ref', ref))
+
+            if not path:
+                print(f"  ❌ No base image for segment {seg.get('ref')} ('{seg_type}')")
+                return None
+
+            paths.append(path)
+
+        return paths
+
+    def _compose_panel(self, image_paths: List[Path], segments: List[Dict],
+                       direction: str, total_width: int,
+                       total_height: int) -> Tuple[Image.Image, List[Tuple]]:
+        """
+        ต่อรูปบานย่อยเป็นบานเดียว โดยให้สัดส่วนของแต่ละบานตรงตามขนาดจริง
+
+        Returns:
+            (panel_image, boxes) โดย boxes = [(start_px, end_px, ขนาด mm), ...]
+        """
+        # ขนาด canvas ตามสัดส่วนจริงของสินค้า (variant A)
+        aspect = total_width / total_height
+
+        if aspect >= 1:
+            panel_w = COMPOSED_LONG_SIDE_PX
+            panel_h = max(COMPOSED_MIN_SIDE_PX, int(round(COMPOSED_LONG_SIDE_PX / aspect)))
+        else:
+            panel_h = COMPOSED_LONG_SIDE_PX
+            panel_w = max(COMPOSED_MIN_SIDE_PX, int(round(COMPOSED_LONG_SIDE_PX * aspect)))
+
+        panel = Image.new('RGB', (panel_w, panel_h), 'white')
+        boxes = []
+        cursor = 0
+
+        for i, (img_path, seg) in enumerate(zip(image_paths, segments)):
+            is_last = (i == len(segments) - 1)
+            img = Image.open(img_path).convert('RGB')
+
+            if direction == 'vertical':
+                seg_mm = int(seg.get('height') or 0)
+                size_px = (panel_h - cursor) if is_last else int(round(panel_h * seg_mm / total_height))
+                size_px = max(1, size_px)
+                img = img.resize((panel_w, size_px), Image.Resampling.LANCZOS)
+                panel.paste(img, (0, cursor))
+            else:
+                seg_mm = int(seg.get('width') or 0)
+                size_px = (panel_w - cursor) if is_last else int(round(panel_w * seg_mm / total_width))
+                size_px = max(1, size_px)
+                img = img.resize((size_px, panel_h), Image.Resampling.LANCZOS)
+                panel.paste(img, (cursor, 0))
+
+            boxes.append((cursor, cursor + size_px, seg_mm, seg))
+            cursor += size_px
+
+        return panel, boxes
+
+    def _draw_rotated_text(self, canvas: Image.Image, draw: ImageDraw,
+                           text: str, font, center_x: int,
+                           y_start: int, y_end: int):
+        """เขียนข้อความแนวตั้ง จัดกึ่งกลางช่วง y_start..y_end"""
+        bbox = draw.textbbox((0, 0), text, font=font)
+        tw, th = bbox[2] - bbox[0], bbox[3] - bbox[1]
+
+        tmp = Image.new('RGBA', (tw + 4, th + 4), (255, 255, 255, 0))
+        ImageDraw.Draw(tmp).text((2 - bbox[0], 2 - bbox[1]), text, fill='black', font=font)
+        rotated = tmp.rotate(90, expand=True)
+
+        canvas.paste(
+            rotated,
+            (int(center_x - rotated.width / 2),
+             int(y_start + (y_end - y_start - rotated.height) / 2)),
+            rotated
+        )
+
+    def _annotate_composed(self, panel: Image.Image, boxes: List[Tuple],
+                           direction: str, total_width: int,
+                           total_height: int) -> Image.Image:
+        """
+        ใส่ dimension ให้รูปประกอบ
+
+        ด้านบน (หยาบ -> ละเอียด จากบนลงล่าง):
+            แถว 1  ความกว้างรวมทั้งชุด
+            แถว 2  ความกว้างของแต่ละบาน (เฉพาะตอนต่อแนวนอน)
+            แถว 3+ ความกว้างของช่องย่อยในบานที่มีหลายช่อง (เช่น บานเลื่อน 2 ช่อง)
+        ด้านซ้าย  ความสูงรวมทั้งชุด
+        ด้านขวา   ความสูงของแต่ละบาน (เฉพาะตอนต่อแนวตั้ง)
+        """
+        # scale ทุกอย่างตามความละเอียดของรูป (baseline = 300px)
+        scale = max(1.0, max(panel.width, panel.height) / 300.0)
+        px = lambda v: max(1, int(round(v * scale)))
+
+        font_bold = _load_font(px(11), bold=True)
+        font_regular = _load_font(px(10))
+
+        # ---------- วางแผนแถว dimension ด้านบน ----------
+        # ⚠️ ไม่แสดงความกว้างของช่องย่อยภายในบานเดียว
+        #    เช่น "2 panels 2 tracks sliding door" คือชุดเดียวที่มี 2 บาน
+        #    ความกว้าง 1705 คือทั้งชุด ไม่ต้องหารครึ่งเป็น 852 + 852
+        #    แสดงเฉพาะขนาดที่มาจากรายการจริงใน quotation เท่านั้น
+        top_rows = [('total', None)]
+
+        if direction == 'horizontal' and len(boxes) > 1:
+            top_rows.append(('segments', None))
+
+        row_gap = px(30)
+        m_left = px(60)
+        m_right = px(70) if direction == 'vertical' else px(24)
+        m_top = px(46) + (len(top_rows) - 1) * row_gap
+        m_bottom = px(16)
+
+        canvas = Image.new(
+            'RGB',
+            (m_left + panel.width + m_right, m_top + panel.height + m_bottom),
+            'white'
+        )
+        canvas.paste(panel, (m_left, m_top))
+        draw = ImageDraw.Draw(canvas)
+
+        head = px(5)
+        x0, x1 = m_left, m_left + panel.width
+        y0, y1 = m_top, m_top + panel.height
+
+        def row_y(index: int) -> int:
+            """แถวสุดท้ายอยู่ชิดรูปที่สุด แถวแรกอยู่บนสุด"""
+            return m_top - px(22) - (len(top_rows) - 1 - index) * row_gap
+
+        def h_dimension(start_x, end_x, y, label, font, big_head=False):
+            if end_x <= start_x:
+                return
+            draw.line([(start_x, y), (end_x, y)], fill='black', width=px(1))
+            size = head if big_head else px(4)
+            self._draw_arrow_head(draw, start_x, y, 'left', size)
+            self._draw_arrow_head(draw, end_x, y, 'right', size)
+
+            bbox = draw.textbbox((0, 0), label, font=font)
+            draw.text(
+                (start_x + ((end_x - start_x) - (bbox[2] - bbox[0])) // 2, y - px(17)),
+                label, fill='black', font=font
+            )
+
+        # ---------- แถว dimension ด้านบน ----------
+        for index, (kind, payload) in enumerate(top_rows):
+            y = row_y(index)
+
+            if kind == 'total':
+                h_dimension(x0, x1, y, f"W = {total_width}", font_bold, big_head=True)
+
+            elif kind == 'segments':
+                # ความกว้างของแต่ละบาน (แต่ละรายการใน quotation) ตอนต่อแนวนอน
+                for (start_px, end_px, seg_mm, _seg) in boxes:
+                    h_dimension(m_left + start_px + 1, m_left + end_px - 1, y,
+                                str(seg_mm), font_regular)
+
+        # ---------- ความสูงรวม (ด้านซ้าย) ----------
+        height_arrow_x = m_left - px(30)
+        draw.line([(height_arrow_x, y0), (height_arrow_x, y1)], fill='black', width=px(1))
+        self._draw_arrow_head(draw, height_arrow_x, y0, 'up', head)
+        self._draw_arrow_head(draw, height_arrow_x, y1, 'down', head)
+        self._draw_rotated_text(canvas, draw, f"H = {total_height}", font_bold,
+                                height_arrow_x - px(12), y0, y1)
+
+        # ---------- ความสูงของแต่ละบาน (ด้านขวา, เฉพาะต่อแนวตั้ง) ----------
+        if direction == 'vertical':
+            seg_arrow_x = m_left + panel.width + px(22)
+
+            for (start_px, end_px, seg_mm, _seg) in boxes:
+                sy0, sy1 = m_top + start_px, m_top + end_px
+                draw.line([(seg_arrow_x, sy0 + 1), (seg_arrow_x, sy1 - 1)],
+                          fill='black', width=px(1))
+                self._draw_arrow_head(draw, seg_arrow_x, sy0 + 1, 'up', px(4))
+                self._draw_arrow_head(draw, seg_arrow_x, sy1 - 1, 'down', px(4))
+                self._draw_rotated_text(canvas, draw, str(seg_mm), font_regular,
+                                        seg_arrow_x + px(12), sy0, sy1)
+
+        return canvas
+
+    def _process_composed_product(self, ref: str, product_type: str,
+                                  segments: List[Dict]) -> Optional[Path]:
+        """
+        สร้างรูปบานที่ประกอบจากหลาย product ใน quotation
+        (เช่น Awning อยู่บน + Fixed อยู่ล่าง)
+        """
+        try:
+            from PIL import ImageOps
+
+            direction, total_width, total_height = determine_layout(segments, ref)
+
+            print(f"  🧩 Composing {len(segments)} segments for {ref} "
+                  f"({direction}, total {total_width}x{total_height} mm)")
+            for seg in segments:
+                print(f"     - {seg.get('ref')}: {seg.get('width')}x{seg.get('height')} "
+                      f"'{seg.get('product_type')}'")
+
+            # บาน L/R ต้องสร้าง 2 ชุด (R ได้จากการ mirror ของ L)
+            has_lr = any(
+                re.search(r'\bL\s*/\s*R\b', seg.get('product_type') or '', re.IGNORECASE)
+                for seg in segments
+            )
+
+            image_paths = self._resolve_segment_images(
+                segments, ref, lr_side='L' if has_lr else None
+            )
+
+            if not image_paths:
+                return None
+
+            panel, boxes = self._compose_panel(
+                image_paths, segments, direction, total_width, total_height
+            )
+
+            safe_ref = ref.replace('/', '_')
+
+            if not has_lr:
+                canvas = self._annotate_composed(
+                    panel, boxes, direction, total_width, total_height
+                )
+                output_path = self.output_dir / f"{safe_ref}_{total_width}x{total_height}.png"
+                output_path.parent.mkdir(parents=True, exist_ok=True)
+                canvas.save(output_path)
+
+                print(f"  ✅ Composed image saved: {output_path.name}")
+                return output_path
+
+            # ---- L/R: mirror บานที่ประกอบแล้วเพื่อสร้างฝั่ง R ----
+            print(f"  🔁 Segment has L/R - creating mirrored R composition")
+
+            canvas_l = self._annotate_composed(
+                panel, boxes, direction, total_width, total_height
+            )
+            canvas_r = self._annotate_composed(
+                ImageOps.mirror(panel), boxes, direction, total_width, total_height
+            )
+
+            path_l = self.output_dir / f"{safe_ref}_L_{total_width}x{total_height}.png"
+            path_r = self.output_dir / f"{safe_ref}_R_{total_width}x{total_height}.png"
+            path_l.parent.mkdir(parents=True, exist_ok=True)
+            canvas_l.save(path_l)
+            canvas_r.save(path_r)
+
+            return self._combine_lr_images(path_l, path_r, ref, total_width, total_height)
+
+        except Exception as e:
+            print(f"  ❌ Error composing image for {ref}: {e}")
+            import traceback
+            traceback.print_exc()
+            return None
+
+    def _draw_arrow_head(self, draw: ImageDraw, x: int, y: int,
                         direction: str, size: int = 5):
         """
         วาดหัวลูกศร
@@ -743,9 +1131,23 @@ class WindowDoorImageGenerator:
         print(f"Processing: {ref} - {product_type}")
         print(f"Dimensions: {width}x{height} mm")
         
+        # 🔥 บานประกอบหลายตัว (เช่น Awning บน + Fixed ล่าง)
+        #    วาดจากรูป single type ต่อกันตามสัดส่วนจริง
+        #    มาก่อนรูป combo สำเร็จรูป เพราะได้สัดส่วนตรงตามขนาดใน quotation
+        segments = get_panel_segments(product)
+
+        if len(segments) >= 2:
+            composed = self._process_composed_product(ref, product_type, segments)
+
+            if composed:
+                print(f"{'='*60}\n")
+                return composed
+
+            print(f"  ⚠️ Composition failed for {ref}, falling back to single/combo image")
+
         # 🔥 ตรวจสอบว่ามี L/R หรือไม่
         has_lr = bool(re.search(r'\bL\s*/\s*R\b', product_type, re.IGNORECASE))
-        
+
         if has_lr:
             print(f"  🔄 Detected L/R pattern - will generate both L and R images")
             return self._process_lr_product(ref, product_type, width, height)
@@ -847,9 +1249,11 @@ class WindowDoorImageGenerator:
             img_r = Image.open(image_r_path)
             
             # สร้าง canvas ใหม่ (แนวนอน)
-            spacing = 20  # ระยะห่างระหว่างรูป
-            label_height = 30  # พื้นที่สำหรับเขียน "L" และ "R"
-            
+            # ✅ scale ตามความละเอียดของรูป (รูปประกอบมีขนาดใหญ่กว่ารูปเดี่ยวมาก)
+            label_scale = max(1.0, max(img_l.width, img_l.height) / 300.0)
+            spacing = int(20 * label_scale)      # ระยะห่างระหว่างรูป
+            label_height = int(30 * label_scale)  # พื้นที่สำหรับเขียน "L" และ "R"
+
             total_width = img_l.width + spacing + img_r.width
             total_height = max(img_l.height, img_r.height) + label_height
             
@@ -864,22 +1268,20 @@ class WindowDoorImageGenerator:
             # เขียน "L" และ "R" ด้านบน
             draw = ImageDraw.Draw(combined)
             
-            try:
-                font = ImageFont.truetype("arialbd.ttf", 20)
-            except:
-                font = ImageFont.load_default()
-            
+            font = _load_font(int(20 * label_scale), bold=True)
+            label_y = int(5 * label_scale)
+
             # เขียน "L" กลางรูปซ้าย
             bbox_l = draw.textbbox((0, 0), "L", font=font)
             text_width_l = bbox_l[2] - bbox_l[0]
             text_x_l = (img_l.width - text_width_l) // 2
-            draw.text((text_x_l, 5), "L", fill='red', font=font)
-            
+            draw.text((text_x_l, label_y), "L", fill='red', font=font)
+
             # เขียน "R" กลางรูปขวา
             bbox_r = draw.textbbox((0, 0), "R", font=font)
             text_width_r = bbox_r[2] - bbox_r[0]
             text_x_r = img_l.width + spacing + (img_r.width - text_width_r) // 2
-            draw.text((text_x_r, 5), "R", fill='blue', font=font)
+            draw.text((text_x_r, label_y), "R", fill='blue', font=font)
             
             # บันทึก
             output_filename = f"{ref}_{width}x{height}_LR.png"

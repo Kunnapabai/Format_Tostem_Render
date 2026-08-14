@@ -53,7 +53,11 @@ except ImportError:
     PDF_SUPPORT = False
 
 from quotation_processor import EnhancedQuotationProcessor , EnhancedTOSTEMQuotationProcessor , smart_mosquito_detection_and_merge
-from window_door_image_generator import generate_images_for_site_survey
+from window_door_image_generator import (
+    generate_images_for_site_survey,
+    get_panel_segments,
+    determine_layout,
+)
 
 
 def collapse_doubled_thai(text: str) -> str:
@@ -1538,24 +1542,42 @@ class EnhancedSiteSurveyGenerator:
 
             print(f"📐 Calculating width: {width_value} × {qty_value} = {calculated_width}")
 
-            # 🔥 NEW: ตรวจสอบและบวก H ถ้าเป็น Awning window + (และมี Type2)
             height_value = product.get('height', 0)
-        
-            is_awning_plus = bool(re.search(r'awning\s*window\s*\+', product_type_clean, re.IGNORECASE))
-            has_type2 = bool(type2_clean and type2_clean.strip())
-        
-            
-            if is_awning_plus and has_type2:
-                type2_height = self._extract_height_from_type2(product, type2_clean)
-                
-                if type2_height > 0:
-                    original_height = height_value
-                    height_value = original_height + type2_height
-                    print(f"🔺 SPECIAL CASE: Awning + Fixed detected")
-                    print(f"   Main H: {original_height} + Type2 H: {type2_height} = {height_value}")
-                else:
-                    print(f"⚠️ Awning + Fixed detected but no Type2 height found")
-            
+
+            # ✅ บานที่ประกอบจากหลาย product: ใช้ขนาดรวมที่คำนวณไว้แล้ว
+            #    (pre_calculate_heights) เพื่อให้ตัวเลขในตารางตรงกับรูปที่วาด
+            #    ครอบคลุมทุกชนิด ไม่ใช่แค่ Awning + Fixed
+            layout_direction = product.get('layout_direction')
+
+            if layout_direction:
+                combo_height = product.get('calculated_height', 0)
+                if combo_height > 0:
+                    height_value = combo_height
+
+                # ต่อแนวนอนเท่านั้นที่ความกว้างรวมต่างจากความกว้างบานหลัก
+                if layout_direction == 'horizontal':
+                    combo_width = product.get('calculated_width', 0)
+                    if combo_width > 0:
+                        calculated_width = combo_width
+
+                print(f"🧩 Combo size from segments ({layout_direction}): "
+                      f"{calculated_width} x {height_value}")
+            else:
+                # 🔥 เดิม: ตรวจสอบและบวก H ถ้าเป็น Awning window + (และมี Type2)
+                is_awning_plus = bool(re.search(r'awning\s*window\s*\+', product_type_clean, re.IGNORECASE))
+                has_type2 = bool(type2_clean and type2_clean.strip())
+
+                if is_awning_plus and has_type2:
+                    type2_height = self._extract_height_from_type2(product, type2_clean)
+
+                    if type2_height > 0:
+                        original_height = height_value
+                        height_value = original_height + type2_height
+                        print(f"🔺 SPECIAL CASE: Awning + Fixed detected")
+                        print(f"   Main H: {original_height} + Type2 H: {type2_height} = {height_value}")
+                    else:
+                        print(f"⚠️ Awning + Fixed detected but no Type2 height found")
+
             # ✅ เก็บค่าความสูงที่คำนวณแล้วไว้ใน product
             product['calculated_height'] = height_value
 
@@ -1602,7 +1624,11 @@ class EnhancedSiteSurveyGenerator:
                         new_value = replacements[original_text]
                         cell.text = str(new_value) if new_value else ""
                         self._set_cell_font(cell, "TH Sarabun New")
-                        
+
+                        # ✅ เติมขนาดของบานย่อยลงในช่อง Wo/Ho ของแถว Type2/3/4
+                        if original_text in ('Type2', 'Type3', 'Type4') and new_value:
+                            self._fill_sub_panel_size(row, product, original_text)
+
                         # Debug
                         if new_value:
                             print(f"  ✓ Replaced '{original_text}' with '{str(new_value)[:60]}' at Row {row_index+1}, Cell {cell_index+1}")
@@ -1623,6 +1649,39 @@ class EnhancedSiteSurveyGenerator:
             import traceback
             traceback.print_exc()
 
+
+    def _fill_sub_panel_size(self, row, product: Dict, type_key: str):
+        """
+        เติมขนาดของบานย่อย (Fixed window) ลงในช่อง Wo/Ho ของแถว Type2/Type3/Type4
+
+        เดิมช่องนี้เป็นหน่วย 'mm.' ซึ่งย้ายไปอยู่ในหัวคอลัมน์แล้ว จึงว่างอยู่
+        """
+        try:
+            width = product.get(f"{type_key}_W", '')
+            height = product.get(f"{type_key}_H", '')
+
+            if not width and not height:
+                return
+
+            cells = row.cells
+
+            if len(cells) < 6:
+                return
+
+            # ถ้าช่อง Wo/Ho ถูก merge เป็นเซลล์เดียว ให้เขียนรวมกัน
+            if cells[4]._tc is cells[5]._tc:
+                cells[4].text = f"{width} x {height}"
+                self._set_cell_font(cells[4], "TH Sarabun New")
+            else:
+                cells[4].text = str(width)
+                cells[5].text = str(height)
+                self._set_cell_font(cells[4], "TH Sarabun New")
+                self._set_cell_font(cells[5], "TH Sarabun New")
+
+            print(f"  ✓ {type_key} size: {width} x {height}")
+
+        except Exception as e:
+            print(f"  ⚠️ Could not fill {type_key} size: {e}")
 
     def _extract_height_from_type2(self, product: Dict, type2_text: str) -> int:
         """
@@ -2459,17 +2518,40 @@ def calculate_smart_summary(products: List[Dict]) -> Dict[str, Any]:
 
 def pre_calculate_heights(products: List[Dict]) -> List[Dict]:
     """
-    คำนวณความสูงล่วงหน้าสำหรับ Awning + Fixed
+    คำนวณขนาดรวมล่วงหน้าสำหรับบานที่ประกอบจากหลาย product
     ก่อนสร้างรูปบาน
+
+    - ต่อแนวตั้ง (กว้างเท่ากัน)  -> H รวม = ผลรวมความสูงของทุกบาน
+    - ต่อแนวนอน (สูงเท่ากัน)    -> W รวม = ผลรวมความกว้างของทุกบาน
+    - Transom ถูกข้ามไปตั้งแต่ตอน merge จึงไม่ถูกนับ
     """
     try:
         for product in products:
             product_type = product.get('product_type', '').lower()
             height_value = product.get('height', 0)
-            
+
+            # ✅ ทางหลัก: ใช้ panel_segments (รองรับทุกชนิด ไม่ใช่แค่ Awning และรองรับเกิน 2 บาน)
+            segments = get_panel_segments(product)
+
+            if len(segments) >= 2:
+                direction, total_width, total_height = determine_layout(
+                    segments, product.get('ref', '')
+                )
+
+                product['calculated_height'] = total_height
+                product['calculated_width'] = total_width
+                product['original_height'] = height_value
+                product['layout_direction'] = direction
+
+                print(f"🔺 Pre-calculated size for {product.get('ref')}: "
+                      f"{len(segments)} segments ({direction}) "
+                      f"= {total_width}x{total_height} mm")
+                continue
+
+            # ⤵️ ทางสำรอง: ข้อมูลเก่าที่ไม่มี panel_segments (Awning + Fixed แบบเดิม)
             # ตรวจสอบ Awning + Fixed
             is_awning_plus = bool(re.search(r'awning\s*window\s*\+', product_type, re.IGNORECASE))
-            
+
             # ดึง Type2 จาก product
             type2_text = product.get('Type2', '')
             has_type2 = bool(type2_text and type2_text.strip())
@@ -2580,6 +2662,12 @@ def enhanced_generate_site_survey_report(quo_data: Dict,
         
         # อัพเดท products กลับไปใน merged_data
         merged_data['products'] = products
+
+        # ⚠️ generate_site_survey_multipage() เรียก merge_data() ใหม่อีกครั้ง
+        #    ซึ่งจะ copy products จาก quo_processor.processed_data
+        #    ต้องเขียนค่าที่คำนวณแล้ว (calculated_height / layout_direction) กลับไปด้วย
+        #    ไม่งั้นตารางจะใช้ความสูงเดิม แล้วไม่ตรงกับรูปที่วาด
+        generator.quo_processor.processed_data['products'] = products
         
         # ตอนนี้ products มี calculated_height แล้ว!
         print(f"✅ Heights calculated for {len(products)} products")
