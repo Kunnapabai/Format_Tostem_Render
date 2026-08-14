@@ -297,6 +297,10 @@ class WindowDoorImageGenerator:
         is_fixed = 'fix' in product_type_lower
         is_airflow = 'airflow' in product_type_lower or 'air flow' in product_type_lower
         is_grill = 'grill' in product_type_lower
+
+        # SFS = Sliding-Fixed-Sliding (บานเลื่อน-ฟิกซ์-บานเลื่อน)
+        # เป็นแบบเฉพาะ ต้องใช้รูป SFS เท่านั้น และรุ่นปกติต้องไม่หยิบรูป SFS ไปใช้
+        is_sfs = bool(re.search(r'\bSFS\b', product_type, re.IGNORECASE))
         
         # ตรวจสอบจำนวน panels (รองรับทั้ง (N), "N panels", และ "XPYT")
         num_panels = None
@@ -473,6 +477,19 @@ class WindowDoorImageGenerator:
                     score -= 15
                     score_breakdown.append("fix_not_airflow:-15")
             
+            # ตรวจสอบ SFS ก่อน เพราะเป็นตัวแยกรุ่นที่ชัดเจนที่สุด
+            file_is_sfs = 'sfs' in filename_lower
+
+            if is_sfs and file_is_sfs:
+                score += 30
+                score_breakdown.append("sfs:+30")
+            elif is_sfs and not file_is_sfs:
+                score -= 30
+                score_breakdown.append("needs_sfs:-30")
+            elif file_is_sfs:
+                score -= 30
+                score_breakdown.append("unwanted_sfs:-30")
+
             if is_sliding:
                 if 'slid' in filename_lower or 'panels-slid' in filename_lower:
                     score += 25
